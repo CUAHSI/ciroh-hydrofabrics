@@ -37,5 +37,15 @@ remotes::install_github("lynker-spatial/hfrefactor")
 whitebox::install_whitebox()
 ```
 
+### Setup R Environment Paths
+
+```
+echo 'DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/libspatialite/5.1.0_3/lib:$DYLD_LIBRARY_PATH' >> ~/.Renviron
+```
+
+```
+echo 'GDAL_DRIVER_PATH=/usr/local/lib' >> ~/.Renviron
+```
+
 
 
