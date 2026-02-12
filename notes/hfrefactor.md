@@ -37,6 +37,10 @@ remotes::install_github("lynker-spatial/hfrefactor")
 whitebox::install_whitebox()
 ```
 
+```
+install.packages("nanoarrow")
+```
+
 ### Setup R Environment Paths
 
 ```
