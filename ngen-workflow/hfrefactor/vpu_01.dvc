@@ -1,0 +1,14 @@
+md5: e7612217a1603b531e94d3b608aa8ad4
+frozen: true
+deps:
+- md5: 38ede141d7396de94cc40e0dbde39cc1.dir
+  size: 446448799
+  nfiles: 15
+  hash: md5
+  path: remote://vpu01
+outs:
+- md5: 42c101e021378e683abc0769b96de13a.dir
+  size: 446448799
+  nfiles: 15
+  hash: md5
+  path: vpu_01

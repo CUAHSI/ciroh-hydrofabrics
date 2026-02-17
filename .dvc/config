@@ -1,0 +1,5 @@
+[core]
+    remote = vpu01
+['remote "vpu01"']
+    url = s3://sblack/0f27eb7beebb4d0cb2e69ba51ac7d1fa/data/contents/vpu_01/
+    profile = hydroshare

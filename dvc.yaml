@@ -1,0 +1,8 @@
+stages:
+  refactor:
+    cmd: docker compose -f ngen-workflow/docker-compose.yml run --rm hfrefactor ./run-refactor.sh
+    deps:
+    - ngen-workflow/hfrefactor/building-hf.Rmd
+    - ngen-workflow/hfrefactor/vpu_01
+    outs:
+    - ngen-workflow/hfrefactor/vpu_01_out
