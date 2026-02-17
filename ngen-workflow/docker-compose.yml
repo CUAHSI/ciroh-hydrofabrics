@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  hfrefactor:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./hfrefactor:/hfrefactor
