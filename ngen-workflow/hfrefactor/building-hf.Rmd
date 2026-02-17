@@ -54,7 +54,7 @@ Sys.setenv(CPL_DEBUG = "ON")
 gpkg   <- "vpu_01/reference_hydrofabric.gpkg"   # must contain flowpaths, divides, (optionally) events
 fac    <- "vpu_01/01a_fac.tif"                  # optional flow accumulation raster
 fdr    <- "vpu_01/01a_fdr.tif"                  # optional flow direction raster
-outfile <- "vpu_01/refactored_reference_hydrofabric.gpkg"
+outfile <- "vpu_01_out/refactored_reference_hydrofabric.gpkg"
 ```
 
 ```{r}
