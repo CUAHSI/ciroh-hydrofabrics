@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### Install Packages
+
+```{r}
+install.packages("remotes")
+
+# Installing from local source so minor bugs can be fixed. For instance,
+# in aggregate_to_outlets.R, line 202 references a non-existing "verbose" parameter: 
+# add_network_type(verbose = FALSE)
+#
+#remotes::install_github("lynker-spatial/hfaggregate", dependencies = TRUE)
+install.packages('/Users/castro/Documents/work/hydrofabric/ciroh-hydrofabrics/lynkerspatial/hfaggregate', repos=NULL, type="source")
+```
+
+### Run Aggregation Workflow
+
+```{r}
+library(hfutils)
+library(hfaggregate)
+```
+
+Define the input dataset which should be the output from the `hfrefactor` function.
+
+```{r}
+hf_path <- "vpu_01/refactored_reference_hydrofabric.gpkg"
+```
+
+There are two ways to aggregate the hydrofabric, the first is using user-defined points of interest (POIs). Since I don't have any POIs I'm just grabbing the hydrolocations within the reference hydrofabric. From what I can tell, this won't make any changes to the hydrofabric since no new POIs are included. It seems like this is a place the CIROH researcher may want to insert their own POIs that don't exist in the reference hydrofabric.
+
+```{r}
+#pois  <- hfutils::as_ogr(hf_path, "pois") |> 
+#  dplyr::select(flowpath_id, poi_id, geom) |> 
+#  hfutils::st_as_sf()
+
+
+pois  <- hfutils::as_ogr(hf_path, "hydrolocations") |> 
+  dplyr::select(flowpath_id, poi_id, geom) |> 
+  hfutils::st_as_sf()
+
+
+outlet_net <- aggregate_to_outlets(gpkg = hf_path,
+                                   pois = pois,
+                                   outfile = "vpu_01/vpu01_aggregate_outlets.gpkg"
+                                   )
+```
+
+The second way to aggregate the hydrofabric is by modifying attributes such as `ideal_size_sqkm`.
+
+```{r}
+# Build a uniformly sized distribution
+aggregated <- aggregate_to_distribution(
+  gpkg = hf_path,
+  ideal_size_sqkm = 25,
+  min_length_km = 1,
+  min_area_sqkm = 10,
+  outfile = "vpu_01/vpu01_aggregate_distribution.gpkg"
+)
+```

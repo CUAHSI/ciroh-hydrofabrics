@@ -1,0 +1,142 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Notes
+
+I'm following this tutorial: <https://noaa-owp.github.io/hydrofabric/articles/devcon2024-tutorial.html>, but using the libraries published here: <https://github.com/lynker-spatial/>
+
+Data was downloaded:
+
+-   <https://proxy.lynker-spatial.com/gridded/NHDSnapshot/>. These are the flow direction and flow accumulation rasters that are needed as input to the `hfrefactor` function.
+    -   FDR/01a_fdr.tif
+    -   FAC/01a/fac.tif
+-   <https://proxy.lynker-spatial.com/hydrofabric/v2.3/superconus/cn/>
+    -   divides/vpuid=01/part-0.parquet, save as `divides.parquet`
+    -   flowpaths/vpuid=01/part-0.parquet, save as `flowpaths.parquet`
+    -   network/vpuid=01/part-0.parquet, save as `network.parquet`
+    -   hydrolocation/vpuid=01/part-0.parquet, save as hydrolocation`.parquet`
+-   <https://proxy.lynker-spatial.com/hydrofabric/v3.0/superconus/reference/cn/pois/vpuid%3D01/>
+    -   pois. This data appears to no longer be available!
+
+### Install packages
+
+GDAL must be installed with Spatialite support. I did this on mac like this
+
+```{bash}
+brew install gdal libspatialite sqlite
+```
+
+check that it's working as expected
+
+```{bash}
+gdalinfo --formats | grep -i spatial
+```
+
+Install SF from source so that it's compiled with the GDAL that we just configured. This is necessary to make sure `SF` is installed with `spatialite` support.
+
+```{r}
+install.packages("sf", type = "source")
+```
+
+Install `hfutils` from lynkerspatial. There is a bug in the current HEAD so a specific revision is provided that works.
+
+```{r}
+remotes::install_github("lynker-spatial/hfutils@f74e9a41beaddf539c9420fc0f01ed1dc18820a2")
+```
+
+Install HFRefactor from local source.
+
+```{r}
+install.packages('/Users/castro/Documents/work/hydrofabric/ciroh-hydrofabrics/lynkerspatial/hfrefactor', repos=NULL, type="source")
+```
+
+Alternatively, source it locally
+
+```{r}
+library(devtools)
+load_all('../../lynkerspatial/hfrefactor')
+```
+
+Install WhiteBox
+
+```{r}
+whitebox::install_whitebox()
+```
+
+### Configure the R Environment
+
+Set environment variables so that GDAL works properly.
+
+```{bash}
+echo 'DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/libspatialite/5.1.0_3/lib:$DYLD_LIBRARY_PATH' >> ~/.Renviron
+
+```
+
+```{bash}
+
+echo 'GDAL_DRIVER_PATH=/usr/local/lib' >> ~/.Renviron
+```
+
+Reload the .Renviron file
+
+```{r}
+readRenviron("~/.Renviron")
+```
+
+### Build the Input Geopackage
+
+The input geopackage will consist of layers that are created from the parquet files which are downloaded from lynkerspatial.com. Execute the following script to build the geopackage file.
+
+```{bash}
+
+# create_reference_gpkg.sh <directory containing parquet files>
+./create_reference_gpkg.sh vpu_01 01
+```
+
+Run HFRefactor
+
+```{r}
+Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
+Sys.getenv("DYLD_LIBRARY_PATH")
+Sys.getenv("GDAL_SQLITE_LOAD_EXTENSIONS")
+#Sys.setenv(CPL_DEBUG = "ON")
+```
+
+```{r}
+library(sf)
+library(hfrefactor)
+```
+
+```{r}
+gpkg   <- "vpu_01/reference_hydrofabric.gpkg"   
+fac    <- "vpu_01/01a_fac.tif"                  
+fdr    <- "vpu_01/01a_fdr.tif"                  
+outfile <- "vpu_01/refactored_reference_hydrofabric.gpkg"
+```
+
+```{r}
+refactor(
+  gpkg      = gpkg,
+  fac       = fac,
+  fdr       = fdr,
+  outfile   = outfile,
+  split_flines_meters         = 10000,
+  collapse_flines_meters      = 1000,
+  collapse_flines_main_meters = 1000,
+  simplify_tolerance_m        = 40
+)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
