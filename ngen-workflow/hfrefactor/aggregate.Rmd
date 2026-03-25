@@ -1,0 +1,60 @@
+---
+title: "Building HF"
+output: html_document
+date: "2026-02-06"
+---
+
+Running https://noaa-owp.github.io/hydrofabric/articles/devcon2024-tutorial.html#build-an-aggregated-network
+
+```{r}
+Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
+```
+
+```{r}
+Sys.getenv("DYLD_LIBRARY_PATH")
+Sys.getenv("GDAL_SQLITE_LOAD_EXTENSIONS")
+```
+
+```{r}
+library(sf)
+library(hfrefactor)
+library(hydrofabric)
+```
+
+```{r}
+sf::sf_extSoftVersion()  # Check versions first
+```
+
+```{r}
+Sys.setenv(CPL_DEBUG = "ON")
+```
+
+```{r}
+refactored_reference_file <- "vpu_01_out/refactored_reference_hydrofabric.gpkg"
+hf = read_hydrofabric(refactored_reference_file)
+
+pois = open_dataset(glue("{source}/v2.2/conus_hl")) %>%
+  filter(hl_source == 'GFv20', 
+         vpuid %in% unique(hf$flowpaths$vpuid),
+         hf_id %in% hf$flowpaths$id) %>%
+  collect() %>%
+  st_as_sf(coords = c("X", "Y"), crs = 5070)
+```
+
+```{r}
+hydrolocations = read_sf(refactored_reference_file, 'lookup_table') %>%
+  inner_join(pois, by = c("NHDPlusV2_COMID" = "hf_id")) %>%
+  select(poi_id, NHDPlusV2_COMID, id = reconciled_ID) %>%
+  distinct()
+```
+
+```{r}
+aggregate_to_distribution(
+  gpkg = refactored_file,
+  hydrolocations = hydrolocations,
+  ideal_size_sqkm = 10,
+  min_length_km = 1,
+  min_area_sqkm = 3,
+  outfile = aggregated_file,
+  overwrite = TRUE )
+```

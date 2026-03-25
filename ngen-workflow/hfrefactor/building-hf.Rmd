@@ -27,7 +27,6 @@ echo 'DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/libspatialite/5.1.0_3/l
 echo 'GDAL_DRIVER_PATH=/usr/local/lib' >> ~/.Renviron
 
 
-
 ```{r}
 Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
 ```
