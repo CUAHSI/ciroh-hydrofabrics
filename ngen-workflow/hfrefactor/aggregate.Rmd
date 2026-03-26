@@ -19,6 +19,9 @@ Sys.getenv("GDAL_SQLITE_LOAD_EXTENSIONS")
 library(sf)
 library(hfrefactor)
 library(hydrofabric)
+library(aws.s3)
+library(arrow)
+library(glue)
 ```
 
 ```{r}
@@ -50,7 +53,7 @@ hydrolocations = read_sf(refactored_reference_file, 'lookup_table') %>%
 
 ```{r}
 aggregate_to_distribution(
-  gpkg = refactored_file,
+  gpkg = refactored_reference_file,
   hydrolocations = hydrolocations,
   ideal_size_sqkm = 10,
   min_length_km = 1,
