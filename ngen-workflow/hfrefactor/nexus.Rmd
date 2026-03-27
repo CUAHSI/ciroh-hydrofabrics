@@ -1,0 +1,22 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### Apply Nexus Topology
+
+```{r}
+library(hydrofabric)
+```
+
+# not sure where to get the nextgen_file
+```{r}
+nextgen_file <- "hydrofabric/poudre.gpkg"
+aggregated_file <- "vpu_01/vpu01_aggregate_distribution.gpkg"
+
+```
+
+
+```{r}
+apply_nexus_topology(aggregated_file, export_gpkg = nextgen_file)
+```
