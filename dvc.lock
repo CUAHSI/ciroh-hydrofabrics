@@ -1,0 +1,40 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh 
+      vpuid_01
+    deps:
+    - path: ngen-workflow/bash/prepare_reference_gpkg.sh
+      hash: md5
+      md5: 42c04ac03cf9bd8de8a47c9b34688f04
+      size: 1553
+      isexec: true
+    - path: ngen-workflow/data/superconus/divides/vpuid_01.parquet
+      hash: md5
+      md5: 770ad914d27fba4645dd247a1912dd2d
+      size: 28140206
+    - path: ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet
+      hash: md5
+      md5: 2bd6259187778e2843405e971245a3da
+      size: 30246540
+    - path: ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet
+      hash: md5
+      md5: 5c329ac3319238df88656c7537644330
+      size: 696236
+    - path: ngen-workflow/data/superconus/network/vpuid_01.parquet
+      hash: md5
+      md5: a936746b226879b765eba9558b37bf49
+      size: 3661526
+    - path: ngen-workflow/data/superconus/reference_hydrofabric.gpkg
+      hash: md5
+      md5: b97f5ec4b720c8d7ecce77b798f4b5ee
+      size: 120037376
+    params:
+      params.yaml:
+        vpuid: vpuid_01
+    outs:
+    - path: ngen-workflow/data/prepared
+      hash: md5
+      md5: 585b3198d20d15e499b6f312e20e9c5f.dir
+      size: 119021568
+      nfiles: 1

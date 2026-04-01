@@ -1,0 +1,12 @@
+md5: cb1c3c9a9131991ca841c78f7fc0b27d
+frozen: true
+deps:
+- etag: 45813235bf751a373613bd87d1db3ef0-2
+  size: 120037376
+  hash: md5
+  path: remote://superconus/reference_hydrofabric.gpkg
+outs:
+- hash: md5
+  path: reference_hydrofabric.gpkg
+  md5: b97f5ec4b720c8d7ecce77b798f4b5ee
+  size: 120037376

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  hydrofabric:
+    platform: linux/amd64
+    build:
+      context: ./ngen-workflow/
+      dockerfile: Dockerfile
+    volumes:
+      - ./ngen-workflow:/ngen-workflow
+    working_dir: /ngen-workflow

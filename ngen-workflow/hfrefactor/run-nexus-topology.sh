@@ -1,1 +1,0 @@
-Rscript -e "rmarkdown::render('nexus.Rmd')"

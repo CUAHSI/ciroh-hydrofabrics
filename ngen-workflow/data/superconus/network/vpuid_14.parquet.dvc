@@ -1,0 +1,10 @@
+md5: 5e7b9ae49efefdf87be6c3055db23ff9
+frozen: true
+deps:
+- etag: 8a3199a94638b41583dbdb7458b9871f
+  size: 4087700
+  hash: md5
+  path: remote://superconus/network/vpuid_14.parquet
+outs:
+- hash: md5
+  path: vpuid_14.parquet

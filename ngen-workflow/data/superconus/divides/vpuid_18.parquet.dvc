@@ -1,0 +1,10 @@
+md5: 84672dc92fc94b65fb1e4e0d4368796e
+frozen: true
+deps:
+- etag: bf813aead3e403397d50c9ccec43f3e6-4
+  size: 60048419
+  hash: md5
+  path: remote://superconus/divides/vpuid_18.parquet
+outs:
+- hash: md5
+  path: vpuid_18.parquet

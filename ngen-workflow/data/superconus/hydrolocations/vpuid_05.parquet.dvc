@@ -1,0 +1,10 @@
+md5: 06e85d1482006aca765be5bd8f8c3206
+frozen: true
+deps:
+- etag: 5b249dd1bd9d9de503e72596a46c24b6
+  size: 1660059
+  hash: md5
+  path: remote://superconus/hydrolocations/vpuid_05.parquet
+outs:
+- hash: md5
+  path: vpuid_05.parquet

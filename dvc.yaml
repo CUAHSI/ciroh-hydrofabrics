@@ -1,8 +1,15 @@
 stages:
-  refactor:
-    cmd: docker compose -f ngen-workflow/docker-compose.yml run --rm hfrefactor ./run-refactor.sh
+  prepare:
+    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh ${vpuid} 
+    params:
+       - vpuid
     deps:
-    - ngen-workflow/hfrefactor/building-hf.Rmd
-    - ngen-workflow/hfrefactor/vpu_01
+    - ngen-workflow/bash/prepare_reference_gpkg.sh
+    - ngen-workflow/data/superconus/reference_hydrofabric.gpkg
+    - ngen-workflow/data/superconus/divides/${vpuid}.parquet
+    - ngen-workflow/data/superconus/flowpaths/${vpuid}.parquet
+    - ngen-workflow/data/superconus/hydrolocations/${vpuid}.parquet
+    - ngen-workflow/data/superconus/network/${vpuid}.parquet
+    #- ngen-workflow/data/superconus/NHDSnapshot/FAC/vpuid_${vpuid}.parquet
     outs:
-    - ngen-workflow/hfrefactor/vpu_01_out
+    - ngen-workflow/data/prepared
