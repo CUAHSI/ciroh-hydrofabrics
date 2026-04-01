@@ -1,35 +1,33 @@
 #!/usr/bin/env bash
 set -e
 
-if [ $# -lt 1 ]; then
-  echo "Usage: $0 <vpuid>"
+if [ $# -lt 5 ]; then
+  echo "Usage: $0 <vpuid> <divides_file> <flowpaths_file> <hydrolocations_file> <network_file>"
   exit 1
 fi
 
-VPU_ID="$1"
-mkdir -p data/prepared
+vpuid="$1"
+divides_file="$2"
+flowpaths_file="$3"
+hydrolocations_file="$4"
+network_file="$5"
+
+mkdir -p data/prepared/$vpuid
 
 # combine the parquets into a geopackage
-ogr2ogr -f "GPKG" data/prepared/reference_hydrofabric.gpkg data/superconus/divides/${VPU_ID}.parquet -nln divides
-ogr2ogr -f "GPKG" -append data/prepared/reference_hydrofabric.gpkg data/superconus/flowpaths/${VPU_ID}.parquet -nln flowpaths
-ogr2ogr -f "GPKG" -append data/prepared/reference_hydrofabric.gpkg data/superconus/hydrolocations/${VPU_ID}.parquet -nln hydrolocations
-ogr2ogr -f "GPKG" -append data/prepared/reference_hydrofabric.gpkg data/superconus/network/${VPU_ID}.parquet -nln network
-#ogr2ogr -f "GPKG" -append data/prepared/reference_hydrofabric.gpkg data/superconus/pois/vpuid_${VPU_ID}.parquet -nln pois
+ogr2ogr -f "GPKG" data/prepared/$vpuid/reference_hydrofabric.gpkg "/$divides_file" -nln divides
+ogr2ogr -f "GPKG" -append data/prepared/$vpuid/reference_hydrofabric.gpkg "/$flowpaths_file" -nln flowpaths
+ogr2ogr -f "GPKG" -append data/prepared/$vpuid/reference_hydrofabric.gpkg "/$hydrolocations_file" -nln hydrolocations
+ogr2ogr -f "GPKG" -append data/prepared/$vpuid/reference_hydrofabric.gpkg "/$network_file" -nln network
 
 # add VPU column to the divides table
-ogrinfo data/prepared/reference_hydrofabric.gpkg \
+ogrinfo data/prepared/$vpuid/reference_hydrofabric.gpkg \
   -sql "ALTER TABLE divides ADD COLUMN vpuid TEXT"
-ogrinfo data/prepared/reference_hydrofabric.gpkg \
-  -sql "UPDATE divides SET vpuid = '$(echo $VPU_ID | sed 's/^vpuid_//')'"
+ogrinfo data/prepared/$vpuid/reference_hydrofabric.gpkg \
+  -sql "UPDATE divides SET vpuid = '$vpuid'"
 
 # add VPU column to the flowpaths table
-ogrinfo data/prepared/reference_hydrofabric.gpkg \
+ogrinfo data/prepared/$vpuid/reference_hydrofabric.gpkg \
   -sql "ALTER TABLE flowpaths ADD COLUMN vpuid TEXT"
-ogrinfo data/prepared/reference_hydrofabric.gpkg \
-  -sql "UPDATE flowpaths SET vpuid = '$(echo $VPU_ID | sed 's/^vpuid_//')'"
-
-# add VPU column to the pois
-#ogrinfo data/prepared/reference_hydrofabric.gpkg \
-#  -sql "ALTER TABLE pois ADD COLUMN vpuid TEXT"
-#ogrinfo data/prepared/reference_hydrofabric.gpkg \
-#  -sql "UPDATE pois SET vpuid = '$VPU_ID'"
+ogrinfo data/prepared/$vpuid/reference_hydrofabric.gpkg \
+  -sql "UPDATE flowpaths SET vpuid = '$vpuid'"

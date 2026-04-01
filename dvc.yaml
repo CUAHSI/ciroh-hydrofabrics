@@ -1,15 +1,17 @@
 stages:
   prepare:
-    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh ${vpuid} 
+    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh ${vpuid} ${divides_file} ${flowpaths_file} ${hydrolocations_file} ${network_file}
     params:
-       - vpuid
+    - vpuid
+    - divides_file
+    - flowpaths_file
+    - hydrolocations_file
+    - network_file
     deps:
     - ngen-workflow/bash/prepare_reference_gpkg.sh
-    - ngen-workflow/data/superconus/reference_hydrofabric.gpkg
-    - ngen-workflow/data/superconus/divides/${vpuid}.parquet
-    - ngen-workflow/data/superconus/flowpaths/${vpuid}.parquet
-    - ngen-workflow/data/superconus/hydrolocations/${vpuid}.parquet
-    - ngen-workflow/data/superconus/network/${vpuid}.parquet
-    #- ngen-workflow/data/superconus/NHDSnapshot/FAC/vpuid_${vpuid}.parquet
+    - ${divides_file}
+    - ${flowpaths_file}
+    - ${hydrolocations_file}
+    - ${network_file}
     outs:
     - ngen-workflow/data/prepared

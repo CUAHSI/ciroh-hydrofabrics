@@ -1,1 +1,5 @@
-vpuid: vpuid_01
+vpuid: "01"
+divides_file: "ngen-workflow/data/superconus/divides/vpuid_01.parquet"
+flowpaths_file: "ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet"
+hydrolocations_file: "ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet"
+network_file: "ngen-workflow/data/superconus/network/vpuid_01.parquet"
