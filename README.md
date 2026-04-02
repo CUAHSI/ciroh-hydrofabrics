@@ -1,6 +1,8 @@
 
 # CIROH HydroFabric DVC Integration
 
+This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data pipelines and track changes to large datasets. DVC enables reproducible workflows and seamless collaboration.
+
 ## DVC Installation
 
 To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via pip:
@@ -16,8 +18,6 @@ brew install dvc
 ```
 
 For more installation options, see the [official DVC documentation](https://dvc.org/doc/install).
-
-This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data pipelines and track changes to large datasets. DVC enables reproducible workflows and seamless collaboration.
 
 ## Data
 
