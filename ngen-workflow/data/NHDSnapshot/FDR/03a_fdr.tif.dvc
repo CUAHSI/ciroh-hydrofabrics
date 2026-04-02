@@ -1,0 +1,10 @@
+md5: 8c1455fd553fabc57a191a18d908d361
+frozen: true
+deps:
+- etag: 70cefc00629cab0e6a1b39ca7e03f153-4
+  size: 50903340
+  hash: md5
+  path: remote://superconus/NHDSnapshot/FDR/03a_fdr.tif
+outs:
+- hash: md5
+  path: 03a_fdr.tif

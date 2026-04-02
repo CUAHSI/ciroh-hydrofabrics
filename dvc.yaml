@@ -15,3 +15,11 @@ stages:
     - ${network_file}
     outs:
     - ngen-workflow/data/prepared
+  refactor:
+    cmd: docker compose run --rm hydrofabric ./bash/run-refactor.sh
+    deps:
+    - ngen-workflow/bash/run-refactor.sh
+    - ngen-workflow/R/refactor.Rmd
+    - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+    outs:
+    - ngen-workflow/data/refactored

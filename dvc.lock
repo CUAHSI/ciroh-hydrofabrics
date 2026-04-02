@@ -1,40 +1,44 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh 
-      vpuid_01
+    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh 02
+      ngen-workflow/data/superconus/divides/vpuid_02.parquet 
+      ngen-workflow/data/superconus/flowpaths/vpuid_02.parquet 
+      ngen-workflow/data/superconus/hydrolocations/vpuid_02.parquet 
+      ngen-workflow/data/superconus/network/vpuid_02.parquet
     deps:
     - path: ngen-workflow/bash/prepare_reference_gpkg.sh
       hash: md5
-      md5: 42c04ac03cf9bd8de8a47c9b34688f04
-      size: 1553
+      md5: ed15bf085c9b48569cf9391056beb9e4
+      size: 1258
       isexec: true
-    - path: ngen-workflow/data/superconus/divides/vpuid_01.parquet
+    - path: ngen-workflow/data/superconus/divides/vpuid_02.parquet
       hash: md5
-      md5: 770ad914d27fba4645dd247a1912dd2d
-      size: 28140206
-    - path: ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet
+      md5: f83f095ceee95ba4d197639f02811dbd
+      size: 47306138
+    - path: ngen-workflow/data/superconus/flowpaths/vpuid_02.parquet
       hash: md5
-      md5: 2bd6259187778e2843405e971245a3da
-      size: 30246540
-    - path: ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet
+      md5: c20d8eabcb7019b53800728603435a80
+      size: 46116852
+    - path: ngen-workflow/data/superconus/hydrolocations/vpuid_02.parquet
       hash: md5
-      md5: 5c329ac3319238df88656c7537644330
-      size: 696236
-    - path: ngen-workflow/data/superconus/network/vpuid_01.parquet
+      md5: ee237aa77f8647e5e4f92b6c36eeea8e
+      size: 1358466
+    - path: ngen-workflow/data/superconus/network/vpuid_02.parquet
       hash: md5
-      md5: a936746b226879b765eba9558b37bf49
-      size: 3661526
-    - path: ngen-workflow/data/superconus/reference_hydrofabric.gpkg
-      hash: md5
-      md5: b97f5ec4b720c8d7ecce77b798f4b5ee
-      size: 120037376
+      md5: c478e00f2e48acfd954354e3ffd19931
+      size: 6551444
     params:
       params.yaml:
-        vpuid: vpuid_01
+        divides_file: ngen-workflow/data/superconus/divides/vpuid_02.parquet
+        flowpaths_file: ngen-workflow/data/superconus/flowpaths/vpuid_02.parquet
+        hydrolocations_file: 
+          ngen-workflow/data/superconus/hydrolocations/vpuid_02.parquet
+        network_file: ngen-workflow/data/superconus/network/vpuid_02.parquet
+        vpuid: '02'
     outs:
     - path: ngen-workflow/data/prepared
       hash: md5
-      md5: 585b3198d20d15e499b6f312e20e9c5f.dir
-      size: 119021568
+      md5: 1e4939ead0e91fa3611ed4403d14b855.dir
+      size: 197808128
       nfiles: 1

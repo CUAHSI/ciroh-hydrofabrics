@@ -1,0 +1,49 @@
+---
+title: "Refactor HF"
+output: html_document
+date: "2026-02-06"
+params:
+  fac_file: "data/NHDSnapshot/FAC/01a_fac.tif"
+  fdr_file: "data/NHDSnapshot/FDR/01a_fdr.tif"
+  gpkg_file: "data/prepared/reference_hydrofabric.gpkg"
+  out_file: "data/refactored/01/refactored_reference_hydrofabric.gpkg
+  split_flines_meters: 10000
+  collapse_flines_meters: 1000
+  collapse_flines_main_meters: 1000
+  simplify_tolerance_m: 40
+---
+
+```{r}
+Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
+```
+
+```{r}
+Sys.getenv("DYLD_LIBRARY_PATH")
+Sys.getenv("GDAL_SQLITE_LOAD_EXTENSIONS")
+```
+
+```{r}
+library(sf)
+library(hfrefactor)
+```
+
+```{r}
+sf::sf_extSoftVersion()  # Check versions first
+```
+
+```{r}
+Sys.setenv(CPL_DEBUG = "ON")
+```
+
+```{r}
+refactor(
+  gpkg      = gpkg_file,
+  fac       = fac_file,
+  fdr       = fdr_file,
+  outfile   = out_file,
+  split_flines_meters         = split_flines_meters,
+  collapse_flines_meters      = collapse_flines_meters,
+  collapse_flines_main_meters = collapse_flines_main_meters,
+  simplify_tolerance_m        = simplify_tolerance_m
+)
+```
