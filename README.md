@@ -42,7 +42,7 @@ Each subdirectory contains files for multiple regions or VPUs, typically named b
 For DVC to access the input files on HydroShare, configure your AWS credentials with a profile named `hydroshare`:
 
 1. Install the AWS CLI if not already installed.
-2. Get an access token and key from HydroShare (POST to https://www.hydroshare.org/hsapi/user/service/accounts/s3/ with basic authentication)
+2. Get an access token and key from HydroShare (POST to https://www.hydroshare.org/hsapi/user/service/accounts/s3/ with basic authentication, use the [Swagger page](https://www.hydroshare.org/hsapi/) to do this easily)
 3. Run the following command and enter your credentials:
     ```sh
     aws configure --profile hydroshare
