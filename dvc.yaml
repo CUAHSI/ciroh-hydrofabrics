@@ -7,18 +7,21 @@ stages:
       ${flowpaths_file}
       ${hydrolocations_file}
       ${network_file}
+      ${pois_file}
     params:
       - vpuid
       - divides_file
       - flowpaths_file
       - hydrolocations_file
       - network_file
+      - pois_file
     deps:
       - ngen-workflow/bash/prepare_reference_gpkg.sh
       - ${divides_file}
       - ${flowpaths_file}
       - ${hydrolocations_file}
       - ${network_file}
+      - ${pois_file}
     outs:
       - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
   refactor:

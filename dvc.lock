@@ -3,12 +3,13 @@ stages:
   prepare:
     cmd: "docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh 01
       ngen-workflow/data/superconus/divides/vpuid_01.parquet ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet
-      ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet ngen-workflow/data/superconus/network/vpuid_01.parquet\n"
+      ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet ngen-workflow/data/superconus/network/vpuid_01.parquet
+      ngen-workflow/data/superconus/pois.parquet\n"
     deps:
     - path: ngen-workflow/bash/prepare_reference_gpkg.sh
       hash: md5
-      md5: ed15bf085c9b48569cf9391056beb9e4
-      size: 1258
+      md5: 544f137e40fcc19440c0e12b714d9560
+      size: 1625
       isexec: true
     - path: ngen-workflow/data/superconus/divides/vpuid_01.parquet
       hash: md5
@@ -26,6 +27,10 @@ stages:
       hash: md5
       md5: a936746b226879b765eba9558b37bf49
       size: 3661526
+    - path: ngen-workflow/data/superconus/pois.parquet
+      hash: md5
+      md5: b2259c93e0a93ff8c3022732ad5cd178
+      size: 310951
     params:
       params.yaml:
         divides_file: ngen-workflow/data/superconus/divides/vpuid_01.parquet
@@ -33,9 +38,52 @@ stages:
         hydrolocations_file: 
           ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet
         network_file: ngen-workflow/data/superconus/network/vpuid_01.parquet
+        pois_file: ngen-workflow/data/superconus/pois.parquet
         vpuid: '01'
     outs:
     - path: ngen-workflow/data/prepared/01/reference_hydrofabric.gpkg
       hash: md5
-      md5: 3162b24c475ecad435dd8efaca2770db
-      size: 119021568
+      md5: 5a320e41f9f31ee560fe20ff917914a4
+      size: 120037376
+  refactor:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-refactor.sh /ngen-workflow/data/NHDSnapshot/FAC/01a_fac.tif
+      /ngen-workflow/data/NHDSnapshot/FDR/01a_fdr.tif /ngen-workflow/data/prepared/01/reference_hydrofabric.gpkg
+      /ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg 10000
+      1000 1000 400\n"
+    deps:
+    - path: ngen-workflow/R/refactor.Rmd
+      hash: md5
+      md5: 04cbb6d5e69d3f53e32425d5a5e7f62b
+      size: 1002
+    - path: ngen-workflow/bash/run-refactor.sh
+      hash: md5
+      md5: 828c49c182674266ba6bde9c9ccc0ce1
+      size: 935
+      isexec: true
+    - path: ngen-workflow/data/NHDSnapshot/FAC/01a_fac.tif
+      hash: md5
+      md5: ecb03118b64d99f3d892213275a0a848
+      size: 194984247
+    - path: ngen-workflow/data/NHDSnapshot/FDR/01a_fdr.tif
+      hash: md5
+      md5: 4c72d7f0ec722b45700f8d529e1853f0
+      size: 70337469
+    - path: ngen-workflow/data/prepared/01/reference_hydrofabric.gpkg
+      hash: md5
+      md5: 3c397b6bc08113dd45e0905c22151fac
+      size: 120037376
+    params:
+      params.yaml:
+        collapse_flines_main_meters: 1000
+        collapse_flines_meters: 1000
+        fac_file: ngen-workflow/data/NHDSnapshot/FAC/01a_fac.tif
+        fdr_file: ngen-workflow/data/NHDSnapshot/FDR/01a_fdr.tif
+        simplify_tolerance_meters: 400
+        split_flines_meters: 10000
+        vpuid: '01'
+    outs:
+    - path: 
+        ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
+      hash: md5
+      md5: 1fff16fcdbfc6d6580ed25baed0d1505
+      size: 104443904

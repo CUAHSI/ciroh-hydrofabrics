@@ -3,6 +3,7 @@ divides_file: "ngen-workflow/data/superconus/divides/vpuid_01.parquet"
 flowpaths_file: "ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet"
 hydrolocations_file: "ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet"
 network_file: "ngen-workflow/data/superconus/network/vpuid_01.parquet"
+pois_file: "ngen-workflow/data/superconus/pois.parquet"
 fac_file: "ngen-workflow/data/NHDSnapshot/FAC/01a_fac.tif"
 fdr_file: "ngen-workflow/data/NHDSnapshot/FDR/01a_fdr.tif"
 split_flines_meters: 10000
