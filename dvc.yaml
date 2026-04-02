@@ -1,25 +1,50 @@
 stages:
   prepare:
-    cmd: docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh ${vpuid} ${divides_file} ${flowpaths_file} ${hydrolocations_file} ${network_file}
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh
+      ${vpuid}
+      ${divides_file}
+      ${flowpaths_file}
+      ${hydrolocations_file}
+      ${network_file}
     params:
-    - vpuid
-    - divides_file
-    - flowpaths_file
-    - hydrolocations_file
-    - network_file
+      - vpuid
+      - divides_file
+      - flowpaths_file
+      - hydrolocations_file
+      - network_file
     deps:
-    - ngen-workflow/bash/prepare_reference_gpkg.sh
-    - ${divides_file}
-    - ${flowpaths_file}
-    - ${hydrolocations_file}
-    - ${network_file}
+      - ngen-workflow/bash/prepare_reference_gpkg.sh
+      - ${divides_file}
+      - ${flowpaths_file}
+      - ${hydrolocations_file}
+      - ${network_file}
     outs:
-    - ngen-workflow/data/prepared
+      - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
   refactor:
-    cmd: docker compose run --rm hydrofabric ./bash/run-refactor.sh
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-refactor.sh
+      /${fac_file}
+      /${fdr_file}
+      /ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+      /ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+      ${split_flines_meters}
+      ${collapse_flines_meters}
+      ${collapse_flines_main_meters}
+      ${simplify_tolerance_meters}
+    params:
+      - vpuid
+      - fac_file
+      - fdr_file
+      - split_flines_meters
+      - collapse_flines_meters
+      - collapse_flines_main_meters
+      - simplify_tolerance_meters
     deps:
-    - ngen-workflow/bash/run-refactor.sh
-    - ngen-workflow/R/refactor.Rmd
-    - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+      - ngen-workflow/bash/run-refactor.sh
+      - ngen-workflow/R/refactor.Rmd
+      - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+      - ${fac_file}
+      - ${fdr_file}
     outs:
-    - ngen-workflow/data/refactored
+      - ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg

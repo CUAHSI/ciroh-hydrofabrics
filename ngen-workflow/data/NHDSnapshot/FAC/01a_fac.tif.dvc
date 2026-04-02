@@ -1,4 +1,4 @@
-md5: f23e3a11e437c8011b3ef09029f2643e
+md5: ab1ef4989f9facd76bdc0f786d3ce5c0
 frozen: true
 deps:
 - etag: 0f5e89f50245c2129f1e47def576abb8-12
@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: 01a_fac.tif
+  md5: ecb03118b64d99f3d892213275a0a848
+  size: 194984247

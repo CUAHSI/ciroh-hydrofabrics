@@ -3,14 +3,14 @@ title: "Refactor HF"
 output: html_document
 date: "2026-02-06"
 params:
-  fac_file: "data/NHDSnapshot/FAC/01a_fac.tif"
-  fdr_file: "data/NHDSnapshot/FDR/01a_fdr.tif"
-  gpkg_file: "data/prepared/reference_hydrofabric.gpkg"
-  out_file: "data/refactored/01/refactored_reference_hydrofabric.gpkg
-  split_flines_meters: 10000
-  collapse_flines_meters: 1000
-  collapse_flines_main_meters: 1000
-  simplify_tolerance_m: 40
+  fac_file: "..."
+  fdr_file: "..."
+  gpkg_file: "..."
+  out_file: "..."
+  split_flines_meters: ...
+  collapse_flines_meters: ...
+  collapse_flines_main_meters: ...
+  simplify_tolerance_m: ...
 ---
 
 ```{r}
@@ -37,13 +37,13 @@ Sys.setenv(CPL_DEBUG = "ON")
 
 ```{r}
 refactor(
-  gpkg      = gpkg_file,
-  fac       = fac_file,
-  fdr       = fdr_file,
-  outfile   = out_file,
-  split_flines_meters         = split_flines_meters,
-  collapse_flines_meters      = collapse_flines_meters,
-  collapse_flines_main_meters = collapse_flines_main_meters,
-  simplify_tolerance_m        = simplify_tolerance_m
+  gpkg      = params$gpkg_file,
+  fac       = params$fac_file,
+  fdr       = params$fdr_file,
+  outfile   = params$out_file,
+  split_flines_meters = as.numeric(params$split_flines_meters),
+  collapse_flines_meters      = as.numeric(params$collapse_flines_meters),
+  collapse_flines_main_meters = as.numeric(params$collapse_flines_main_meters),
+  simplify_tolerance_m        = as.numeric(params$simplify_tolerance_m)
 )
 ```
