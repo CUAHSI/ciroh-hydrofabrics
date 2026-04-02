@@ -1,6 +1,5 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Aggregate Hydrofabric"
 params:
   hf_path: "..."
   aggregate_outlets_file: "..."

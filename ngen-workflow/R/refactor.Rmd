@@ -1,6 +1,5 @@
 ---
 title: "Refactor HF"
-output: html_document
 date: "2026-02-06"
 params:
   fac_file: "..."
@@ -18,21 +17,8 @@ Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
 ```
 
 ```{r}
-Sys.getenv("DYLD_LIBRARY_PATH")
-Sys.getenv("GDAL_SQLITE_LOAD_EXTENSIONS")
-```
-
-```{r}
 library(sf)
 library(hfrefactor)
-```
-
-```{r}
-sf::sf_extSoftVersion()  # Check versions first
-```
-
-```{r}
-Sys.setenv(CPL_DEBUG = "ON")
 ```
 
 ```{r}
