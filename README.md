@@ -91,3 +91,11 @@ Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direct
 Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
 
 Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
+
+#### WIP stages:
+
+### 4. Generate a NextGen Network
+
+Runs apply_nexus_topology
+
+### 5. Enriching the Network
