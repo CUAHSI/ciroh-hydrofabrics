@@ -25,10 +25,10 @@ Rscript -e "
             fdr_file = '$fdr_file',
             gpkg_file = '$gpkg_file',
             out_file = '$out_file',
-            split_flines_meters = '$split_flines_meters',
-            collapse_flines_meters = '$collapse_flines_meters',
-            collapse_flines_main_meters = '$collapse_flines_main_meters',
-            simplify_tolerance_m = '$simplify_tolerance_m'
+            split_flines_meters = as.numeric('$split_flines_meters'),
+            collapse_flines_meters = as.numeric('$collapse_flines_meters'),
+            collapse_flines_main_meters = as.numeric('$collapse_flines_main_meters'),
+            simplify_tolerance_m = as.numeric('$simplify_tolerance_m')
         )
     )
 "

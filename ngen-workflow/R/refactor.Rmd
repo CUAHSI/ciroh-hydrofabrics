@@ -41,9 +41,9 @@ refactor(
   fac       = params$fac_file,
   fdr       = params$fdr_file,
   outfile   = params$out_file,
-  split_flines_meters = as.numeric(params$split_flines_meters),
-  collapse_flines_meters      = as.numeric(params$collapse_flines_meters),
-  collapse_flines_main_meters = as.numeric(params$collapse_flines_main_meters),
-  simplify_tolerance_m        = as.numeric(params$simplify_tolerance_m)
+  split_flines_meters = params$split_flines_meters,
+  collapse_flines_meters      = params$collapse_flines_meters,
+  collapse_flines_main_meters = params$collapse_flines_main_meters,
+  simplify_tolerance_m        = params$simplify_tolerance_m
 )
 ```
