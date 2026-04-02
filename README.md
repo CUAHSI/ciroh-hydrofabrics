@@ -4,10 +4,21 @@ This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data 
 
 ## DVC Integration
 
-- **Data Tracking:** All large files and datasets are tracked using DVC, ensuring version control and easy sharing.
-- **Pipelines:** The workflow is defined in `dvc.yaml`, specifying stages and dependencies for reproducible results.
-- **Remote Storage:** Data is stored remotely on HydroShare using the HydroShare S3 compatible API, allowing team members to pull and push data as needed.
 
+## DVC Pipeline Stages
+
+The pipeline is composed of the following stages, as defined in `dvc.yaml`:
+
+### 1. prepare
+Prepares the reference hydrofabric for a given VPU by combining divides, flowpaths, hydrolocations, network, and POI data into a single GeoPackage. Output: `ngen-workflow/data/prepared/{vpuid}/reference_hydrofabric.gpkg`.
+
+### 2. refactor
+Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direction (FDR) rasters, splitting and simplifying flowlines as specified by parameters. Output: `ngen-workflow/data/refactored/{vpuid}/refactored_reference_hydrofabric.gpkg`.
+
+### 3. aggregate
+Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
+
+Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
 
 ## Data
 
