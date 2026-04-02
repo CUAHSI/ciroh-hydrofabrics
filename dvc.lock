@@ -70,7 +70,7 @@ stages:
       size: 70337469
     - path: ngen-workflow/data/prepared/01/reference_hydrofabric.gpkg
       hash: md5
-      md5: 3c397b6bc08113dd45e0905c22151fac
+      md5: 5a320e41f9f31ee560fe20ff917914a4
       size: 120037376
     params:
       params.yaml:
@@ -85,5 +85,34 @@ stages:
     - path: 
         ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
       hash: md5
-      md5: 1fff16fcdbfc6d6580ed25baed0d1505
+      md5: 644283c29cfd9b8d386471876107666d
       size: 104443904
+  aggregate:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-aggregate.sh /ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
+      /ngen-workflow/data/aggregated/01/aggregate_outlets.gpkg /ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
+      25 1 10\n"
+    deps:
+    - path: ngen-workflow/R/aggregate.Rmd
+      hash: md5
+      md5: 67c78d0d55adb302570a6423f7be9a52
+      size: 1482
+    - path: 
+        ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
+      hash: md5
+      md5: 644283c29cfd9b8d386471876107666d
+      size: 104443904
+    params:
+      params.yaml:
+        ideal_size_sqkm: 25
+        min_area_sqkm: 10
+        min_length_km: 1
+        vpuid: '01'
+    outs:
+    - path: ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
+      hash: md5
+      md5: b4aff495523315c0b324605c33d328ec
+      size: 60760064
+    - path: ngen-workflow/data/aggregated/01/aggregate_outlets.gpkg
+      hash: md5
+      md5: 7576d96e04824b613b46dda5676676a2
+      size: 37040128

@@ -51,3 +51,23 @@ stages:
       - ${fdr_file}
     outs:
       - ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+  aggregate:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-aggregate.sh
+      /ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+      /ngen-workflow/data/aggregated/${vpuid}/aggregate_outlets.gpkg
+      /ngen-workflow/data/aggregated/${vpuid}/aggregate_distribution.gpkg
+      ${ideal_size_sqkm}
+      ${min_length_km}
+      ${min_area_sqkm}
+    params:
+      - vpuid
+      - ideal_size_sqkm
+      - min_length_km
+      - min_area_sqkm
+    deps:
+      - ngen-workflow/R/aggregate.Rmd
+      - ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+    outs:
+      - ngen-workflow/data/aggregated/${vpuid}/aggregate_outlets.gpkg
+      - ngen-workflow/data/aggregated/${vpuid}/aggregate_distribution.gpkg

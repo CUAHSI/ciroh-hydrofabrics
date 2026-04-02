@@ -10,3 +10,6 @@ split_flines_meters: 10000
 collapse_flines_meters: 1000
 collapse_flines_main_meters: 1000
 simplify_tolerance_meters: 400
+ideal_size_sqkm: 25
+min_length_km: 1
+min_area_sqkm: 10
