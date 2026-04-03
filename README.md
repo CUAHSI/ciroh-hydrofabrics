@@ -8,13 +8,7 @@ This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data 
 To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via pip:
 
 ```sh
-pip install dvc[s3]
-```
-
-Or, with Homebrew on macOS:
-
-```sh
-brew install dvc
+pip install dvc-s3
 ```
 
 For more installation options, see the [official DVC documentation](https://dvc.org/doc/install).
