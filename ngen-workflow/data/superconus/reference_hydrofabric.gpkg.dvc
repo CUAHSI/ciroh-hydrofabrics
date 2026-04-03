@@ -8,5 +8,3 @@ deps:
 outs:
 - hash: md5
   path: reference_hydrofabric.gpkg
-  md5: b97f5ec4b720c8d7ecce77b798f4b5ee
-  size: 120037376

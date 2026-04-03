@@ -8,5 +8,3 @@ deps:
 outs:
 - hash: md5
   path: pois.parquet
-  md5: b2259c93e0a93ff8c3022732ad5cd178
-  size: 310951
