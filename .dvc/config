@@ -1,5 +1,9 @@
 [core]
-    remote = superconus
+    remote = results
 ['remote "superconus"']
     url = s3://sblack/7056bc5d6de14c5e9fbece9735124ca1/data/contents/
     profile = hydroshare
+['remote "results"']
+    url = s3://sblack/04f3de531b8b4d72b27cfeadbc1924eb/data/contents/
+    profile = hydroshare
+    
