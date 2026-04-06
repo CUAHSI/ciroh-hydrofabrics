@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rocker/geospatial:4
+FROM rocker/geospatial:4
 
 RUN Rscript -e "install.packages('sf', type = 'source')"
 RUN Rscript -e "install.packages('remotes')"
