@@ -61,7 +61,7 @@ dvc update <path_to_file.dvc>
 To reproduce the pipeline, use:
 
 ```sh
-dvc repro
+dvc repro pipelines/demo/dvc.yaml
 ```
 
 This command will download all files needed to execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary.
