@@ -3,7 +3,6 @@ version: '3.8'
 services:
   hydrofabric:
     platform: linux/amd64
-    image: scootna/ciroh-hydrofabrics-hydrofabric:latest
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
