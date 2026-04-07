@@ -2,12 +2,8 @@ version: '3.8'
 
 services:
   hydrofabric:
-<<<<<<< Updated upstream
-    platform: linux/amd64
-=======
     platform: linux/arm64
     image: scootna/ciroh-hydrofabrics-hydrofabric:latest
->>>>>>> Stashed changes
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
