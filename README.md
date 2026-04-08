@@ -5,10 +5,10 @@ This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data 
 
 ## DVC Installation
 
-To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via pip:
+To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via uv:
 
 ```sh
-pip install dvc-s3
+uv tool install dvc --with dvc-s3
 ```
 
 For more installation options, see the [official DVC documentation](https://dvc.org/doc/install).
@@ -37,7 +37,7 @@ For DVC to access the input files on HydroShare, configure your AWS credentials 
 
 1. Install the AWS CLI if not already installed.
     ```sh
-    pip install awscli
+    uv tool install awscli
     ```
 2. Get an access token and key from HydroShare (POST to https://www.hydroshare.org/hsapi/user/service/accounts/s3/ with basic authentication, use the [Swagger page](https://www.hydroshare.org/hsapi/) to do this easily)
 3. Run the following command and enter your credentials:
