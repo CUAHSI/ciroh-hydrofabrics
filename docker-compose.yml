@@ -1,6 +1,7 @@
 services:
   hydrofabric:
     user: "1000:1000"
+    #image: joshcu/chdvc:latest # uncomment to use pre-built image from DockerHub
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
