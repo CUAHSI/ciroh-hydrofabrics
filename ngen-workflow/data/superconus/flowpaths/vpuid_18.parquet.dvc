@@ -1,4 +1,4 @@
-md5: 5a8b28d580b4b8449d01ba6f18c434de
+md5: adab3e6c79ae2086c58b987f699c9513
 frozen: true
 deps:
 - etag: 9d158b619ccefb96c0392e460cc8709e-4
@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: vpuid_18.parquet
+  md5: ae0639fff6073da47c8bb21eab12557c
+  size: 62303725

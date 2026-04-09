@@ -37,6 +37,7 @@ RUN Rscript -e "$R_FAIL install.packages('aws.s3'); library(aws.s3)"
 RUN Rscript -e "$R_FAIL install.packages('arrow'); library(arrow)"
 RUN Rscript -e "$R_FAIL install.packages('glue'); library(glue)"
 
+RUN ulimit -s unlimited
 
 RUN mkdir /ngen-workflow
 WORKDIR /ngen-workflow

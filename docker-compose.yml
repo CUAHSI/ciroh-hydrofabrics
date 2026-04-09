@@ -1,10 +1,15 @@
 services:
   hydrofabric:
+<<<<<<< x86
     image: scootna/ciroh-hydrofabrics-hydrofabric:latest
     user: 1000
+=======
+>>>>>>> dvc
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
     volumes:
       - ./ngen-workflow:/ngen-workflow
     working_dir: /ngen-workflow
+    ulimits:
+      stack: 67108864

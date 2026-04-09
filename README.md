@@ -56,15 +56,23 @@ Running the pipeline will download necessary data lazily. You can also download 
 dvc update <path_to_file.dvc>
 ```
 
-## Running the Pipeline
+### DVC repro
 
-To reproduce the pipeline, use:
+Before running the pipeline, you should pull the required data from the configured DVC remote. This ensures all tracked input files are available locally:
 
 ```sh
-dvc repro
+dvc pull
 ```
 
-This command will download all files needed to execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary.
+This command will download all necessary data files from your configured DVC remote storage (as set in your DVC config). Make sure your credentials and remote configuration are correct.
+
+Once the data is available, you can reproduce the pipeline with:
+
+```sh
+dvc repro pipelines/demo/dvc.yaml
+```
+
+This will execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary. If any required data is missing, DVC will attempt to pull it automatically from the remote during execution.
 
 ### Pipeline Parameters
 
@@ -75,15 +83,9 @@ Parameters are defined in `params.yaml` and referenced in the pipeline stages. T
 - `vpuid`: Vector Processing Unit ID (01, 02, etc)
 
 #### prepare
-- `divides_file`: Path to divides parquet file
-- `flowpaths_file`: Path to flowpaths parquet file
-- `hydrolocations_file`: Path to hydrolocations parquet file
-- `network_file`: Path to network parquet file
-- `pois_file`: Path to POIs parquet file
+Uses vpuid to read input files and write an output file, no other parameters necessary.
 
 #### refactor
-- `fac_file`: Path to flow accumulation (FAC) raster file
-- `fdr_file`: Path to flow direction (FDR) raster file
 - `split_flines_meters`: Split flowlines at this length (meters)
 - `collapse_flines_meters`: Collapse flowlines below this length (meters)
 - `collapse_flines_main_meters`: Collapse main flowlines below this length (meters)
@@ -122,3 +124,37 @@ Each stage is run in a containerized environment using Docker Compose, and all d
 Runs apply_nexus_topology
 
 ### 5. Enriching the Network
+
+## Adding Your Own DVC Remote
+
+To use your own remote storage (such as S3, Azure, GCP, or a local directory) for DVC data, you can add and configure a DVC remote as follows:
+
+1. **Add a new remote:**
+    ```sh
+    dvc remote add -d myremote <remote_url>
+    ```
+    Replace `myremote` with a name for your remote, and `<remote_url>` with the appropriate URL (e.g., `s3://my-bucket/path`, `azure://container/path`, `gdrive://folderid`, or a local path).
+
+2. **Configure credentials and options:**
+    If you are using a HydroShare resource, you should already have credentials stored.
+
+    For other remotes, see the [DVC remote documentation](https://dvc.org/doc/command-reference/remote/modify) for available options.
+
+3. **Verify your remote:**
+    ```sh
+    dvc remote list
+    dvc remote status
+    ```
+
+4. **Push or pull data:**
+    ```sh
+    dvc push
+    dvc pull
+    ```
+
+You can add multiple remotes and switch the default with:
+```sh
+dvc remote default myremote
+```
+
+For more details, see the [official DVC documentation on remotes](https://dvc.org/doc/command-reference/remote).

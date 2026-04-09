@@ -1,0 +1,68 @@
+stages:
+  prepare:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh
+        ${item}
+        /ngen-workflow/data/superconus/divides/vpuid_${item}.parquet
+        /ngen-workflow/data/superconus/flowpaths/vpuid_${item}.parquet
+        /ngen-workflow/data/superconus/hydrolocations/vpuid_${item}.parquet
+        /ngen-workflow/data/superconus/network/vpuid_${item}.parquet
+        /ngen-workflow/data/superconus/pois.parquet
+      deps:
+        - ../../ngen-workflow/bash/prepare_reference_gpkg.sh
+        - ../../ngen-workflow/data/superconus/divides/vpuid_${item}.parquet
+        - ../../ngen-workflow/data/superconus/flowpaths/vpuid_${item}.parquet
+        - ../../ngen-workflow/data/superconus/hydrolocations/vpuid_${item}.parquet
+        - ../../ngen-workflow/data/superconus/network/vpuid_${item}.parquet
+        - ../../ngen-workflow/data/superconus/pois.parquet
+      outs:
+        - ../../ngen-workflow/data/prepared/${item}/reference_hydrofabric.gpkg
+  refactor:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-refactor.sh
+        /ngen-workflow/data/NHDSnapshot/FAC/${item}a_fac.tif
+        /ngen-workflow/data/NHDSnapshot/FDR/${item}a_fdr.tif
+        /ngen-workflow/data/prepared/${item}/reference_hydrofabric.gpkg
+        /ngen-workflow/data/refactored/${item}/refactored_reference_hydrofabric.gpkg
+        ${refactor.split_flines_meters}
+        ${refactor.collapse_flines_meters}
+        ${refactor.collapse_flines_main_meters}
+        ${refactor.simplify_tolerance_meters}
+      params:
+        - refactor.split_flines_meters
+        - refactor.collapse_flines_meters
+        - refactor.collapse_flines_main_meters
+        - refactor.simplify_tolerance_meters
+      deps:
+        - ../../ngen-workflow/bash/run-refactor.sh
+        - ../../ngen-workflow/R/refactor.Rmd
+        - ../../ngen-workflow/data/prepared/${item}/reference_hydrofabric.gpkg
+        - ../../ngen-workflow/data/NHDSnapshot/FAC/${item}a_fac.tif
+        - ../../ngen-workflow/data/NHDSnapshot/FDR/${item}a_fdr.tif
+      outs:
+        - ../../ngen-workflow/data/refactored/${item}/refactored_reference_hydrofabric.gpkg
+  aggregate:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-aggregate.sh
+        /ngen-workflow/data/refactored/${item}/refactored_reference_hydrofabric.gpkg
+        /ngen-workflow/data/aggregated/${item}/aggregate_outlets.gpkg
+        /ngen-workflow/data/aggregated/${item}/aggregate_distribution.gpkg
+        ${aggregate.ideal_size_sqkm}
+        ${aggregate.min_length_km}
+        ${aggregate.min_area_sqkm}
+      params:
+        - aggregate.ideal_size_sqkm
+        - aggregate.min_length_km
+        - aggregate.min_area_sqkm
+      deps:
+        - ../../ngen-workflow/R/aggregate.Rmd
+        - ../../ngen-workflow/data/refactored/${item}/refactored_reference_hydrofabric.gpkg
+      outs:
+        - ../../ngen-workflow/data/aggregated/${item}/aggregate_outlets.gpkg
+        - ../../ngen-workflow/data/aggregated/${item}/aggregate_distribution.gpkg
