@@ -25,8 +25,8 @@ vpuids:
     prefix: "10"
   - id: "10U"
     prefix: "10"
-  # - id: "11"
-  #   prefix: "11" -   Error
+  - id: "11"
+    prefix: "11"
   - id: "12"
     prefix: "12"
   - id: "13"
