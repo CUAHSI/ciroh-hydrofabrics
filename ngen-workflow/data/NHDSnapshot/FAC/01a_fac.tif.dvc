@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: 01a_fac.tif
+  md5: ecb03118b64d99f3d892213275a0a848
+  size: 194984247

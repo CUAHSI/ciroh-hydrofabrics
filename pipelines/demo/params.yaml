@@ -1,13 +1,44 @@
-vpuid: "01"
-prepare:
-  divides_file: "ngen-workflow/data/superconus/divides/vpuid_01.parquet"
-  flowpaths_file: "ngen-workflow/data/superconus/flowpaths/vpuid_01.parquet"
-  hydrolocations_file: "ngen-workflow/data/superconus/hydrolocations/vpuid_01.parquet"
-  network_file: "ngen-workflow/data/superconus/network/vpuid_01.parquet"
-  pois_file: "ngen-workflow/data/superconus/pois.parquet"
+vpuids:
+  - "01"
+  - "02"
+  # missing- "03"
+  - "04"
+  - "05"
+  - "06"
+  - "07"
+  - "08"
+  # missing- "09"
+  # missing- "10"
+  # erroring- "11"
+  - "12"
+  - "13"
+  - "14"
+  - "15"
+  - "16"
+  - "17"
+  # - "18" -   Error in `aggregate.data.frame()`:
+#! no rows to aggregate
+#Backtrace:
+#     ▆
+#  1. ├─hfrefactor::refactor(...)
+#  2. │ └─hfrefactor:::.clean(...)
+#  3. │   ├─sf::st_as_sf(...)
+#  4. │   ├─data.table::rbindlist(...)
+#  5. │   ├─base::merge(...)
+#  6. │   ├─dplyr::mutate(...)
+#  7. │   ├─data.table::as.data.table(...)
+#  8. │   └─hydrofab::union_polygons(...)
+#  9. │     └─... %>% select(!!ID)
+# 10. ├─dplyr::select(., !!ID)
+# 11. ├─sf::st_as_sf(.)
+# 12. ├─stats::aggregate(., by = eval(ID))
+# 13. └─terra::aggregate(., by = eval(ID))
+# 14.   └─terra (local) .local(x, ...)
+# 15.     └─terra:::aggregate_attributes(...)
+# 16.       ├─stats::aggregate(...)
+# 17.       ├─stats::aggregate(...)
+# 18.       └─stats::aggregate.data.frame(...)
 refactor:
-  fac_file: "ngen-workflow/data/NHDSnapshot/FAC/01a_fac.tif"
-  fdr_file: "ngen-workflow/data/NHDSnapshot/FDR/01a_fdr.tif"
   split_flines_meters: 10000
   collapse_flines_meters: 1000
   collapse_flines_main_meters: 1000
