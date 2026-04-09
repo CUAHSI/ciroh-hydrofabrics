@@ -1,6 +1,6 @@
 services:
   hydrofabric:
-    user: 1000
+    user: "1000:1000"
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
