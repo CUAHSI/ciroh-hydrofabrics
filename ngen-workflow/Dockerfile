@@ -9,16 +9,10 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
-# Install Miniconda (choose installer based on architecture)
-ARG TARGETARCH
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O /tmp/miniconda.sh; \
-    else \
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh; \
-    fi \
- && bash /tmp/miniconda.sh -b -p /opt/conda \
- && rm /tmp/miniconda.sh
-ENV CONDA_DIR=/opt/conda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-$(uname -m).sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh
 
 # Put Conda in PATH
 ENV PATH=$CONDA_DIR/bin:$PATH
