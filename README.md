@@ -76,14 +76,16 @@ This will execute all stages defined in `dvc.yaml` in the correct order, rebuild
 
 ### Pipeline Parameters
 
-
 Parameters are defined in `params.yaml` and referenced in the pipeline stages. The following parameters are available:
 
 #### Global
-- `vpuid`: Vector Processing Unit ID (01, 02, etc)
+- `vpuids`: Vector Processing Unit ID (01, 02, etc)
+
+- **id**: A unique identifier for each item (e.g., a VPU code like `07a`, `08a`, etc.).
+- **prefix**: A substring or related value derived from `id` (e.g., `07` for `07a`). This is useful when you need to reference files or resources that use only part of the id in their names.
 
 #### prepare
-Uses vpuid to read input files and write an output file, no other parameters necessary.
+Uses vpuids to read input files and write an output file, no other parameters necessary.
 
 #### refactor
 - `split_flines_meters`: Split flowlines at this length (meters)
@@ -106,6 +108,8 @@ cat params.yaml
 
 The pipeline is composed of the following stages, as defined in `dvc.yaml`:
 
+Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
+
 ### 1. prepare
 Prepares the reference hydrofabric for a given VPU by combining divides, flowpaths, hydrolocations, network, and POI data into a single GeoPackage. Output: `ngen-workflow/data/prepared/{vpuid}/reference_hydrofabric.gpkg`.
 
@@ -114,8 +118,6 @@ Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direct
 
 ### 3. aggregate
 Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
-
-Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
 
 #### WIP stages:
 

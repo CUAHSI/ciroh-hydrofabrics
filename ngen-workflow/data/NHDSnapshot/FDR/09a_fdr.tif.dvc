@@ -1,4 +1,4 @@
-md5: ebe83d40f33ae2d25fa4688d78a409da
+md5: bf4dcddcd78b78b50a65b64d88489a4d
 frozen: true
 deps:
 - etag: 63dda0768f39875ceb183b3fdb7a8af5-6
@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: 09a_fdr.tif
+  md5: 6105afe1e9435d0fd41bc0a1ec31e386
+  size: 96373122

@@ -1,11 +1,16 @@
 /vpuid_01.parquet
 /vpuid_02.parquet
+/vpuid_03N.parquet
+/vpuid_03S.parquet
+/vpuid_03W.parquet
 /vpuid_04.parquet
 /vpuid_05.parquet
 /vpuid_06.parquet
 /vpuid_07.parquet
 /vpuid_08.parquet
 /vpuid_09.parquet
+/vpuid_10L.parquet
+/vpuid_10U.parquet
 /vpuid_11.parquet
 /vpuid_12.parquet
 /vpuid_13.parquet
