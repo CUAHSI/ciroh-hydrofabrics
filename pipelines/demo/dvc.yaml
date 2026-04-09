@@ -16,19 +16,19 @@ stages:
       - prepare.network_file
       - prepare.pois_file
     deps:
-      - ngen-workflow/bash/prepare_reference_gpkg.sh
-      - ${prepare.divides_file}
-      - ${prepare.flowpaths_file}
-      - ${prepare.hydrolocations_file}
-      - ${prepare.network_file}
-      - ${prepare.pois_file}
+      - ../../ngen-workflow/bash/prepare_reference_gpkg.sh
+      - ../../${prepare.divides_file}
+      - ../../${prepare.flowpaths_file}
+      - ../../${prepare.hydrolocations_file}
+      - ../../${prepare.network_file}
+      - ../../${prepare.pois_file}
     outs:
-      - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+      - ../../ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
   refactor:
     cmd: >
       docker compose run --rm hydrofabric ./bash/run-refactor.sh
-      /${refactor.fac_file}
-      /${refactor.fdr_file}
+      ${refactor.fac_file}
+      ${refactor.fdr_file}
       /ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
       /ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
       ${refactor.split_flines_meters}
@@ -44,13 +44,13 @@ stages:
       - refactor.collapse_flines_main_meters
       - refactor.simplify_tolerance_meters
     deps:
-      - ngen-workflow/bash/run-refactor.sh
-      - ngen-workflow/R/refactor.Rmd
-      - ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
-      - ${refactor.fac_file}
-      - ${refactor.fdr_file}
+      - ../../ngen-workflow/bash/run-refactor.sh
+      - ../../ngen-workflow/R/refactor.Rmd
+      - ../../ngen-workflow/data/prepared/${vpuid}/reference_hydrofabric.gpkg
+      - ../../${refactor.fac_file}
+      - ../../${refactor.fdr_file}
     outs:
-      - ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+      - ../../ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
   aggregate:
     cmd: >
       docker compose run --rm hydrofabric ./bash/run-aggregate.sh
@@ -66,8 +66,8 @@ stages:
       - aggregate.min_length_km
       - aggregate.min_area_sqkm
     deps:
-      - ngen-workflow/R/aggregate.Rmd
-      - ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
+      - ../../ngen-workflow/R/aggregate.Rmd
+      - ../../ngen-workflow/data/refactored/${vpuid}/refactored_reference_hydrofabric.gpkg
     outs:
-      - ngen-workflow/data/aggregated/${vpuid}/aggregate_outlets.gpkg
-      - ngen-workflow/data/aggregated/${vpuid}/aggregate_distribution.gpkg
+      - ../../ngen-workflow/data/aggregated/${vpuid}/aggregate_outlets.gpkg
+      - ../../ngen-workflow/data/aggregated/${vpuid}/aggregate_distribution.gpkg
