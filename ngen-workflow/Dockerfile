@@ -9,10 +9,16 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
-ENV CONDA_DIR /opt/conda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh
+# Install Miniconda (choose installer based on architecture)
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O /tmp/miniconda.sh; \
+    else \
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh; \
+    fi \
+ && bash /tmp/miniconda.sh -b -p /opt/conda \
+ && rm /tmp/miniconda.sh
+ENV CONDA_DIR=/opt/conda
 
 # Put Conda in PATH
 ENV PATH=$CONDA_DIR/bin:$PATH
@@ -37,6 +43,7 @@ RUN Rscript -e "$R_FAIL install.packages('aws.s3'); library(aws.s3)"
 RUN Rscript -e "$R_FAIL install.packages('arrow'); library(arrow)"
 RUN Rscript -e "$R_FAIL install.packages('glue'); library(glue)"
 
+RUN ulimit -s unlimited
 
 RUN mkdir /ngen-workflow
 WORKDIR /ngen-workflow

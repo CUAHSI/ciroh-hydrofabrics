@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   hydrofabric:
-    platform: linux/arm64
-    image: scootna/ciroh-hydrofabrics-hydrofabric:latest
     build:
       context: ./ngen-workflow/
       dockerfile: Dockerfile
     volumes:
       - ./ngen-workflow:/ngen-workflow
     working_dir: /ngen-workflow
+    ulimits:
+      stack: 67108864
