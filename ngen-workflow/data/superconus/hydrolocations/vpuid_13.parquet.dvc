@@ -1,0 +1,12 @@
+md5: f98bb9e43db515a4d5b2f53c8fe411db
+frozen: true
+deps:
+- etag: d7642b4f2256b956989399708f5cb7bb
+  size: 290494
+  hash: md5
+  path: remote://superconus/hydrolocations/vpuid_13.parquet
+outs:
+- hash: md5
+  path: vpuid_13.parquet
+  md5: d7642b4f2256b956989399708f5cb7bb
+  size: 290494

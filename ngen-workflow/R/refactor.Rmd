@@ -1,0 +1,35 @@
+---
+title: "Refactor HF"
+date: "2026-02-06"
+params:
+  fac_file: "..."
+  fdr_file: "..."
+  gpkg_file: "..."
+  out_file: "..."
+  split_flines_meters: ...
+  collapse_flines_meters: ...
+  collapse_flines_main_meters: ...
+  simplify_tolerance_m: ...
+---
+
+```{r}
+Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
+```
+
+```{r}
+library(sf)
+library(hfrefactor)
+```
+
+```{r}
+refactor(
+  gpkg      = params$gpkg_file,
+  fac       = params$fac_file,
+  fdr       = params$fdr_file,
+  outfile   = params$out_file,
+  split_flines_meters = params$split_flines_meters,
+  collapse_flines_meters      = params$collapse_flines_meters,
+  collapse_flines_main_meters = params$collapse_flines_main_meters,
+  simplify_tolerance_m        = params$simplify_tolerance_m
+)
+```
