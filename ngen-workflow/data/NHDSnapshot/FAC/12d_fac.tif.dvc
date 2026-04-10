@@ -1,0 +1,10 @@
+md5: 0eaf4a0e27f9c992c0992cf8ef5b9d5a
+frozen: true
+deps:
+- etag: fa0ba2c8ceb0da109a9a0bccaffd15a0-8
+  size: 122556759
+  hash: md5
+  path: remote://superconus/NHDSnapshot/FAC/12d_fac.tif
+outs:
+- hash: md5
+  path: 12d_fac.tif
