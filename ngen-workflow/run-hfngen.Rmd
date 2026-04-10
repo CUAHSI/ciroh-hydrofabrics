@@ -1,0 +1,127 @@
+---
+title: "run-hfngen"
+output: html_document
+date: "2026-04-08"
+---
+
+### Install packages
+
+```{r}
+
+install.packages("remotes")
+install.packages("devtools", dependencies = TRUE)
+install.packages("sf", dependencies = TRUE)
+
+#remotes::install_github("lynker-spatial/hfngen", dependencies = TRUE)
+install.packages('../lynkerspatial/hfngen', repos=NULL, type="source")
+```
+
+```{r}
+
+# Install Arrow with Brotli support.
+# Brotli is used to compress the channel hydraulic attributes parquet
+# so it's needed to decompress them too.
+Sys.setenv(
+  ARROW_WITH_BROTLI = "ON",
+  ARROW_USE_PKG_CONFIG = "true"
+)
+
+install.packages("arrow", type = "source")
+
+```
+
+```{r}
+
+arrow::codec_is_available("brotli")
+```
+-   **Hydrofabric inputs** must include `flowpaths`, `divides`, and (optionally) flowline-resolution layers (`flowlines`, `incremental_areas`, `hydrolocations`).
+
+-   **Raster inputs** should share a compatible CRS with the divides layer. The package will reproject geometries on the fly when needed, but aligning rasters ahead of time avoids repeated transforms.
+
+-   **Hydraulic attributes** need a `feature_id` column that matches `network$reference_id`, the attributes you wish to aggregate, and a length-based weighting column.
+
+```{r}
+
+library(sf)
+
+#library(hfngen)
+devtools::load_all("../lynkerspatial/hfngen")
+```
+
+Define paths to input files
+
+```{r}
+
+flowpath_gpkg <- "vpu_01/vpu01_aggregate_distribution.gpkg"
+flowline_gpkg <- "vpu_01/refactored_reference_hydrofabric.gpkg"
+
+#st_layers(flowpath_gpkg)
+#st_layers(flowline_gpkg)
+
+```
+
+```{r}
+
+out_nextgen <- "vpu_01/vpu01_ngen.gpkg"
+
+build_nextgen(flowpath_gpkg,
+              flowline_gpkg = flowline_gpkg,
+              outfile = out_nextgen)
+```
+
+```{r}
+
+# gpkg: Path to a GeoPackage containing `divides` and `network` layers.
+# - The `divides` layer must contain `divide_id` and valid geometries.
+# - The `network` layer must contain: `divide_id`, `incremental_area_id`, `areasqkm`, `incremental_areasqkm`, and `reference_id`.
+# ISLTYP: Path to a raster of soil type (ISLTYP).
+# IVGTYP: Path to a raster of vegetation type (IVGTYP).
+# IMP: Path to a raster for impervious fraction used for
+# GW DuckDB connection via `hfutils::tbl_http()` with groundwater attributes,
+#'   expected to include columns `ComID` and `Zmax`.
+
+
+
+soil      <- "vpu_01/ISLTYP.tif"
+veg       <- "vpu_01/IVGTYP.tif"
+imperv    <- "vpu_01/CONUS_imp_240.tif"
+
+gw_basins <- arrow::open_dataset("vpu_01/nwm_gw_basins.parquet")
+
+minimal_div_atts(out_nextgen,
+                 ISLTYP = soil,
+                 IVGTYP = veg,
+                 IMP    = imperv,
+                 GW     = gw_basins)
+
+```
+
+
+```{r}
+
+# network A data frame/tibble containing at least:
+# - `reference_id` (IDs that link to the attribute dataset),
+# - `hl_class` and `hl_reference` (to extract gage references),
+# - the grouping column given by `hf_id` (default: `"flowline_id"`),
+# - and (optionally) other columns used downstream.
+# This is typically the `network` layer produced by your NextGen build.
+net = sf::read_sf(out_nextgen, "network")
+
+
+# hydraulics Arrow dataset or DuckDB/DBI table (e.g., via
+# `hfutils::tbl_http()`) containing:
+# - `feature_id` (mapped to `reference_id`),
+# - the columns listed in `attribute_cols`,
+# - the weighting column named in `weight_col`.
+hydraulic_atts <- arrow::open_dataset("vpu_01/riverml_channel_geometry_with_ahg.parquet")
+
+```
+
+```{r}
+atts = c('owp_y_bf', 'owp_tw_bf','bf_area', 'owp_roughness_bathy','slope')
+calculate_flow_atts(net,
+                    hydraulic_atts,
+                    hf_id = "flowline_id",
+                    attribute_cols = atts,
+                    weight_col = 'lengthkm')
+```

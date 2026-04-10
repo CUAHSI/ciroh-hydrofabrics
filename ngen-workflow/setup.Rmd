@@ -1,0 +1,83 @@
+---
+title: "Setup"
+output: html_document
+date: "2026-04-10"
+---
+
+```{bash}
+# echo 'DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/Cellar/libspatialite/5.1.0_3/lib:$./' >> ~/.Renviron
+# RUN echo 'GDAL_DRIVER_PATH=/usr/local/lib' >> ~/.Renviron
+```
+
+```{r}
+## Install DevTools if you plan to debug local source of packages
+# install.packages("devtools")
+library(devtools)
+```
+
+```{r}
+install.packages('remotes')
+library("remotes")
+```
+
+```{r}
+install.packages('sf', type = 'source')
+library("sf")
+```
+
+```{r}
+remotes::install_github('lynker-spatial/hfutils@f74e9a41beaddf539c9420fc0f01ed1dc18820a2')
+library("hfutils")
+```
+
+```{r}
+
+# Install from source for debugging, if necessary
+install.packages('/Users/castro/Documents/work/hydrofabric/ciroh-hydrofabrics/lynkerspatial/hfrefactor', repos=NULL, type="source") 
+load_all('../../lynkerspatial/hfrefactor')
+
+#remotes::install_github('lynker-spatial/hfrefactor')
+
+library("hfrefactor")
+```
+
+```{r}
+install.packages('../lynkerspatial/hfaggregate', repos=NULL, type="source") 
+load_all('../lynkerspatial/hfaggregate')
+
+#install_github('CUAHSI/hfaggregate')
+library("hfaggregate")
+```
+
+
+```{r}
+whitebox::install_whitebox()
+```
+
+```{r}
+install.packages('nanoarrow')
+```
+```{r}
+remotes::install_github("mikejohnson51/climateR")
+```
+
+```{r}
+remotes::install_github('NOAA-OWP/hydrofabric')
+```
+
+```{r}
+# Install Arrow with Brotli support.
+# Brotli is used to compress the channel hydraulic attributes parquet
+# so it's needed to decompress them too.
+Sys.setenv(
+  ARROW_WITH_BROTLI = "ON",
+  ARROW_USE_PKG_CONFIG = "true"
+)
+
+install.packages("arrow", type = "source")
+library("arrow")
+```
+
+```{r}
+install.packages('glue')
+```
