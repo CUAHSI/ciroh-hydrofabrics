@@ -27,6 +27,7 @@ Define the input dataset which should be the output from the `hfrefactor` functi
 
 ```{r}
 hf_path <- "vpu_01/refactored_reference_hydrofabric.gpkg"
+
 ```
 
 There are two ways to aggregate the hydrofabric, the first is using user-defined points of interest (POIs). Since I don't have any POIs I'm just grabbing the hydrolocations within the reference hydrofabric. From what I can tell, this won't make any changes to the hydrofabric since no new POIs are included. It seems like this is a place the CIROH researcher may want to insert their own POIs that don't exist in the reference hydrofabric.
@@ -54,9 +55,13 @@ The second way to aggregate the hydrofabric is by modifying attributes such as `
 # Build a uniformly sized distribution
 aggregated <- aggregate_to_distribution(
   gpkg = hf_path,
+  flowpath = "flowpaths",
+  divide = "divides",
   ideal_size_sqkm = 25,
   min_length_km = 1,
   min_area_sqkm = 10,
+  overwrite=TRUE,
+  vpu='01',
   outfile = "vpu_01/vpu01_aggregate_distribution.gpkg"
 )
 ```
