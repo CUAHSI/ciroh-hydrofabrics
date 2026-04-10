@@ -81,19 +81,23 @@ build_nextgen(flowpath_gpkg,
 #'   expected to include columns `ComID` and `Zmax`.
 
 
-
+# https://proxy.lynker-spatial.com/gridded/nwm/CONUS/ 
 soil      <- "vpu_01/ISLTYP.tif"
 veg       <- "vpu_01/IVGTYP.tif"
+
+# https://proxy.lynker-spatial.com/gridded/nwm/CONUS/derived/
 imperv    <- "vpu_01/CONUS_imp_240.tif"
 
+# https://proxy.lynker-spatial.com/tabular/
 gw_basins <- arrow::open_dataset("vpu_01/nwm_gw_basins.parquet")
 
-minimal_div_atts(out_nextgen,
+div_atts <- minimal_div_atts(out_nextgen,
                  ISLTYP = soil,
                  IVGTYP = veg,
                  IMP    = imperv,
                  GW     = gw_basins)
 
+st_write(div_atts, out_nextgen, layer = "divide-attributes", append = TRUE)
 ```
 
 
@@ -113,15 +117,18 @@ net = sf::read_sf(out_nextgen, "network")
 # - `feature_id` (mapped to `reference_id`),
 # - the columns listed in `attribute_cols`,
 # - the weighting column named in `weight_col`.
+# https://proxy.lynker-spatial.com/tabular/ 
 hydraulic_atts <- arrow::open_dataset("vpu_01/riverml_channel_geometry_with_ahg.parquet")
 
 ```
 
 ```{r}
 atts = c('owp_y_bf', 'owp_tw_bf','bf_area', 'owp_roughness_bathy','slope')
-calculate_flow_atts(net,
+flow_atts <- calculate_flow_atts(net,
                     hydraulic_atts,
                     hf_id = "flowline_id",
                     attribute_cols = atts,
                     weight_col = 'lengthkm')
+
+st_write(flow_atts, out_nextgen, layer = "flowpath-attributes", append = TRUE)
 ```
