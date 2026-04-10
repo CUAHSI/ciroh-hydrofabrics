@@ -20,8 +20,7 @@ install.packages('/Users/castro/Documents/work/hydrofabric/ciroh-hydrofabrics/ly
 
 ```{r}
 library(hfutils)
-devtools::load_all("/Users/castro/Documents/work/hydrofabric/ciroh-hydrofabrics/lynkerspatial/hfaggregate")
-#library(hfaggregate)
+library(hfaggregate)
 ```
 
 Define the input dataset which should be the output from the `hfrefactor` function.
