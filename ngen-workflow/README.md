@@ -30,6 +30,9 @@ graph TD;
 
   Out_agg_dist@{ shape: doc, label: "aggregate_distribution.gpkg"}
   class Out_agg_dist data
+
+  Out_ngen@{ shape: doc, label: "ngen_hydrofabric.gpkg"}
+  class Out_ngen data
   
   Input_pois@{ shape: doc, label: "pois"}
   class Input_pois data
@@ -53,7 +56,9 @@ graph TD;
   aggregate --> Out_agg_outlets;
   aggregate --> Out_agg_dist;
 
-  ngen;
+  Out_agg_dist --> ngen;
+  Out_refactored --> ngen;
+  ngen --> Out_ngen
 
   
 
