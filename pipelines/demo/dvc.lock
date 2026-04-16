@@ -2060,7 +2060,7 @@ stages:
     - path: 
         ../../ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
       hash: md5
-      md5: c5e254e11fb05eec8521c5d8dff5f71d
+      md5: 556a41ba9ad17d490d9d47151c66f0cc
       size: 104443904
   refactor@1:
     cmd: "docker compose run --rm hydrofabric ./bash/run-refactor.sh /ngen-workflow/data/NHDSnapshot/FAC/02a_fac.tif
@@ -2542,7 +2542,7 @@ stages:
     - path: 
         ../../ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
       hash: md5
-      md5: c5e254e11fb05eec8521c5d8dff5f71d
+      md5: 556a41ba9ad17d490d9d47151c66f0cc
       size: 104443904
     params:
       params.yaml:
@@ -2552,11 +2552,11 @@ stages:
     outs:
     - path: ../../ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
       hash: md5
-      md5: a356b278cb29deb61854aee168a12f0d
+      md5: 8c2f8a262ae71e0ec264f0dbd76c3c30
       size: 60760064
     - path: ../../ngen-workflow/data/aggregated/01/aggregate_outlets.gpkg
       hash: md5
-      md5: ddf3bee35dd531fb9633e6fead0f53cf
+      md5: 8dbf272e1158824db74b621f3af3d286
       size: 37040128
   aggregate@1:
     cmd: "docker compose run --rm hydrofabric ./bash/run-aggregate.sh /ngen-workflow/data/refactored/02/refactored_reference_hydrofabric.gpkg
@@ -2997,3 +2997,21 @@ stages:
       hash: md5
       md5: 701e035d8e20dbc79ef62678e1e79197
       size: 107667456
+  hfngen@0:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-hfngen.sh /ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
+      /ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg /ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg\n"
+    deps:
+    - path: ../../ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
+      hash: md5
+      md5: 8c2f8a262ae71e0ec264f0dbd76c3c30
+      size: 60760064
+    - path: 
+        ../../ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg
+      hash: md5
+      md5: 556a41ba9ad17d490d9d47151c66f0cc
+      size: 104443904
+    outs:
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg
+      hash: md5
+      md5: 1735e8bfa823e81d592da10b37135275
+      size: 207228928

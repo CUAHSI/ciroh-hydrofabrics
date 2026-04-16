@@ -66,3 +66,16 @@ stages:
       outs:
         - ../../ngen-workflow/data/aggregated/${item.id}/aggregate_outlets.gpkg
         - ../../ngen-workflow/data/aggregated/${item.id}/aggregate_distribution.gpkg
+  hfngen:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-hfngen.sh
+        /ngen-workflow/data/aggregated/${item.id}/aggregate_distribution.gpkg
+        /ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
+        /ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+      deps:
+        - ../../ngen-workflow/data/aggregated/${item.id}/aggregate_distribution.gpkg
+        - ../../ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
+      outs:
+        - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg

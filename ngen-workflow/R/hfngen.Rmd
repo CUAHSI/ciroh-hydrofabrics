@@ -1,0 +1,21 @@
+---
+title: "Build NGEN Hydrofabric"
+date: "2026-04-08"
+params:
+  flowpath_gpkg: "..."
+  flowline_gpkg: "..."
+  out_nextgen: "..."
+---
+
+```{r}
+library(sf)
+library(hfngen)
+```
+
+
+```{r}
+build_nextgen(params$flowpath_gpkg,
+              flowline_gpkg = params$flowline_gpkg,
+              outfile = params$out_nextgen)
+```
+
