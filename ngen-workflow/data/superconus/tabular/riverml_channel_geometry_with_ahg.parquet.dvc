@@ -1,0 +1,12 @@
+md5: fe0abec0825663295a5aa3de1ba1282a
+frozen: true
+deps:
+- etag: cc5cd22a7a388f7559183c3f04ef207e-2
+  size: 188372842
+  hash: md5
+  path: remote://superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+outs:
+- hash: md5
+  path: riverml_channel_geometry_with_ahg.parquet
+  md5: 6710437e2b100a2b3518a7cea47b827d
+  size: 188372842

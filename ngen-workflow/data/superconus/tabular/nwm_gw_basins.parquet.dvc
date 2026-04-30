@@ -1,0 +1,12 @@
+md5: 0fcf7cb78bcf6ff0e502a16ff747c56b
+frozen: true
+deps:
+- etag: e74f5e438b307226ee9846023a2ba241-1
+  size: 48798640
+  hash: md5
+  path: remote://superconus/tabular/nwm_gw_basins.parquet
+outs:
+- hash: md5
+  path: nwm_gw_basins.parquet
+  md5: 5376b5d2ddbb16610c001f4cf1553c65
+  size: 48798640

@@ -1,0 +1,88 @@
+---
+title: "Add Minimal Attributes to the NGEN Hydrofabric"
+date: "2026-04-30"
+params:
+  nextgen_geopackage: "..."
+  soil_grid: "..."
+  vegetation_grid: "..."
+  impervious_grid: "..."
+  groundwater_basins_table: "..."
+  channel_geometry_table: "..." 
+  output_nextgen_geopackage: "..."
+---
+
+
+```{r}
+library(sf)
+library(hfngen)
+library(arrow)
+```
+
+
+## Compute Minimal Divide Attributes
+
+```{r}
+
+# Compute minimal divide attributes
+# Requires the following input datasetys:
+# ISLTYP - Soil Type Grid - https://proxy.lynker-spatial.com/gridded/nwm/CONUS/ 
+# IVGTYP - Vegetation Type Grid - https://proxy.lynker-spatial.com/gridded/nwm/CONUS/ 
+# IMP - Impervious Surfaces Grid - https://proxy.lynker-spatial.com/gridded/nwm/CONUS/derived/
+# GW - Ground Water Basin Table - https://proxy.lynker-spatial.com/tabular/ 
+
+# load the groundwater basins using arrow. This is because the 
+# minimal_div_atts fucntion takes a table object
+gw_basins <- arrow::open_dataset(params$groundwater_basins_table)
+
+# compute the divide attributes
+div_atts <- minimal_div_atts(params$nextgen_geopackage,
+                             ISLTYP = params$soil,
+                             IVGTYP = params$veg,
+                             IMP    = params$imperv,
+                             GW     = gw_basins)
+
+
+```
+
+
+## Compute Minimal Flowpath Attributes
+
+```{r}
+
+# Read the network layer within the nextgen geopackage into a tibble
+net = sf::read_sf(params$nextgen_geopackage, "network")
+
+
+# Load the channel geometry table into memory 
+hydraulic_atts <- arrow::open_dataset(params$channel_geometry_table)
+
+# Compute the minimal channel attributes
+atts = c('owp_y_bf', 'owp_tw_bf','bf_area', 'owp_roughness_bathy','slope')
+flow_atts <- calculate_flow_atts(net,
+                    hydraulic_atts,
+                    hf_id = "flowline_id",
+                    attribute_cols = atts,
+                    weight_col = 'lengthkm')
+```
+
+
+## Save the Computed Attributes to the NGEN Geopackage
+
+```{r}
+
+# Copy the input geopackage to a new file, then add the attributes
+file.copy(params$nextgen_geopackage, params$output_nextgen_geopackage)
+
+# Add divide attributes to the ngen geopackage
+st_write(div_atts,
+         params$output_nextgen_geopackage,
+         layer = "divide-attributes",
+         append = TRUE)
+
+
+# Add the flowpath attributes to the ngen geopackage
+st_write(flow_atts,
+         params$output_nextgen_geopackage,
+         layer = "flowpath-attributes",
+         append = TRUE)
+```

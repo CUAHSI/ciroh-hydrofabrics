@@ -1,0 +1,12 @@
+md5: 0f56ef1300a8ea3d1913324b256169dc
+frozen: true
+deps:
+- etag: 13f9e386eb268683ebaa592725f29142-3
+  size: 291729883
+  hash: md5
+  path: remote://superconus/derived/CONUS_imp_240.tif
+outs:
+- hash: md5
+  path: CONUS_imp_240.tif
+  md5: d6d5f68e829f9881066cba9758e04fec
+  size: 291729883

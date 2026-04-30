@@ -1,0 +1,12 @@
+md5: 60c623db49f3192793c8f4b6e70b3b65
+frozen: true
+deps:
+- etag: 6279c8a205c40d199d697c58f62562f3-1
+  size: 3358400
+  hash: md5
+  path: remote://superconus/gridded/IVGTYP.tif
+outs:
+- hash: md5
+  path: IVGTYP.tif
+  md5: 175e62422240bc9c5ea8d633452ea8cb
+  size: 3358400
