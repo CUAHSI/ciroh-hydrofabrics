@@ -79,3 +79,25 @@ stages:
         - ../../ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
       outs:
         - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+  minimal_attributes:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-minimal-attributes.sh
+        /ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+        /ngen-workflow/data/superconus/gridded/ISLTYP.tif
+        /ngen-workflow/data/superconus/gridded/IVGTYP.tif
+        /ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
+        /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+        /ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+        /ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+
+      deps:
+        - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+        - ../../ngen-workflow/data/superconus/gridded/ISLTYP.tif
+        - ../../ngen-workflow/data/superconus/gridded/IVGTYP.tif
+        - ../../ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
+        - ../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+        - ../../ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+      outs:
+        - ../../ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
