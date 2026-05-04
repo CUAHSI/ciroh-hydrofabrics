@@ -3001,6 +3001,10 @@ stages:
     cmd: "docker compose run --rm hydrofabric ./bash/run-hfngen.sh /ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
       /ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg /ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg\n"
     deps:
+    - path: ../../ngen-workflow/R/hfngen.Rmd
+      hash: md5
+      md5: c827622b9b024456d24ff582698abe41
+      size: 888
     - path: ../../ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg
       hash: md5
       md5: 03c85e5982f97b194e4107f8228d1488
@@ -3013,8 +3017,8 @@ stages:
     outs:
     - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg
       hash: md5
-      md5: 54a7ed9ed632a67b0051cd8839c2e4a0
-      size: 219115520
+      md5: 7576742b8bcfe036ac047d408140652a
+      size: 219197440
   minimal_attributes@0:
     cmd: "docker compose run --rm hydrofabric ./bash/run-minimal-attributes.sh /ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg
       /ngen-workflow/data/superconus/gridded/ISLTYP.tif /ngen-workflow/data/superconus/gridded/IVGTYP.tif
@@ -3022,10 +3026,14 @@ stages:
       /ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
       /ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg\n"
     deps:
+    - path: ../../ngen-workflow/R/minimal_attributes.Rmd
+      hash: md5
+      md5: 08539b61ffbe105302523baccb360174
+      size: 2471
     - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg
       hash: md5
-      md5: 54a7ed9ed632a67b0051cd8839c2e4a0
-      size: 219115520
+      md5: 7576742b8bcfe036ac047d408140652a
+      size: 219197440
     - path: ../../ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
       hash: md5
       md5: d6d5f68e829f9881066cba9758e04fec
@@ -3050,8 +3058,8 @@ stages:
     outs:
     - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
       hash: md5
-      md5: c641ed9e6d1f4f54789b5529bb39ab15
-      size: 223219712
+      md5: 7092680be7ffa4a04c91f07efc0907c6
+      size: 223305728
   hfngen@1:
     cmd: "docker compose run --rm hydrofabric ./bash/run-hfngen.sh /ngen-workflow/data/aggregated/02/aggregate_distribution.gpkg
       /ngen-workflow/data/refactored/02/refactored_reference_hydrofabric.gpkg /ngen-workflow/data/ngen/02/ngen_hydrofabric.gpkg\n"
@@ -4097,3 +4105,20 @@ stages:
       hash: md5
       md5: 7f1a23d4cc6dde313604bb62a2f73bfb
       size: 860745728
+  reconcile@0:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-reconcile.sh /ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      01 /ngen-workflow/data/ngen/01/ngen_hydrofabric_reconciled.gpkg\n"
+    deps:
+    - path: ../../ngen-workflow/R/reconcile.Rmd
+      hash: md5
+      md5: 49d9614eaa99726baec8aab653721fb1
+      size: 2629
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      hash: md5
+      md5: 7092680be7ffa4a04c91f07efc0907c6
+      size: 223305728
+    outs:
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_reconciled.gpkg
+      hash: md5
+      md5: e875757162c112e0219378d316c74813
+      size: 223367168
