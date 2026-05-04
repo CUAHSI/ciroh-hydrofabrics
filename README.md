@@ -50,7 +50,7 @@ For DVC to access the input files on HydroShare, configure your AWS credentials 
     ```
 ### Download Data
 
-Running the pipeline will download necessary data lazily. You can also download specific files manually with:
+You can also download specific files manually with:
 
 ```sh
 dvc update <path_to_file.dvc>
