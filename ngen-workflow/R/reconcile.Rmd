@@ -43,6 +43,7 @@ divides <- st_read(params$ngen_gpkg, layer = "divides") |>
 # add missing vpuid column
 divides$vpuid <- params$vpu_id
 
+
 ```
 
 ## Fix the Flowpath Attributes
@@ -59,6 +60,10 @@ flowpaths <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
          toid = flowpath_toid,
          ) |>
   select(-flowpath_id, -flowpath_toid, -flowline_id, -member_comid)
+
+
+# add missing vpuid column
+flowpaths$vpuid <- params$vpu_id
 
 ```
 
@@ -80,6 +85,7 @@ nexus <- st_read(params$ngen_gpkg, layer = "nexus") |>
 # add placeholder values for missing coumns
 nexus$type   <- "nexus"
 nexus$poi_id <- NA
+nexus$vpuid <- params$vpu_id
 ```
 
 ## Write the updated divides and flowpaths to the output NextGen Geopackage

@@ -427,6 +427,8 @@ flowpaths &lt;- st_read(params$ngen_gpkg, layer = &quot;flowpaths&quot;) |&gt;
 ## Dimension:     XY
 ## Bounding box:  xmin: 1825913 ymin: 2215930 xmax: 2255727 ymax: 3084450
 ## Projected CRS: NAD83 / Conus Albers</code></pre>
+<pre class="r"><code># add missing vpuid column
+flowpaths$vpuid &lt;- params$vpu_id</code></pre>
 </div>
 <div id="fix-the-nexus-attributes" class="section level2">
 <h2>Fix the Nexus Attributes</h2>
@@ -450,7 +452,8 @@ nexus &lt;- st_read(params$ngen_gpkg, layer = &quot;nexus&quot;) |&gt;
 ## Projected CRS: NAD83 / Conus Albers</code></pre>
 <pre class="r"><code># add placeholder values for missing coumns
 nexus$type   &lt;- &quot;nexus&quot;
-nexus$poi_id &lt;- NA</code></pre>
+nexus$poi_id &lt;- NA
+nexus$vpuid &lt;- params$vpu_id</code></pre>
 </div>
 <div id="write-the-updated-divides-and-flowpaths-to-the-output-nextgen-geopackage" class="section level2">
 <h2>Write the updated divides and flowpaths to the output NextGen
@@ -465,12 +468,12 @@ st_write(divides, params$out_nextgen, layer = &quot;divides&quot;, delete_layer 
 <pre><code>## Deleting layer `flowpaths&#39; using driver `GPKG&#39;
 ## Writing layer `flowpaths&#39; to data source 
 ##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric_reconciled.gpkg&#39; using driver `GPKG&#39;
-## Writing 6221 features with 10 fields and geometry type Multi Line String.</code></pre>
+## Writing 6221 features with 11 fields and geometry type Multi Line String.</code></pre>
 <pre class="r"><code>st_write(nexus, params$out_nextgen, layer = &quot;nexus&quot;, delete_layer = TRUE)</code></pre>
 <pre><code>## Deleting layer `nexus&#39; using driver `GPKG&#39;
 ## Writing layer `nexus&#39; to data source 
 ##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric_reconciled.gpkg&#39; using driver `GPKG&#39;
-## Writing 4402 features with 4 fields and geometry type Point.</code></pre>
+## Writing 4402 features with 5 fields and geometry type Point.</code></pre>
 </div>
 
 
