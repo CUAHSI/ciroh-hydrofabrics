@@ -79,10 +79,10 @@ This will execute all stages defined in `dvc.yaml` in the correct order, rebuild
 Parameters are defined in `params.yaml` and referenced in the pipeline stages. The following parameters are available:
 
 #### Global
-- `vpuids`: Vector Processing Unit ID (01, 02, etc)
+- `vpuids`: List of Vector Processing Unit entries used by the `foreach` stages
 
-- **id**: A unique identifier for each item (e.g., a VPU code like `07a`, `08a`, etc.).
-- **prefix**: A substring or related value derived from `id` (e.g., `07` for `07a`). This is useful when you need to reference files or resources that use only part of the id in their names.
+- **id**: A VPU identifier such as `01`, `03N`, or `10U`.
+- **prefix**: The raster file prefix paired with that VPU entry (for example, `03` for `03N` and `10` for `10U`).
 
 #### prepare
 Uses vpuids to read input files and write an output file, no other parameters necessary.
@@ -98,10 +98,13 @@ Uses vpuids to read input files and write an output file, no other parameters ne
 - `min_length_km`: Minimum flowpath length (km)
 - `min_area_sqkm`: Minimum catchment area (sq km)
 
+#### minimal_attributes
+- `output_geopackage_name`: File name for the enriched hydrofabric written to `ngen-workflow/data/ngen/{vpuid}/`
+
 You can modify these parameters in `params.yaml` to customize pipeline behavior. To see current parameters:
 
 ```sh
-cat params.yaml
+cat pipelines/demo/params.yaml
 ```
 
 ## DVC Pipeline Stages
@@ -119,13 +122,11 @@ Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direct
 ### 3. aggregate
 Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
 
-#### WIP stages:
+### 4. hfngen
+Builds an ngen-ready hydrofabric by combining the aggregate distribution output with the refactored hydrofabric. Output: `ngen-workflow/data/ngen/{vpuid}/ngen_hydrofabric.gpkg`.
 
-### 4. Generate a NextGen Network
-
-Runs apply_nexus_topology
-
-### 5. Enriching the Network
+### 5. minimal_attributes
+Adds the minimal attribute set required by downstream ngen workflows using gridded and tabular superconus inputs. Output: `ngen-workflow/data/ngen/{vpuid}/{minimal_attributes.output_geopackage_name}`.
 
 ## Adding Your Own DVC Remote
 
