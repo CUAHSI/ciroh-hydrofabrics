@@ -9,13 +9,33 @@ params:
 
 ```{r}
 library(sf)
+library(dplyr)
 library(hfngen)
 ```
 
+## Build the NextGen HydroFabric
 
 ```{r}
 build_nextgen(params$flowpath_gpkg,
               flowline_gpkg = params$flowline_gpkg,
               outfile = params$out_nextgen)
+
+
 ```
 
+
+## Add missing fields to the Divides layer
+
+```{r}
+
+# select flowpath_lengthkm and tot_drainage_areasqkm from the network layer.
+network_atts <- st_read(params$out_nextgen, layer = "network") |>
+  select(divide_id, lengthkm = flowpath_lengthkm, tot_drainage_areasqkm) |>
+  distinct()
+
+# Add these attributes to the divides layer
+divides <- st_read(params$out_nextgen, layer = "divides") |>
+  left_join(network_atts, by = "divide_id")
+
+st_write(divides, params$out_nextgen, layer = "divides", delete_layer = TRUE)
+```

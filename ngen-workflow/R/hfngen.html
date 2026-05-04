@@ -357,28 +357,65 @@ display: none;
 
 <pre class="r"><code>library(sf)</code></pre>
 <pre><code>## Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>library(hfngen)</code></pre>
+<div id="build-the-nextgen-hydrofabric" class="section level2">
+<h2>Build the NextGen HydroFabric</h2>
 <pre class="r"><code>build_nextgen(params$flowpath_gpkg,
               flowline_gpkg = params$flowline_gpkg,
               outfile = params$out_nextgen)</code></pre>
 <pre><code>## → --- Applying NextGen topology ---</code></pre>
-<pre><code>## ℹ --- Reading Hydrofabric from &#39;/ngen-workflow/data/aggregated/17/aggregate_distribution.gpkg&#39; ---</code></pre>
+<pre><code>## ℹ --- Reading Hydrofabric from &#39;/ngen-workflow/data/aggregated/01/aggregate_distribution.gpkg&#39; ---</code></pre>
 <pre><code>## ℹ Reading flowpaths from: flowpaths</code></pre>
 <pre><code>## ℹ Reading divides from: divides</code></pre>
 <pre><code>## ✔ Done. Returned: flowpaths &amp; divides.</code></pre>
 <pre><code>## ✔ --- Flowline topology provided ---</code></pre>
-<pre><code>## ℹ --- Reading Hydrofabric from &#39;/ngen-workflow/data/refactored/17/refactored_reference_hydrofabric.gpkg&#39; ---</code></pre>
+<pre><code>## ℹ --- Reading Hydrofabric from &#39;/ngen-workflow/data/refactored/01/refactored_reference_hydrofabric.gpkg&#39; ---</code></pre>
 <pre><code>## ℹ Reading flowpaths from: flowpaths</code></pre>
 <pre><code>## ℹ Reading divides from: divides</code></pre>
 <pre><code>## ✔ Done. Returned: flowpaths &amp; divides.</code></pre>
 <pre><code>## ℹ Writing 6 spatial layer(s) to temp GPKG...</code></pre>
 <pre><code>## ℹ Writing 1 attribute table(s)...</code></pre>
 <pre><code>## Warning in file.rename(tmpfile, outfile): cannot rename file
-## &#39;/tmp/RtmpEf84Qb/file9d3277bf.gpkg&#39; to
-## &#39;/ngen-workflow/data/ngen/17/ngen_hydrofabric.gpkg&#39;, reason &#39;Invalid
+## &#39;/tmp/RtmpMRn8dz/file94bcd75fb.gpkg&#39; to
+## &#39;/ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg&#39;, reason &#39;Invalid
 ## cross-device link&#39;</code></pre>
-<pre><code>## ✔ Wrote 7 layer(s)/table(s) → /ngen-workflow/data/ngen/17/ngen_hydrofabric.gpkg</code></pre>
+<pre><code>## ✔ Wrote 7 layer(s)/table(s) → /ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg</code></pre>
 <pre><code>## Warning in connection_release(conn@ptr): Already disconnected</code></pre>
+</div>
+<div id="add-missing-fields-to-the-divides-layer" class="section level2">
+<h2>Add missing fields to the Divides layer</h2>
+<pre class="r"><code># select flowpath_lengthkm and tot_drainage_areasqkm from the network layer.
+network_atts &lt;- st_read(params$out_nextgen, layer = &quot;network&quot;) |&gt;
+  select(divide_id, lengthkm = flowpath_lengthkm, tot_drainage_areasqkm) |&gt;
+  distinct()</code></pre>
+<pre><code>## Reading layer `network&#39; from data source 
+##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg&#39; using driver `GPKG&#39;</code></pre>
+<pre><code>## Warning: no simple feature geometries present: returning a data.frame or tbl_df</code></pre>
+<pre class="r"><code># Add these attributes to the divides layer
+divides &lt;- st_read(params$out_nextgen, layer = &quot;divides&quot;) |&gt;
+  left_join(network_atts, by = &quot;divide_id&quot;)</code></pre>
+<pre><code>## Reading layer `divides&#39; from data source 
+##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg&#39; using driver `GPKG&#39;
+## Simple feature collection with 5931 features and 6 fields
+## Geometry type: POLYGON
+## Dimension:     XY
+## Bounding box:  xmin: 1824825 ymin: 2215935 xmax: 2255715 ymax: 3086925
+## Projected CRS: NAD83 / Conus Albers</code></pre>
+<pre class="r"><code>st_write(divides, params$out_nextgen, layer = &quot;divides&quot;, delete_layer = TRUE)</code></pre>
+<pre><code>## Deleting layer `divides&#39; using driver `GPKG&#39;
+## Writing layer `divides&#39; to data source 
+##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric.gpkg&#39; using driver `GPKG&#39;
+## Writing 5931 features with 8 fields and geometry type Polygon.</code></pre>
+</div>
 
 
 
