@@ -138,8 +138,8 @@ button{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var
 // ============================================================
 // CONFIG
 // ============================================================
-const S3_PARQUET = 'https://communityhydrofabric.s3.us-east-1.amazonaws.com/hydrofabrics/community/parquet';
-const S3_MAP = 'https://communityhydrofabric.s3.us-east-1.amazonaws.com/map';
+const S3_PARQUET = 'https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/parquet';
+const S3_MAP = 'https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map';
 const NETWORK_GRAPH_URL = `${S3_PARQUET}/network_graph.json`;
 
 const PARQUET_URLS = {
@@ -318,7 +318,7 @@ function initMap() {
     if (map.getSource("oconus_ref_flowpaths")) return;
     map.addSource("oconus_ref_flowpaths", {
       type: "vector",
-      url: "pmtiles://https://communityhydrofabric.s3.us-east-1.amazonaws.com/map/only_geometry/reference/flowpaths.pmtiles",
+      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/flowpaths.pmtiles",
     });
     map.addLayer(
       {
@@ -337,7 +337,7 @@ function initMap() {
     );
     map.addSource("oconus_ref_divides", {
       type: "vector",
-      url: "pmtiles://https://communityhydrofabric.s3.us-east-1.amazonaws.com/map/only_geometry/reference/divides.pmtiles",
+      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/divides.pmtiles",
     });
     map.addLayer(
       {
@@ -415,7 +415,7 @@ function initMapRight() {
     if (mapRight.getSource("oconus_ref_flowpaths")) return;
     mapRight.addSource("oconus_ref_flowpaths", {
       type: "vector",
-      url: "pmtiles://https://communityhydrofabric.s3.us-east-1.amazonaws.com/map/only_geometry/reference/flowpaths.pmtiles",
+      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/flowpaths.pmtiles",
     });
     mapRight.addLayer({
       id: "ref_flowpaths",
@@ -431,7 +431,7 @@ function initMapRight() {
     });
     mapRight.addSource("oconus_ref_divides", {
       type: "vector",
-      url: "pmtiles://https://communityhydrofabric.s3.us-east-1.amazonaws.com/map/only_geometry/reference/divides.pmtiles",
+      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/divides.pmtiles",
     });
     mapRight.addLayer({
       id: "ref_divides",
