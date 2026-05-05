@@ -82,10 +82,21 @@ nexus <- st_read(params$ngen_gpkg, layer = "nexus") |>
   ) |>
   select(-nexus_id, -nexus_toid)
 
+# Add missing POI attributes which are defined in the network layer.
+# rename the nexus_id column to match the flowpath_id column in the network layer,
+# then join to get the poi_id
+poi_lookup <- st_read(params$ngen_gpkg, layer = "network") |>
+     dplyr::select(flowpath_id, poi_id) |>
+     dplyr::distinct() |>
+     dplyr::filter(!is.na(poi_id)) |>
+     dplyr::mutate(nexus_id = gsub("^fp-", "nex-", flowpath_id)) |>
+     dplyr::select(nexus_id, poi_id)
+nexus <- left_join(nexus, poi_lookup, by = c("id" = "nexus_id"))
+
 # add placeholder values for missing coumns
 nexus$type   <- "nexus"
-nexus$poi_id <- NA
 nexus$vpuid <- params$vpu_id
+
 ```
 
 ## Write the updated divides and flowpaths to the output NextGen Geopackage

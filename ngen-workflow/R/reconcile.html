@@ -450,9 +450,23 @@ nexus &lt;- st_read(params$ngen_gpkg, layer = &quot;nexus&quot;) |&gt;
 ## Dimension:     XY
 ## Bounding box:  xmin: 1830070 ymin: 2215930 xmax: 2255727 ymax: 3083610
 ## Projected CRS: NAD83 / Conus Albers</code></pre>
-<pre class="r"><code># add placeholder values for missing coumns
+<pre class="r"><code># Add missing POI attributes which are defined in the network layer.
+# rename the nexus_id column to match the flowpath_id column in the network layer,
+# then join to get the poi_id
+poi_lookup &lt;- st_read(params$ngen_gpkg, layer = &quot;network&quot;) |&gt;
+     dplyr::select(flowpath_id, poi_id) |&gt;
+     dplyr::distinct() |&gt;
+     dplyr::filter(!is.na(poi_id)) |&gt;
+     dplyr::mutate(nexus_id = gsub(&quot;^fp-&quot;, &quot;nex-&quot;, flowpath_id)) |&gt;
+     dplyr::select(nexus_id, poi_id)</code></pre>
+<pre><code>## Reading layer `network&#39; from data source 
+##   `/ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg&#39; 
+##   using driver `GPKG&#39;</code></pre>
+<pre><code>## Warning: no simple feature geometries present: returning a data.frame or tbl_df</code></pre>
+<pre class="r"><code>nexus &lt;- left_join(nexus, poi_lookup, by = c(&quot;id&quot; = &quot;nexus_id&quot;))
+
+# add placeholder values for missing coumns
 nexus$type   &lt;- &quot;nexus&quot;
-nexus$poi_id &lt;- NA
 nexus$vpuid &lt;- params$vpu_id</code></pre>
 </div>
 <div id="write-the-updated-divides-and-flowpaths-to-the-output-nextgen-geopackage" class="section level2">
