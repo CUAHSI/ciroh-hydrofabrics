@@ -7,3 +7,6 @@
 ['remote "results"']
     url = s3://sblack/04f3de531b8b4d72b27cfeadbc1924eb/data/contents/
     profile = hydroshare
+['remote "subsetter"']
+    url = s3://sblack/4219997533bf46a1893e9ba0232403eb/data/contents/
+    profile = hydroshare

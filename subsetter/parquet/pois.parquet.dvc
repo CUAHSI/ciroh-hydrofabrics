@@ -1,0 +1,10 @@
+md5: 134f18c705c266241256219f3a73bd9f
+frozen: true
+deps:
+- etag: 9f31fea2e841e83e67881fb670df2ef6
+  size: 1490620
+  hash: md5
+  path: remote://subsetter/parquet/pois.parquet
+outs:
+- hash: md5
+  path: pois.parquet

@@ -1,0 +1,10 @@
+md5: 053860997a82dd3b13199df6176794de
+frozen: true
+deps:
+- etag: 4821aab11158e00e4c52fe21ca7ab54a
+  size: 410730
+  hash: md5
+  path: remote://subsetter/parquet/lakes.parquet
+outs:
+- hash: md5
+  path: lakes.parquet

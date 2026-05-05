@@ -1,0 +1,12 @@
+md5: 294423c9d38d4ef3bedd501e934b3826
+frozen: true
+deps:
+- etag: cab85359f71622d1ff470a2ae1476c9b
+  size: 1141420829
+  hash: md5
+  path: remote://subsetter/map/only_geometry/reference/divides.pmtiles
+outs:
+- md5: cab85359f71622d1ff470a2ae1476c9b
+  size: 1141420829
+  hash: md5
+  path: divides.pmtiles

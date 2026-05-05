@@ -1,0 +1,10 @@
+md5: 11601d0599500c08a4538ffbd9c9f808
+frozen: true
+deps:
+- etag: 39ae894d3d22b8739b3715d7d2a7f358
+  size: 8086539
+  hash: md5
+  path: remote://subsetter/parquet/hydrolocations.parquet
+outs:
+- hash: md5
+  path: hydrolocations.parquet
