@@ -1,0 +1,10 @@
+md5: c80161ac00a28213a738d120ffee9b1b
+frozen: true
+deps:
+- etag: da005e6b18998b3eb6598b71c950b1ad-1
+  size: 2573484
+  hash: md5
+  path: remote://superconus/gridded/dksat_soil_layers_stag=3.tif
+outs:
+- hash: md5
+  path: dksat_soil_layers_stag=3.tif

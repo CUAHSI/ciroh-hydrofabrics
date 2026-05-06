@@ -101,3 +101,28 @@ stages:
         - ../../ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
       outs:
         - ../../ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+  vaa_noahowp:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-vaa-noahowp.sh
+        /ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+        /ngen-workflow/data/superconus/gridded/bexp_soil_layers_stag=1.tif
+        /ngen-workflow/data/superconus/gridded/dksat_soil_layers_stag=1.tif
+        /ngen-workflow/data/superconus/gridded/psisat_soil_layers_stag=1.tif
+        /ngen-workflow/data/superconus/gridded/smcmax_soil_layers_stag=1.tif
+        /ngen-workflow/data/superconus/gridded/smcwlt_soil_layers_stag=1.tif
+        /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+        /ngen-workflow/data/ngen/${item.id}/vaa_noahowp.parquet
+      deps:
+        - ../../ngen-workflow/bash/run-vaa-noahowp.sh
+        - ../../ngen-workflow/R/vaa_noaaowp.Rmd
+        - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
+        - ../../ngen-workflow/data/superconus/gridded/bexp_soil_layers_stag=1.tif
+        - ../../ngen-workflow/data/superconus/gridded/dksat_soil_layers_stag=1.tif
+        - ../../ngen-workflow/data/superconus/gridded/psisat_soil_layers_stag=1.tif
+        - ../../ngen-workflow/data/superconus/gridded/smcmax_soil_layers_stag=1.tif
+        - ../../ngen-workflow/data/superconus/gridded/smcwlt_soil_layers_stag=1.tif
+        - ../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      outs:
+        - ../../ngen-workflow/data/ngen/${item.id}/vaa_noahowp.parquet

@@ -1,0 +1,10 @@
+md5: 14f7e52d0dd761f5335eaba4e587e273
+frozen: true
+deps:
+- etag: 71000fa92adb953e3e9de8e163c99002-1
+  size: 1628088
+  hash: md5
+  path: remote://superconus/gridded/psisat_soil_layers_stag=2.tif
+outs:
+- hash: md5
+  path: psisat_soil_layers_stag=2.tif
