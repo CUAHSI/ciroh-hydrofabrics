@@ -1,4 +1,4 @@
-md5: 180730b29171f34c6902c2c25d853c1e
+md5: 2bcae2283e039580c9adf75b2e22db1c
 frozen: true
 deps:
 - etag: d1d7a65a1274abcd668d3af9d5384161-1
@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: bexp_soil_layers_stag=3.tif
+  md5: 3e84b792b3102ad8aaba8caea0019e4c
+  size: 2576608

@@ -1,4 +1,4 @@
-md5: 17e918686fd7ee0addb32e69a43d68f0
+md5: 186fd888746994b73b146be0e2666cfc
 frozen: true
 deps:
 - etag: 74255e3da589b96fa107f409c5f6ff9b-1
@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: smcwlt_soil_layers_stag=3.tif
+  md5: 16adca272f034be16cffb61106468491
+  size: 1627849

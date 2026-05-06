@@ -4097,3 +4097,91 @@ stages:
       hash: md5
       md5: 7f1a23d4cc6dde313604bb62a2f73bfb
       size: 860745728
+  vaa_noahowp@0:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-vaa-noahowp.sh /ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      /ngen-workflow/data/superconus/gridded/bexp_soil_layers_stag=1.tif /ngen-workflow/data/superconus/gridded/dksat_soil_layers_stag=1.tif
+      /ngen-workflow/data/superconus/gridded/psisat_soil_layers_stag=1.tif /ngen-workflow/data/superconus/gridded/smcmax_soil_layers_stag=1.tif
+      /ngen-workflow/data/superconus/gridded/smcwlt_soil_layers_stag=1.tif /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet\n"
+    deps:
+    - path: ../../ngen-workflow/R/vaa_noahowp.Rmd
+      hash: md5
+      md5: c2cb70806a92e9e9160a14bd526cbd15
+      size: 4291
+    - path: ../../ngen-workflow/bash/run-vaa-noahowp.sh
+      hash: md5
+      md5: 858f1dacf6a1d3fba8b32cdf60b3eefb
+      size: 720
+      isexec: true
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      hash: md5
+      md5: c641ed9e6d1f4f54789b5529bb39ab15
+      size: 223219712
+    - path: 
+        ../../ngen-workflow/data/superconus/gridded/bexp_soil_layers_stag=1.tif
+      hash: md5
+      md5: 10f44212f30ace288b64498916314480
+      size: 2576608
+    - path: 
+        ../../ngen-workflow/data/superconus/gridded/dksat_soil_layers_stag=1.tif
+      hash: md5
+      md5: e1c180ef474347882b12aac83bfa2ade
+      size: 2573484
+    - path: 
+        ../../ngen-workflow/data/superconus/gridded/psisat_soil_layers_stag=1.tif
+      hash: md5
+      md5: bba01df0e1729447d86148128c520a6b
+      size: 1628088
+    - path: 
+        ../../ngen-workflow/data/superconus/gridded/smcmax_soil_layers_stag=1.tif
+      hash: md5
+      md5: f0bacafceb96981568749448613cf983
+      size: 2547819
+    - path: 
+        ../../ngen-workflow/data/superconus/gridded/smcwlt_soil_layers_stag=1.tif
+      hash: md5
+      md5: 28122ffa9760d640b852a7d62530a240
+      size: 1627849
+    - path: ../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      hash: md5
+      md5: 5376b5d2ddbb16610c001f4cf1553c65
+      size: 48798640
+    outs:
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_noahowp.gpkg
+      hash: md5
+      md5: 67d14d90ad341d7580d4a0b3dfe2b2eb
+      size: 223612928
+    - path: ../../ngen-workflow/data/ngen/01/vaa_noahowp.parquet
+      hash: md5
+      md5: 622a23f9f7bb3ce57e0a4af24e8b525c
+      size: 252699
+  vaa@0:
+    cmd: "docker compose run --rm hydrofabric ./bash/run-vaa.sh /ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      /ngen-workflow/data/superconus/gridded/soil/  /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet\n"
+    deps:
+    - path: ../../ngen-workflow/R/vaa.Rmd
+      hash: md5
+      md5: 12f2e0ca14d626b97b8b0c1a9274ce6c
+      size: 4424
+    - path: ../../ngen-workflow/bash/run-vaa.sh
+      hash: md5
+      md5: 7ecaed23046153b504c991dec205ea16
+      size: 469
+      isexec: true
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
+      hash: md5
+      md5: c641ed9e6d1f4f54789b5529bb39ab15
+      size: 223219712
+    - path: ../../ngen-workflow/data/superconus/gridded/soil/
+      hash: md5
+      md5: 0dd5e322a45357534a5c63d3fc07bb60.dir
+      size: 43822096
+      nfiles: 41
+    - path: ../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      hash: md5
+      md5: 5376b5d2ddbb16610c001f4cf1553c65
+      size: 48798640
+    outs:
+    - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_vaa.gpkg
+      hash: md5
+      md5: 07aef75dfa4b97e12a48888667a327c2
+      size: 224436224
