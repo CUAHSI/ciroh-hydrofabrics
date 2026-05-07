@@ -114,12 +114,41 @@ d2 <- open_dataset(params$gw_params) |>
 
 ```
 
+```{r}
+# centroid of each divide
+d3 <- st_centroid(divides) |>
+  st_coordinates() |>
+  data.frame() |>
+  rename(centroid_x = X, centroid_y = Y) |>
+  mutate(divide_id = divides$divide_id)
+#  st_transform(4326) |>
+
+## DEM attributes
+## START HERE: !!!
+#dem_vars <- c("elev", "slope", "aspect")
+#
+#r  <- rast(glue('{vsi}/250m_grids/usgs_250m_{dem_vars}.tif'))
+#
+#d4 <- execute_zonal(r[[1:2]], 
+#                    div, ID = "divide_id", 
+#                    join = FALSE) |>
+#    setNames(c("divide_id", "elevation_mean", " slope"))
+#
+#d5 <- execute_zonal(r[[3]], 
+#                     div, ID = "divide_id", fun = circular_mean, 
+#                     join = FALSE) |>
+#    setNames(c("divide_id", "aspect_c_mean"))
+#
+```
+
+
+
 ## Save the computed attributes
 
 ```{r}
 
 # Save the attributes to a sidecar parquet file.
-model_attributes <- power_full_join(list(d1, d2), by = "divide_id")
+model_attributes <- power_full_join(list(d1, d2, d3), by = "divide_id")
 #model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
 
 write_parquet(model_attributes, output_parquet)
