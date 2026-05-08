@@ -1,0 +1,10 @@
+md5: c9de60d1c8cea25819736ce8bd439d5c
+frozen: true
+deps:
+- etag: 712ed97b63f8443ab715468cba5f08c4-3
+  size: 224556695
+  hash: md5
+  path: remote://superconus/NHDSnapshot/DEM/03/Ned03a.tif
+outs:
+- hash: md5
+  path: Ned03a.tif

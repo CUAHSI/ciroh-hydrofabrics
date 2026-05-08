@@ -1,0 +1,10 @@
+md5: fa7cecdc8d69eb2bf35814541f09c891
+frozen: true
+deps:
+- etag: 63b6f4c4c20bd56343c788b5f60c0a77-1
+  size: 2744
+  hash: md5
+  path: remote://superconus/NHDSnapshot/DEM/04/dem04.vrt
+outs:
+- hash: md5
+  path: dem04.vrt
