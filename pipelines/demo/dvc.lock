@@ -4156,17 +4156,27 @@ stages:
       size: 252699
   vaa@0:
     cmd: "docker compose run --rm hydrofabric ./bash/run-vaa.sh /ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
-      /ngen-workflow/data/superconus/gridded/soil/  /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet\n"
+      /ngen-workflow/data/superconus/gridded/soil/  /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      /ngen-workflow/data/NHDSnapshot/DEM/01/dem01.vrt\n"
     deps:
     - path: ../../ngen-workflow/R/vaa.Rmd
       hash: md5
-      md5: 12f2e0ca14d626b97b8b0c1a9274ce6c
-      size: 4424
+      md5: 7e8123ecd4c8c288d7ed640ef0f6b9db
+      size: 5386
     - path: ../../ngen-workflow/bash/run-vaa.sh
       hash: md5
-      md5: 7ecaed23046153b504c991dec205ea16
-      size: 469
+      md5: bd320c6df0513a9d356d09922bdfadee
+      size: 525
       isexec: true
+    - path: ../../ngen-workflow/data/NHDSnapshot/DEM/01/
+      hash: md5
+      md5: 2e0da67b8e356552cb0393a3dc6d44f0.dir
+      size: 411057963
+      nfiles: 4
+    - path: ../../ngen-workflow/data/NHDSnapshot/DEM/01/dem01.vrt
+      hash: md5
+      md5: ba9cd007ef057ab59e62e6089607b0ca
+      size: 1458
     - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_with_atts.gpkg
       hash: md5
       md5: c641ed9e6d1f4f54789b5529bb39ab15
@@ -4183,5 +4193,5 @@ stages:
     outs:
     - path: ../../ngen-workflow/data/ngen/01/ngen_hydrofabric_vaa.gpkg
       hash: md5
-      md5: 07aef75dfa4b97e12a48888667a327c2
-      size: 224436224
+      md5: dfafd05c7949ed4ab3828031bcb05778
+      size: 224739328

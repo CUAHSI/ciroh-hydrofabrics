@@ -5,6 +5,7 @@ params:
   nextgen_geopackage: "..."
   soil_data: "..."
   gw_params: "..."
+  dem: "..."
 ---
 
 ```{r}
@@ -121,24 +122,24 @@ d3 <- st_centroid(divides) |>
   data.frame() |>
   rename(centroid_x = X, centroid_y = Y) |>
   mutate(divide_id = divides$divide_id)
-#  st_transform(4326) |>
 
-## DEM attributes
-## START HERE: !!!
-#dem_vars <- c("elev", "slope", "aspect")
-#
-#r  <- rast(glue('{vsi}/250m_grids/usgs_250m_{dem_vars}.tif'))
-#
-#d4 <- execute_zonal(r[[1:2]], 
-#                    div, ID = "divide_id", 
-#                    join = FALSE) |>
-#    setNames(c("divide_id", "elevation_mean", " slope"))
-#
-#d5 <- execute_zonal(r[[3]], 
-#                     div, ID = "divide_id", fun = circular_mean, 
-#                     join = FALSE) |>
-#    setNames(c("divide_id", "aspect_c_mean"))
-#
+# Load the input DEM and then compute slope and aspect
+# rasters using the terra package.
+dem_raster <- rast(params$dem)
+slope_raster <- terrain(dem_raster, v = "slope", unit = "degrees")
+aspect_raster <- terrain(dem_raster, v = "aspect", unit = "degrees")
+
+# compute zonal statistics for elevation, slope, and aspect.
+d4 <- execute_zonal(c(dem_raster, slope_raster), 
+                    divides, ID = "divide_id", 
+                    fun = "mean",
+                    join = FALSE) |>
+    setNames(c("divide_id", "mean.elevation", "mean.slope"))
+
+d5 <- execute_zonal(aspect_raster,
+                     divides, ID = "divide_id", fun = circular_mean, 
+                     join = FALSE) |>
+    setNames(c("divide_id", "circ_mean.aspect"))
 ```
 
 
@@ -148,7 +149,7 @@ d3 <- st_centroid(divides) |>
 ```{r}
 
 # Save the attributes to a sidecar parquet file.
-model_attributes <- power_full_join(list(d1, d2, d3), by = "divide_id")
+model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
 #model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
 
 write_parquet(model_attributes, output_parquet)
