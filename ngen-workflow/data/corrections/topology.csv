@@ -1,0 +1,10 @@
+# This file contains mappings that are used to apply corrections to 
+# the reference hydrofabric. This file should only be used to apply
+# corrections to the flowpaths layer. The first column contains the
+# flowpath_id of the flowpath to be corrected. All other columns contain
+# attributes that will be applied/modified in the reference hydrofabric.
+# If a value is empty, it will not be applied to the flowpath.
+#
+# Column structure:
+flowpath_id,flowpath_toid,lengthkm,areasqkm,totdasqkm,pathlength,streamorder
+
