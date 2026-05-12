@@ -103,6 +103,26 @@ stages:
         - ../../ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
       outs:
         - ../../ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+  vaa:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-vaa.sh
+        /ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+        /ngen-workflow/data/superconus/gridded/soil/ 
+        /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+        /ngen-workflow/data/NHDSnapshot/DEM/${item.prefix}/dem${item.prefix}.vrt
+      deps:
+        - ../../ngen-workflow/bash/run-vaa.sh
+        - ../../ngen-workflow/R/vaa.Rmd
+        - ../../ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+        - ../../ngen-workflow/data/superconus/gridded/soil/
+        - ../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+        - ../../ngen-workflow/data/NHDSnapshot/DEM/${item.prefix}/
+        - ../../ngen-workflow/data/NHDSnapshot/DEM/${item.prefix}/dem${item.prefix}.vrt
+      outs:
+#        - ../../ngen-workflow/data/ngen/${item.id}/vaa_noahowp.parquet
+        - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric_vaa.gpkg
   reconcile:
     foreach: ${vpuids}
     do:

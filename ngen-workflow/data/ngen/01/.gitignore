@@ -1,3 +1,6 @@
 /ngen_hydrofabric.gpkg
 /ngen_hydrofabric_with_atts.gpkg
+/vaa_noahowp.parquet
+/ngen_hydrofabric_noahowp.gpkg
+/ngen_hydrofabric_vaa.gpkg
 /ngen_hydrofabric_reconciled.gpkg
