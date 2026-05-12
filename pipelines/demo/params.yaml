@@ -73,3 +73,6 @@ aggregate:
   min_area_sqkm: 20
 minimal_attributes:
   output_geopackage_name: ngen_hydrofabric_with_atts.gpkg
+reconcile:
+  output_geopackage_name: ngen_hydrofabric_reconciled.gpkg
+

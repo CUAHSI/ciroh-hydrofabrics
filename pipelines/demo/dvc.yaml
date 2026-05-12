@@ -75,6 +75,7 @@ stages:
         /ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
         /ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
       deps:
+        - ../../ngen-workflow/R/hfngen.Rmd
         - ../../ngen-workflow/data/aggregated/${item.id}/aggregate_distribution.gpkg
         - ../../ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
       outs:
@@ -93,6 +94,7 @@ stages:
         /ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
 
       deps:
+        - ../../ngen-workflow/R/minimal_attributes.Rmd
         - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric.gpkg
         - ../../ngen-workflow/data/superconus/gridded/ISLTYP.tif
         - ../../ngen-workflow/data/superconus/gridded/IVGTYP.tif
@@ -121,3 +123,16 @@ stages:
       outs:
 #        - ../../ngen-workflow/data/ngen/${item.id}/vaa_noahowp.parquet
         - ../../ngen-workflow/data/ngen/${item.id}/ngen_hydrofabric_vaa.gpkg
+  reconcile:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-reconcile.sh
+        /ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+        ${item.id}
+        /ngen-workflow/data/ngen/${item.id}/${reconcile.output_geopackage_name}
+      deps:
+        - ../../ngen-workflow/R/reconcile.Rmd
+        - ../../ngen-workflow/data/ngen/${item.id}/${minimal_attributes.output_geopackage_name}
+      outs:
+        - ../../ngen-workflow/data/ngen/${item.id}/${reconcile.output_geopackage_name}

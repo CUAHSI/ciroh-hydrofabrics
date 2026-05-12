@@ -1,0 +1,112 @@
+---
+title: "Reconcile HydroFabric Attributes"
+date: "2026-05-04"
+params:
+  ngen_gpkg: "..."
+  vpu_id: "..."
+  out_nextgen: "..."
+---
+
+```{r}
+library(sf)
+library(dplyr)
+```
+
+## Prepare the Output NextGen Geopackage
+
+```{r}
+# Copy the input geopackage to a new file, then add the attributes
+file.copy(params$ngen_gpkg, params$out_nextgen)
+
+
+```
+
+## Fix The Divide Attributes
+
+```{r}
+
+# get the flowpath_id to toid mapping from the flowpaths layer
+fp_toid <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
+  st_drop_geometry() |>
+  select(flowpath_id, toid = flowpath_toid)
+
+# compute divides with the correct id, divide_id, toid, and other attributes
+# this does the following transformations:
+#   - renames fp-43378 to id = wb-43378 (just swap prefix fp- → wb-)
+#   - adds toid from the flowpaths layer using the flowpath_id
+divides <- st_read(params$ngen_gpkg, layer = "divides") |>
+  left_join(fp_toid, by = "flowpath_id") |>
+  mutate(id = gsub("^fp-", "wb-", flowpath_id)) |>
+  select(-flowpath_id)
+#  select(id, divide_id, toid, ds_id, areasqkm, vpuid, type, has_flowline)
+
+# add missing vpuid column
+divides$vpuid <- params$vpu_id
+
+
+```
+
+## Fix the Flowpath Attributes
+
+```{r}
+
+# read the flowpaths layer and do the following transformations:
+#  - rename fp-43378 to id = wb-43378 (swaps prefix fp to wb)
+#  - add toid from the flowpaths layer using the flowpath_id
+#  - drop columns that we no longer need.
+flowpaths <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
+  mutate(
+         id = gsub("^fp-", "wb-", flowpath_id),
+         toid = flowpath_toid,
+         ) |>
+  select(-flowpath_id, -flowpath_toid, -flowline_id, -member_comid)
+
+
+# add missing vpuid column
+flowpaths$vpuid <- params$vpu_id
+
+```
+
+## Fix the Nexus Attributes
+
+```{r}
+
+# read the nexus layer and do the following transformations:
+#  - set id to be the same as the nexus_id column
+#  - rename nexus_toid to toid, and swap the prefix from fp- to wb- (e.g. fp-43378 becomes wb-43378)
+#  - drop columns that we no longer need
+nexus <- st_read(params$ngen_gpkg, layer = "nexus") |> 
+  mutate(
+         id   = nexus_id,
+         toid = gsub("^fp-", "wb-", nexus_toid)
+  ) |>
+  select(-nexus_id, -nexus_toid)
+
+# Add missing POI attributes which are defined in the network layer.
+# rename the nexus_id column to match the flowpath_id column in the network layer,
+# then join to get the poi_id
+poi_lookup <- st_read(params$ngen_gpkg, layer = "network") |>
+     dplyr::select(flowpath_id, poi_id) |>
+     dplyr::distinct() |>
+     dplyr::filter(!is.na(poi_id)) |>
+     dplyr::mutate(nexus_id = gsub("^fp-", "nex-", flowpath_id)) |>
+     dplyr::select(nexus_id, poi_id)
+nexus <- left_join(nexus, poi_lookup, by = c("id" = "nexus_id"))
+
+# add placeholder values for missing coumns
+nexus$type   <- "nexus"
+nexus$vpuid <- params$vpu_id
+
+```
+
+## Write the updated divides and flowpaths to the output NextGen Geopackage
+
+```{r}
+
+# replace existing layers in the output NextGen Geopackage with the updated versions
+st_write(divides, params$out_nextgen, layer = "divides", delete_layer = TRUE)
+st_write(flowpaths, params$out_nextgen, layer = "flowpaths", delete_layer = TRUE)
+st_write(nexus, params$out_nextgen, layer = "nexus", delete_layer = TRUE)
+
+```
+
