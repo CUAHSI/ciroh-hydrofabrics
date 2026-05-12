@@ -14,3 +14,18 @@
       'lakes':                  `${S3_PARQUET}/lakes.parquet`,
       'network':                `${S3_PARQUET}/network.parquet`,
     };
+
+    // ============================================================
+    // LOGGING
+    // ============================================================
+    const logEl = document.getElementById('log');
+    function log(msg, cls = '') {
+      const span = document.createElement('span');
+      span.className = cls;
+      span.textContent = msg + '\n';
+      logEl.appendChild(span);
+      logEl.parentElement.scrollTop = logEl.parentElement.scrollHeight;
+    }
+    function setProgress(pct) {
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }
