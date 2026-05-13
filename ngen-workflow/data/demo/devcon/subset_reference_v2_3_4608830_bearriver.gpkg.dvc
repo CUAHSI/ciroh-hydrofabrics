@@ -1,0 +1,13 @@
+md5: 640f5b7f8f078a36bceb55fed91de556
+frozen: true
+deps:
+- etag: 9e59485bdd8e0f090ed04a5040d29c29-1
+  size: 12472320
+  hash: md5
+  path: 
+    remote://superconus/demo/devcon/subset_reference_v2_3_4608830_bearriver.gpkg
+outs:
+- hash: md5
+  path: subset_reference_v2_3_4608830_bearriver.gpkg
+  md5: 7979209307859b25fd628f76ae8f9ac5
+  size: 12472320

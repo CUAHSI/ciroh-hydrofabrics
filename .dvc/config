@@ -1,9 +1,12 @@
 [core]
-    remote = results
+    remote = cache
     autostage = true
 ['remote "superconus"']
     url = s3://sblack/7056bc5d6de14c5e9fbece9735124ca1/data/contents/
     profile = hydroshare
-['remote "results"']
-    url = s3://sblack/04f3de531b8b4d72b27cfeadbc1924eb/data/contents/
+['remote "cache"']
+    url = s3://sblack/a96117bdda0e4764ad953f6cfd350100/data/contents/
+    profile = hydroshare
+['remote "bear_river"']
+    url = s3://igarousi/00694408e2ee4d00b3941de92889b624/data/contents/
     profile = hydroshare
