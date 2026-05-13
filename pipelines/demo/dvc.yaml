@@ -42,9 +42,9 @@ stages:
         "mkdir -p /ngen-workflow/data/NHDSnapshot/FAC_vrt &&
         gdalbuildvrt
         /ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
-        /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}*_fac.tif"
+        /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/*"
       deps:
-        - ../../ngen-workflow/data/NHDSnapshot/FAC
+        - ../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/
       outs:
         - ../../ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
   build_fdr_vrt:
@@ -55,9 +55,9 @@ stages:
         "mkdir -p /ngen-workflow/data/NHDSnapshot/FDR_vrt &&
         gdalbuildvrt
         /ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
-        /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}*_fdr.tif"
+        /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/*"
       deps:
-        - ../../ngen-workflow/data/NHDSnapshot/FDR
+        - ../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/
       outs:
         - ../../ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
   refactor:
