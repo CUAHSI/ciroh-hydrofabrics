@@ -19,6 +19,21 @@ stages:
         - ../../ngen-workflow/data/superconus/pois.parquet
       outs:
         - ../../ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
+  reference_corrections:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric ./bash/run-topology-fix.sh
+        /ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
+        /ngen-workflow/data/corrections/topology.csv
+        /ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
+      deps:
+        - ../../ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
+        - ../../ngen-workflow/bash/run-topology-fix.sh
+        - ../../ngen-workflow/Python/topology_fix.py
+        - ../../ngen-workflow/data/corrections/topology.csv
+      outs:
+        - ../../ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
   refactor:
     foreach: ${vpuids}
     do:
@@ -26,7 +41,7 @@ stages:
         docker compose run --rm hydrofabric ./bash/run-refactor.sh
         /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}a_fac.tif
         /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}a_fdr.tif
-        /ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
+        /ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
         /ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
         ${refactor.split_flines_meters}
         ${refactor.collapse_flines_meters}
@@ -40,7 +55,7 @@ stages:
       deps:
         - ../../ngen-workflow/bash/run-refactor.sh
         - ../../ngen-workflow/R/refactor.Rmd
-        - ../../ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
+        - ../../ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
         - ../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}a_fac.tif
         - ../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}a_fdr.tif
       outs:
