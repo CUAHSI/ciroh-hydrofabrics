@@ -5,19 +5,19 @@ This script performs topology fixing on a given input hydrofabric geodatabase
 using a CSV file that describes the corrections to apply.
 """
 
+import shutil
 from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import sqlite3
 import typer
-
-import shutil
 
 
 app = typer.Typer()
 
 
-def apply_topology_fixes(
+def apply_flowpath_topology_fixes(
     gdf: gpd.GeoDataFrame, corrections: pd.DataFrame
 ) -> gpd.GeoDataFrame:
     """
@@ -48,13 +48,8 @@ def apply_topology_fixes(
         for col in corrections.columns[1:]:
 
             # some error handling for missing columns and matches
-            if col not in gdf.columns:
-                typer.echo(f"Column '{col}' not found in GeoDataFrame, skipping")
-            if len(match) == 0:
-                typer.echo(f"No match found for flowpath_id '{fpid}', skipping")
-            elif len(match) > 1:
-                typer.echo(f"Multiple matches found for flowpath_id '{fpid}', skipping")
-
+            if (col not in gdf.columns) or (len(match) == 0) or (len(match) > 1):
+                pass
             # apply correction if the value in the corrections dataset is not NaN
             if pd.notna(row[col]):
                 gdf.loc[match.index, col] = row[col]
@@ -66,12 +61,10 @@ def apply_topology_fixes(
 def fix_topology(
     gdb: Path = typer.Argument(
         ...,
-        exists=True,
         help="Path to the input geodatabase (.gpkg or .gdb).",
     ),
     csv: Path = typer.Argument(
         ...,
-        exists=True,
         help="Path to the CSV file describing topology corrections.",
     ),
     output: Path = typer.Argument(
@@ -96,18 +89,25 @@ def fix_topology(
     )
 
     typer.echo(f"  {len(flowpaths)} features loaded")
-    typer.echo(f"  {len(corrections)} corrections found")
+    typer.echo(f"  {len(corrections)} corrections will be applied")
 
-    breakpoint()
+    typer.echo("Applying topology fixes to flowpaths...")
+    corrected_flowpaths = apply_flowpath_topology_fixes(flowpaths, corrections)
 
-    typer.echo("Applying topology fixes...")
-    corrected_flowpaths = apply_topology_fixes(flowpaths, corrections)
+    typer.echo("Applying topology fixes to network...")
+    corrected_network = apply_flowpath_topology_fixes(
+        gpd.read_file(gdb, layer="network"), corrections
+    )
 
+    #    breakpoint()
     # copy the input gdf to the output location,
     # then overwrite the layers with the corrected gdf
     typer.echo(f"Writing output: {output}")
     shutil.copy(gdb, output)
     corrected_flowpaths.to_file(output, driver="GPKG", layer="flowpaths")
+    with sqlite3.connect(output) as conn:
+        corrected_network.to_sql("network", conn, if_exists="replace", index=False)
+    #    corrected_network.to_file(output, driver="GPKG", layer="network")
 
     typer.echo("Done.")
 

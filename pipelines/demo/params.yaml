@@ -68,9 +68,9 @@ refactor:
   collapse_flines_main_meters: 1000
   simplify_tolerance_meters: 400
 aggregate:
-  ideal_size_sqkm: 50
-  min_length_km: 1
-  min_area_sqkm: 20
+  ideal_size_sqkm: 5
+  min_length_km: .5
+  min_area_sqkm: 1
 minimal_attributes:
   output_geopackage_name: ngen_hydrofabric_with_atts.gpkg
 reconcile:
