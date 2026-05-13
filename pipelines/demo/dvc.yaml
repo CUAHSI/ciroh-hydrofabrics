@@ -34,13 +34,39 @@ stages:
         - ../../ngen-workflow/data/corrections/topology.csv
       outs:
         - ../../ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
+  build_fac_vrt:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric -lc
+        "mkdir -p /ngen-workflow/data/NHDSnapshot/FAC_vrt &&
+        gdalbuildvrt
+        /ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
+        /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}*_fac.tif"
+      deps:
+        - ../../ngen-workflow/data/NHDSnapshot/FAC
+      outs:
+        - ../../ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
+  build_fdr_vrt:
+    foreach: ${vpuids}
+    do:
+      cmd: >
+        docker compose run --rm hydrofabric -lc
+        "mkdir -p /ngen-workflow/data/NHDSnapshot/FDR_vrt &&
+        gdalbuildvrt
+        /ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
+        /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}*_fdr.tif"
+      deps:
+        - ../../ngen-workflow/data/NHDSnapshot/FDR
+      outs:
+        - ../../ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
   refactor:
     foreach: ${vpuids}
     do:
       cmd: >
         docker compose run --rm hydrofabric ./bash/run-refactor.sh
-        /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}a_fac.tif
-        /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}a_fdr.tif
+        /ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
+        /ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
         /ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
         /ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
         ${refactor.split_flines_meters}
@@ -56,8 +82,8 @@ stages:
         - ../../ngen-workflow/bash/run-refactor.sh
         - ../../ngen-workflow/R/refactor.Rmd
         - ../../ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
-        - ../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}a_fac.tif
-        - ../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}a_fdr.tif
+        - ../../ngen-workflow/data/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
+        - ../../ngen-workflow/data/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
       outs:
         - ../../ngen-workflow/data/refactored/${item.id}/refactored_reference_hydrofabric.gpkg
   aggregate:
