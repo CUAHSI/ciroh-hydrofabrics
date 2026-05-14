@@ -1,5 +1,5 @@
 ngen_workflow_dir_relative_input_geopackage: data/demo/devcon/subset_reference_v2_3_4608830_bearriver.gpkg
-vpuid: 16
+vpuid: "16"
 output_folder: demo/devcon
 refactor:
   split_flines_meters: 10000
