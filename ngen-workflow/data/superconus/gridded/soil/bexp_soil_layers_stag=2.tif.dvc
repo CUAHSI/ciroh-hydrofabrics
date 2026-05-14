@@ -1,5 +1,4 @@
 md5: 8c2b7d4e9738d2033c1c7f96faf2a0b6
-frozen: true
 deps:
 - etag: 4275b118d16c2fadc7d638eab516ab8c-1
   size: 2576608
@@ -7,6 +6,5 @@ deps:
   path: remote://superconus/gridded/bexp_soil_layers_stag=2.tif
 outs:
 - md5: ec700b8014296bcfa991ca0d446af1a9
-  size: 2576608
   hash: md5
   path: bexp_soil_layers_stag=2.tif

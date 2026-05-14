@@ -1,5 +1,4 @@
 md5: 07a9d08ff55d014c2c171a52640d778f
-frozen: true
 deps:
 - etag: 22bf3b71f77481117e0777a7dfa48476-1
   size: 2547819
@@ -7,6 +6,5 @@ deps:
   path: remote://superconus/gridded/smcmax_soil_layers_stag=1.tif
 outs:
 - md5: f0bacafceb96981568749448613cf983
-  size: 2547819
   hash: md5
   path: smcmax_soil_layers_stag=1.tif

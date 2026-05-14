@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: CONUS_imp_240.tif
-  md5: d6d5f68e829f9881066cba9758e04fec
-  size: 291729883

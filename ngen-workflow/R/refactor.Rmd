@@ -18,6 +18,7 @@ Sys.setenv(GDAL_SQLITE_LOAD_EXTENSIONS = "YES")
 
 ```{r}
 library(sf)
+library(dplyr)
 library(hfrefactor)
 ```
 

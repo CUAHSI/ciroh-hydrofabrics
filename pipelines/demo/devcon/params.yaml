@@ -1,0 +1,13 @@
+ngen_workflow_dir_relative_input_geopackage: data/demo/devcon/subset_reference_v2_3_4608830_bearriver.gpkg
+vpuid: "16"
+output_folder: demo/devcon
+refactor:
+  split_flines_meters: 10000
+  collapse_flines_meters: 1000
+  collapse_flines_main_meters: 1000
+  simplify_tolerance_meters: 400
+aggregate:
+  ideal_size_sqkm: 5
+  min_length_km: .5
+  min_area_sqkm: 1
+

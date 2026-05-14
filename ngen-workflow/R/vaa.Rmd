@@ -129,17 +129,22 @@ dem_raster <- rast(params$dem)
 slope_raster <- terrain(dem_raster, v = "slope", unit = "degrees")
 aspect_raster <- terrain(dem_raster, v = "aspect", unit = "degrees")
 
-# compute zonal statistics for elevation, slope, and aspect.
-d4 <- execute_zonal(c(dem_raster, slope_raster), 
-                    divides, ID = "divide_id", 
-                    fun = "mean",
-                    join = FALSE) |>
-    setNames(c("divide_id", "mean.elevation", "mean.slope"))
+# terrain() writes to a temp file; force both derived rasters into memory
+# so exactextractr's C++ layer can read values without hitting a stale temp path.
+#slope_raster <- setValues(rast(dem_raster), values(slope_raster))
+#aspect_raster <- setValues(rast(dem_raster), values(aspect_raster))
 
-d5 <- execute_zonal(aspect_raster,
-                     divides, ID = "divide_id", fun = circular_mean, 
-                     join = FALSE) |>
-    setNames(c("divide_id", "circ_mean.aspect"))
+# compute zonal statistics for elevation, slope, and aspect.
+#d4 <- execute_zonal(c(dem_raster, slope_raster),
+#                    divides, ID = "divide_id",
+#                    fun = "mean",
+#                    join = FALSE) |>
+#    setNames(c("divide_id", "mean.elevation", "mean.slope"))
+
+#d5 <- execute_zonal(aspect_raster,
+#                     divides, ID = "divide_id", fun = circular_mean,
+#                     join = FALSE) |>
+#    setNames(c("divide_id", "circ_mean.aspect"))
 ```
 
 
@@ -149,7 +154,7 @@ d5 <- execute_zonal(aspect_raster,
 ```{r}
 
 # Save the attributes to a sidecar parquet file.
-model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
+model_attributes <- power_full_join(list(d1, d2, d3), by = "divide_id")
 #model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
 
 write_parquet(model_attributes, output_parquet)

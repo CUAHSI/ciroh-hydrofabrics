@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: ISLTYP.tif
-  md5: 2f1465f66b23954efa29ba200dca5de3
-  size: 1620874

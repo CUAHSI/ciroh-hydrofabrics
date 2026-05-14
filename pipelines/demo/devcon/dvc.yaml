@@ -1,0 +1,140 @@
+stages:
+  reference_corrections:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-topology-fix.sh
+      /ngen-workflow/${ngen_workflow_dir_relative_input_geopackage}
+      /ngen-workflow/data/corrections/topology.csv
+      /ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+    deps:
+      - ../../../ngen-workflow/${ngen_workflow_dir_relative_input_geopackage}
+      - ../../../ngen-workflow/bash/run-topology-fix.sh
+      - ../../../ngen-workflow/Python/topology_fix.py
+      - ../../../ngen-workflow/data/corrections/topology.csv
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+  build_fac_vrt:
+    cmd: >
+      docker compose run --rm hydrofabric -lc
+      "mkdir -p /ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt &&
+      gdalbuildvrt
+      /ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt
+      /ngen-workflow/data/NHDSnapshot/FAC/${vpuid}/*"
+    deps:
+      - ../../../ngen-workflow/data/NHDSnapshot/FAC/${vpuid}/
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt
+  build_fdr_vrt:
+    cmd: >
+      docker compose run --rm hydrofabric -lc
+      "mkdir -p /ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt &&
+      gdalbuildvrt
+      /ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt
+      /ngen-workflow/data/NHDSnapshot/FDR/${vpuid}/*"
+    deps:
+      - ../../../ngen-workflow/data/NHDSnapshot/FDR/${vpuid}/
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt
+  refactor:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-refactor.sh
+      /ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt
+      /ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt
+      /ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+      /ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+      ${refactor.split_flines_meters}
+      ${refactor.collapse_flines_meters}
+      ${refactor.collapse_flines_main_meters}
+      ${refactor.simplify_tolerance_meters}
+    params:
+      - refactor.split_flines_meters
+      - refactor.collapse_flines_meters
+      - refactor.collapse_flines_main_meters
+      - refactor.simplify_tolerance_meters
+    deps:
+      - ../../../ngen-workflow/bash/run-refactor.sh
+      - ../../../ngen-workflow/R/refactor.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+      - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt
+      - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+  aggregate:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-aggregate.sh
+      /ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+      /ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg
+      /ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
+      ${aggregate.ideal_size_sqkm}
+      ${aggregate.min_length_km}
+      ${aggregate.min_area_sqkm}
+    params:
+      - aggregate.ideal_size_sqkm
+      - aggregate.min_length_km
+      - aggregate.min_area_sqkm
+    deps:
+      - ../../../ngen-workflow/R/aggregate.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg
+      - ../../../ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
+  hfngen:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-hfngen.sh
+      /ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
+      /ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg
+    deps:
+      - ../../../ngen-workflow/R/hfngen.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
+      - ../../../ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg
+  minimal_attributes:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-minimal-attributes.sh
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg
+      /ngen-workflow/data/superconus/gridded/ISLTYP.tif
+      /ngen-workflow/data/superconus/gridded/IVGTYP.tif
+      /ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
+      /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      /ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+
+    deps:
+      - ../../../ngen-workflow/R/minimal_attributes.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg
+      - ../../../ngen-workflow/data/superconus/gridded/ISLTYP.tif
+      - ../../../ngen-workflow/data/superconus/gridded/IVGTYP.tif
+      - ../../../ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
+      - ../../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      - ../../../ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+  vaa:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-vaa.sh
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+      /ngen-workflow/data/superconus/gridded/soil/ 
+      /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      /ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/dem${vpuid}.vrt
+    deps:
+      - ../../../ngen-workflow/bash/run-vaa.sh
+      - ../../../ngen-workflow/R/vaa.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+      - ../../../ngen-workflow/data/superconus/gridded/soil/
+      - ../../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
+      - ../../../ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/
+      - ../../../ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/dem${vpuid}.vrt
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg
+  reconcile:
+    cmd: >
+      docker compose run --rm hydrofabric ./bash/run-reconcile.sh
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+      ${vpuid}
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg
+    deps:
+      - ../../../ngen-workflow/R/reconcile.Rmd
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+    outs:
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg
