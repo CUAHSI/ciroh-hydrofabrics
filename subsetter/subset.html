@@ -138,9 +138,17 @@ button{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var
 // ============================================================
 // CONFIG
 // ============================================================
-const S3_PARQUET = 'https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/parquet';
-const S3_MAP = 'https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map';
+const S3_ORIGIN = `${window.location.protocol}//s3.${window.location.hostname}`;
+const RESOURCE_ID = (() => {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const idx = parts.indexOf('hydrofabric-subsetter');
+  return (idx >= 0 && parts[idx + 1]) ? parts[idx + 1] : '';
+})();
+const S3_PARQUET = `${S3_ORIGIN}/hydroshare-resources/${RESOURCE_ID}/data/contents/parquet`;
+const S3_MAP = `${S3_ORIGIN}/hydroshare-resources/${RESOURCE_ID}/data/contents/map`;
 const NETWORK_GRAPH_URL = `${S3_PARQUET}/network_graph.json`;
+const REF_FLOWPATHS_PMTILES_URL = `${S3_MAP}/only_geometry/reference/flowpaths.pmtiles`;
+const REF_DIVIDES_PMTILES_URL = `${S3_MAP}/only_geometry/reference/divides.pmtiles`;
 
 const PARQUET_URLS = {
   'divides':                `${S3_PARQUET}/divides.parquet`,
@@ -173,6 +181,56 @@ let hp = null;
 let compressors = null;
 const fileHandleCache = {};
 
+let pmtilesProtocolRegistered = false;
+
+function createCredentialedPmtilesSource(url) {
+  return {
+    getKey() {
+      return url;
+    },
+    async getBytes(offset, length, signal, etag) {
+      const headers = new Headers();
+      headers.set('range', `bytes=${offset}-${offset + length - 1}`);
+
+      const resp = await fetch(url, {
+        signal,
+        headers,
+        credentials: 'include',
+      });
+
+      const newEtag = resp.headers.get('Etag') || undefined;
+      if (resp.status === 416 || (etag && newEtag && newEtag !== etag)) {
+        throw new pmtiles.EtagMismatch(`Server returned non-matching ETag ${etag}`);
+      }
+      if (resp.status >= 300) {
+        throw new Error(`Bad response code: ${resp.status}`);
+      }
+
+      const contentLength = resp.headers.get('Content-Length');
+      if (resp.status === 200 && (!contentLength || +contentLength > length)) {
+        throw new Error('Server returned no content-length header or content-length exceeding request. Check that your storage backend supports HTTP Byte Serving.');
+      }
+
+      return {
+        data: await resp.arrayBuffer(),
+        etag: newEtag,
+        cacheControl: resp.headers.get('Cache-Control') || undefined,
+        expires: resp.headers.get('Expires') || undefined,
+      };
+    },
+  };
+}
+
+function ensurePmtilesProtocol() {
+  if (pmtilesProtocolRegistered) return;
+
+  const protocol = new pmtiles.Protocol({ metadata: true });
+  protocol.add(new pmtiles.PMTiles(createCredentialedPmtilesSource(REF_FLOWPATHS_PMTILES_URL)));
+  protocol.add(new pmtiles.PMTiles(createCredentialedPmtilesSource(REF_DIVIDES_PMTILES_URL)));
+  maplibregl.addProtocol('pmtiles', protocol.tile);
+  pmtilesProtocolRegistered = true;
+}
+
 // ============================================================
 // LOGGING
 // ============================================================
@@ -194,7 +252,7 @@ function setProgress(pct) {
 async function loadNetworkGraph() {
   log('Loading network graph...', 'info');
   const t0 = performance.now();
-  const resp = await fetch(NETWORK_GRAPH_URL);
+  const resp = await fetch(NETWORK_GRAPH_URL, { credentials: 'include' });
   if (!resp.ok) throw new Error(`Failed: ${resp.status}`);
   networkGraph = await resp.json();
   log(`  ${networkGraph.meta.total_edges} edges in ${((performance.now()-t0)/1000).toFixed(1)}s`, 'success');
@@ -256,7 +314,7 @@ async function initHyparquet() {
 
 async function getFileHandle(url) {
   if (!fileHandleCache[url]) {
-    fileHandleCache[url] = await hp.asyncBufferFromUrl({ url });
+    fileHandleCache[url] = await hp.asyncBufferFromUrl({ url, requestInit: { credentials: 'include' } });
   }
   return fileHandleCache[url];
 }
@@ -300,8 +358,7 @@ async function readParquetFiltered(url, filterCol, idArray) {
 // MAP
 // ============================================================
 function initMap() {
-  const protocol = new pmtiles.Protocol({ metadata: true });
-  maplibregl.addProtocol('pmtiles', protocol.tile);
+  ensurePmtilesProtocol();
 
   const darkStyle = `${S3_MAP}/styles/dark-style.json`;
   const lightStyle = `${S3_MAP}/styles/light-style.json`;
@@ -312,13 +369,16 @@ function initMap() {
     style: prefersDark ? darkStyle : lightStyle,
     center: [-96, 40],
     zoom: 4,
+    transformRequest: (url) => {
+      if (url.startsWith(S3_ORIGIN)) return { url, credentials: 'include' };
+    },
   });
   
   map.on("styledata", () => {
     if (map.getSource("oconus_ref_flowpaths")) return;
     map.addSource("oconus_ref_flowpaths", {
       type: "vector",
-      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/flowpaths.pmtiles",
+      url: `pmtiles://${REF_FLOWPATHS_PMTILES_URL}`,
     });
     map.addLayer(
       {
@@ -337,7 +397,7 @@ function initMap() {
     );
     map.addSource("oconus_ref_divides", {
       type: "vector",
-      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/divides.pmtiles",
+      url: `pmtiles://${REF_DIVIDES_PMTILES_URL}`,
     });
     map.addLayer(
       {
@@ -394,6 +454,8 @@ function updateMapFilters() {
 // SPLIT VIEW
 // ============================================================
 function initMapRight() {
+  ensurePmtilesProtocol();
+
   const darkStyle = `${S3_MAP}/styles/dark-style.json`;
   const lightStyle = `${S3_MAP}/styles/light-style.json`;
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -405,6 +467,9 @@ function initMapRight() {
     zoom: map.getZoom(),
     bearing: map.getBearing(),
     pitch: map.getPitch(),
+    transformRequest: (url) => {
+      if (url.startsWith(S3_ORIGIN)) return { url, credentials: 'include' };
+    },
   });
 
   mapRight.on("styledata", () => {
@@ -415,7 +480,7 @@ function initMapRight() {
     if (mapRight.getSource("oconus_ref_flowpaths")) return;
     mapRight.addSource("oconus_ref_flowpaths", {
       type: "vector",
-      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/flowpaths.pmtiles",
+      url: `pmtiles://${REF_FLOWPATHS_PMTILES_URL}`,
     });
     mapRight.addLayer({
       id: "ref_flowpaths",
@@ -431,7 +496,7 @@ function initMapRight() {
     });
     mapRight.addSource("oconus_ref_divides", {
       type: "vector",
-      url: "pmtiles://https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/map/only_geometry/reference/divides.pmtiles",
+      url: `pmtiles://${REF_DIVIDES_PMTILES_URL}`,
     });
     mapRight.addLayer({
       id: "ref_divides",
