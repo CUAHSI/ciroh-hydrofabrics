@@ -62,34 +62,18 @@
   </body>
 
   <script>
-    // ============================================================
-    // STATE
-    // ============================================================
-    let networkGraph = null;
-    let adjacency = null;
-    let downstream = null;
-
-    //for selection
-    let outletCatId = null;
-    let upstreamCatIds = [];
-    let upstreamNumericIds = new Set();
-
-    //map stuff
-    let map = null;
-    let mapRight = null;
-    let splitActive = false;
-    let syncing = false;
-
-    let hp = null;
-    let compressors = null;
-    const fileHandleCache = {};
+    import { initMap, updateMapFilters, toggleSplitView } from './map.js';
+    import { loadNetworkGraph, getUpstreamIds } from './networkGraph.js';
+    import { initHyparquet, buildGeoPackage } from './hyparquet.js';
+    import { subsetAndDownload } from './useSubset.js';
+    import { state, log } from './state.js';
 
     // ============================================================
     // SELECTION
     // ============================================================
     async function selectOutlet(catId) {
       if (!catId.startsWith('cat-')) catId = 'cat-' + catId.replace(/^(cat-?)/, '');
-      outletCatId = catId;
+      state.outletCatId = catId;
       document.getElementById('input-catid').value = catId;
 
       const numeric = parseInt(catId.split('-')[1]);
@@ -97,13 +81,13 @@
 
       log(`\nSelected: ${catId}`, 'step');
       const t0 = performance.now();
-      upstreamNumericIds = getUpstreamIds(numeric, includeOutlet);
-      upstreamCatIds = Array.from(upstreamNumericIds).map(n => `cat-${n}`);
-      log(`  ${upstreamNumericIds.size} upstream catchments (${(performance.now()-t0).toFixed(0)}ms)`, 'success');
+      state.upstreamNumericIds = getUpstreamIds(numeric, includeOutlet);
+      state.upstreamCatIds = Array.from(state.upstreamNumericIds).map(n => `cat-${n}`);
+      log(`  ${state.upstreamNumericIds.size} upstream catchments (${(performance.now()-t0).toFixed(0)}ms)`, 'success');
 
       const info = document.getElementById('selection-info');
       info.style.display = 'block';
-      info.innerHTML = `Outlet: <span class="outlet">${catId}</span><br>Upstream: <span class="count">${upstreamNumericIds.size}</span> catchments`;
+      info.innerHTML = `Outlet: <span class="outlet">${catId}</span><br>Upstream: <span class="count">${state.upstreamNumericIds.size}</span> catchments`;
 
       document.getElementById('btn-subset').disabled = false;
       updateMapFilters();
@@ -121,7 +105,7 @@
     });
     document.getElementById('btn-subset').addEventListener('click', subsetAndDownload);
     document.getElementById('chk-include-outlet').addEventListener('change', () => {
-      if (outletCatId) selectOutlet(outletCatId);
+      if (state.outletCatId) selectOutlet(state.outletCatId);
     });
 
     document.getElementById('toggle-split').addEventListener('change', (e) => {
@@ -130,34 +114,34 @@
 
     document.getElementById('toggle-flowpaths').addEventListener('change', (e) => {
       const vis = e.target.checked ? 'visible' : 'none';
-      const target = splitActive && mapRight ? mapRight : map;
+      const target = state.splitActive && state.mapRight ? state.mapRight : state.map;
       if (target && target.getLayer('ref_flowpaths')) {
         target.setLayoutProperty('ref_flowpaths', 'visibility', vis);
       }
     });
     document.getElementById('toggle-divides').addEventListener('change', (e) => {
       const vis = e.target.checked ? 'visible' : 'none';
-      const target = splitActive && mapRight ? mapRight : map;
+      const target = state.splitActive && state.mapRight ? state.mapRight : state.map;
       if (target && target.getLayer('ref_divides')) {
         target.setLayoutProperty('ref_divides', 'visibility', vis);
       }
     });
     document.getElementById('color-flowpaths').addEventListener('input', (e) => {
-      const target = splitActive && mapRight ? mapRight : map;
+      const target = state.splitActive && state.mapRight ? state.mapRight : state.map;
       if (target && target.getLayer('ref_flowpaths')) {
         target.setPaintProperty('ref_flowpaths', 'line-color', e.target.value);
       }
     });
     document.getElementById('color-divides').addEventListener('input', (e) => {
-      const target = splitActive && mapRight ? mapRight : map;
+      const target = state.splitActive && state.mapRight ? state.mapRight : state.map;
       if (target && target.getLayer('ref_divides')) {
         target.setPaintProperty('ref_divides', 'line-color', e.target.value);
       }
     });
     document.getElementById('btn-clear').addEventListener('click', () => {
-      outletCatId = null;
-      upstreamCatIds = [];
-      upstreamNumericIds.clear();
+      state.outletCatId = null;
+      state.upstreamCatIds = [];
+      state.upstreamNumericIds.clear();
       document.getElementById('input-catid').value = '';
       document.getElementById('selection-info').style.display = 'none';
       document.getElementById('btn-subset').disabled = true;
