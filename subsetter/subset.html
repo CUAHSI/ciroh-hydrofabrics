@@ -61,7 +61,7 @@
     </div>
   </body>
 
-  <script>
+  <script type="module">
     import { initMap, updateMapFilters, toggleSplitView } from './map.js';
     import { loadNetworkGraph, getUpstreamIds } from './networkGraph.js';
     import { initHyparquet, buildGeoPackage } from './hyparquet.js';
@@ -164,5 +164,7 @@
       }
     })();
   </script>
-
+<style>
+  @import './src/style.css';
+</style>
 </html>
