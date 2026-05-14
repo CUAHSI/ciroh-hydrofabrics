@@ -1,5 +1,4 @@
 md5: 8b551ff420951325001313aa3f83a26e
-frozen: true
 deps:
 - etag: 2578ead006906994bf60682136bc5c00-1
   size: 310951
@@ -8,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: pois.parquet
-  md5: b2259c93e0a93ff8c3022732ad5cd178
-  size: 310951

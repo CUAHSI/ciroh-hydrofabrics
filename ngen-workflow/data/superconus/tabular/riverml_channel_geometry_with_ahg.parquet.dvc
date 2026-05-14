@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: riverml_channel_geometry_with_ahg.parquet
-  md5: 6710437e2b100a2b3518a7cea47b827d
-  size: 188372842
