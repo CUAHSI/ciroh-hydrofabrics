@@ -63,19 +63,18 @@
 
   <script>
     // ============================================================
-    // CONFIG
-    // ============================================================
-
-
-    // ============================================================
     // STATE
     // ============================================================
     let networkGraph = null;
     let adjacency = null;
     let downstream = null;
+
+    //for selection
     let outletCatId = null;
     let upstreamCatIds = [];
     let upstreamNumericIds = new Set();
+
+    //map stuff
     let map = null;
     let mapRight = null;
     let splitActive = false;

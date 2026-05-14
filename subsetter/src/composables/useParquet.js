@@ -1,26 +1,28 @@
+import { log, state } from '../config';
+
 export function useParquet() {
         async function initHyparquet() {
-      if (hp) return;
+      if (state.hp) return;
       log('Loading hyparquet...', 'info');
       const t0 = performance.now();
 
-      hp = await import('https://cdn.jsdelivr.net/npm/hyparquet/+esm');
+      state.hp = await import('https://cdn.jsdelivr.net/npm/hyparquet/+esm');
 
       try {
         const hpc = await import('https://cdn.jsdelivr.net/npm/hyparquet-compressors/+esm');
-        compressors = hpc.compressors;
+        state.compressors = hpc.compressors;
         log(`  hyparquet + compressors ready (${((performance.now()-t0)/1000).toFixed(1)}s)`, 'success');
       } catch (e) {
         log(`  hyparquet ready, compressors unavailable (${e.message})`, 'info');
-        compressors = undefined;
+        state.compressors = undefined;
       }
     }
 
     async function getFileHandle(url) {
-      if (!fileHandleCache[url]) {
-        fileHandleCache[url] = await hp.asyncBufferFromUrl({ url });
+      if (!state.fileHandleCache[url]) {
+        state.fileHandleCache[url] = await state.hp.asyncBufferFromUrl({ url });
       }
-      return fileHandleCache[url];
+      return state.fileHandleCache[url];
     }
 
     /**
@@ -39,9 +41,9 @@ export function useParquet() {
         utf8: false, // keep BYTE_ARRAY as Uint8Array so binary geom isn't corrupted by UTF-8 decoding
         filter: { [filterCol]: { $in: idArray } },
       };
-      if (compressors) opts.compressors = compressors;
+      if (state.compressors) opts.compressors = state.compressors;
 
-      const rows = await hp.parquetReadObjects(opts);
+      const rows = await state.hp.parquetReadObjects(opts);
       return rows.map(row => {
         const out = {};
         for (const [k, v] of Object.entries(row)) {

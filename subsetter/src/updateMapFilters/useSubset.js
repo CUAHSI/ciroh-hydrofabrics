@@ -1,3 +1,9 @@
+import { PARQUET_URLS } from "../config";
+import { log, state } from "../config";
+import { useParquet } from "./useParquet";
+import { buildGeoPackage } from "./useGpkg";
+import { UseNetwork } from "./useNetwork";
+
 export function useSubset() {
     // ============================================================
     // SUBSET & DOWNLOAD
@@ -17,15 +23,15 @@ export function useSubset() {
     //   network            -> filter by id using the full upstream id set
     // ============================================================
     async function subsetAndDownload() {
-      if (!outletCatId || upstreamNumericIds.size === 0) return;
+      if (!state.outletCatId || state.upstreamNumericIds.size === 0) return;
       const btn = document.getElementById('btn-subset');
       btn.disabled = true;
       logEl.innerHTML = '';
       setProgress(0);
 
       try {
-        const nums = Array.from(upstreamNumericIds);
-        log(`Subsetting ${nums.length} catchments from ${outletCatId}`, 'step');
+        const nums = Array.from(state.upstreamNumericIds);
+        log(`Subsetting ${nums.length} catchments from ${state.outletCatId}`, 'step');
 
         await initHyparquet();
 
@@ -62,17 +68,17 @@ export function useSubset() {
         // Compute nexus IDs from network topology (no need to fetch flowpaths first)
         // Include nex-N for every N in the selection that has an upstream parent also in the selection
         const computedNexIds = [];
-        for (const n of upstreamNumericIds) {
-          const parents = adjacency.get(n);
+        for (const n of state.upstreamNumericIds) {
+          const parents = state.adjacency.get(n);
           if (parents) {
             for (const p of parents) {
-              if (upstreamNumericIds.has(p)) { computedNexIds.push(`nex-${n}`); break; }
+              if (state.upstreamNumericIds.has(p)) { computedNexIds.push(`nex-${n}`); break; }
             }
           }
         }
         // Add the outlet's downstream nexus (not in the upstream selection itself)
-        const outletNumeric = parseInt(outletCatId.split('-')[1]);
-        const outletDownstream = downstream.get(outletNumeric);
+        const outletNumeric = parseInt(state.outletCatId.split('-')[1]);
+        const outletDownstream = state.downstream.get(outletNumeric);
         if (outletDownstream != null) computedNexIds.push(`nex-${outletDownstream}`);
         const allNexIds = [...new Set(computedNexIds)];
 
@@ -107,7 +113,7 @@ export function useSubset() {
         const gpkgBlob = await buildGeoPackage(allTableData);
 
         setProgress(100);
-        const filename = `${outletCatId}_subset.gpkg`;
+        const filename = `${state.outletCatId}_subset.gpkg`;
         const a = document.createElement('a');
         a.href = URL.createObjectURL(gpkgBlob);
         a.download = filename;
