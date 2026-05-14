@@ -6,6 +6,5 @@ deps:
   path: remote://superconus/gridded/smcwlt_soil_layers_stag=1.tif
 outs:
 - md5: 28122ffa9760d640b852a7d62530a240
-  size: 1627849
   hash: md5
   path: smcwlt_soil_layers_stag=1.tif

@@ -6,6 +6,5 @@ deps:
   path: remote://superconus/gridded/bexp_soil_layers_stag=2.tif
 outs:
 - md5: ec700b8014296bcfa991ca0d446af1a9
-  size: 2576608
   hash: md5
   path: bexp_soil_layers_stag=2.tif

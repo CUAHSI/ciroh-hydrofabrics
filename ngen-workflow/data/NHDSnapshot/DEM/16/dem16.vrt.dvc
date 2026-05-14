@@ -1,5 +1,4 @@
 md5: 0282a78d1f75c77d6005d968270ae25a
-frozen: true
 deps:
 - etag: 89bd9039e2a81f6321402bd1168d7d69-1
   size: 1887
@@ -8,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: dem16.vrt
-  md5: ebbd8dec01a86fcd81835913e47611a6
-  size: 1887
