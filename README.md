@@ -58,18 +58,10 @@ dvc update <path_to_file.dvc>
 
 ### DVC repro
 
-Before running the pipeline, you should pull the required data from the configured DVC remote. This ensures all tracked input files are available locally:
+You can reproduce the demo/devcon pipeline with:
 
 ```sh
-dvc pull
-```
-
-This command will download all necessary data files from your configured DVC remote storage (as set in your DVC config). Make sure your credentials and remote configuration are correct.
-
-Once the data is available, you can reproduce the pipeline with:
-
-```sh
-dvc repro pipelines/demo/dvc.yaml
+dvc repro pipelines/demo/devcon/dvc.yaml
 ```
 
 This will execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary. If any required data is missing, DVC will attempt to pull it automatically from the remote during execution.
