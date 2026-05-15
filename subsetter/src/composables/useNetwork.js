@@ -5,7 +5,7 @@ export function UseNetwork() {
     async function loadNetworkGraph() {
       log('Loading network graph...', 'info');
       const t0 = performance.now();
-      const resp = await fetch(NETWORK_GRAPH_URL);
+      const resp = await fetch(NETWORK_GRAPH_URL, { credentials: 'include' });
       if (!resp.ok) throw new Error(`Failed: ${resp.status}`);
       state.networkGraph = await resp.json();
       log(`  ${state.networkGraph.meta.total_edges} edges in ${((performance.now()-t0)/1000).toFixed(1)}s`, 'success');

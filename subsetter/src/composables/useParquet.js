@@ -20,7 +20,7 @@ export function useParquet() {
 
     async function getFileHandle(url) {
       if (!state.fileHandleCache[url]) {
-        state.fileHandleCache[url] = await state.hp.asyncBufferFromUrl({ url });
+        state.fileHandleCache[url] = await state.hp.asyncBufferFromUrl({ url, requestInit: { credentials: 'include' } });
       }
       return state.fileHandleCache[url];
     }
