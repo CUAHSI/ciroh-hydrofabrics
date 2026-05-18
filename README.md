@@ -122,41 +122,41 @@ Each stage is run in a containerized environment using Docker Compose, and all d
 
 ### 1. reference_corrections
 Applies topology corrections to the input hydrofabric.
-Output: [ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg.
 
 ### 2. build_fac_vrt
 Builds a FAC VRT mosaic for the selected VPU.
-Output: [ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt.
 
 ### 3. build_fdr_vrt
 Builds an FDR VRT mosaic for the selected VPU.
-Output: [ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt.
 
 ### 4. refactor
 Refactors hydrofabric flowlines with FAC/FDR rasters and refactor parameters.
-Output: [ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg.
 
 ### 5. aggregate
 Aggregates refactored catchments using the aggregate parameter thresholds.
 Outputs:
-- [ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg](ngen-workflow/output)
-- [ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg](ngen-workflow/output)
+- ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg
+- ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
 
 ### 6. hfngen
 Builds the ngen hydrofabric from aggregate distribution and refactored hydrofabric.
-Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg.
 
 ### 7. minimal_attributes
 Adds required minimal attributes from gridded and tabular sources.
-Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg.
 
 ### 8. vaa
 Computes and appends value-added attributes (terrain, soil, and related variables).
-Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg.
 
 ### 9. reconcile
 Reconciles hydrofabric attributes and writes the final devcon hydrofabric.
-Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg](ngen-workflow/output).
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg.
 
 ## Devcon Run Outputs
 
@@ -164,16 +164,16 @@ For the default params (`output_folder: demo/devcon`), a successful run creates 
 
 Key outputs:
 
-- [ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg](ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg)
-- [ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt](ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt)
-- [ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt](ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt)
-- [ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg](ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg)
-- [ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg](ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg)
-- [ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg](ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg)
-- [ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg)
-- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg)
-- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg)
-- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg)
+- ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg
+- ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt
+- ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt
+- ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg
+- ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg
+- ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg
 
 ## DVC Metadata After A Pipeline Run
 
