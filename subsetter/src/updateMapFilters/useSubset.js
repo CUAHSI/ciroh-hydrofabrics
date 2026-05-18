@@ -1,8 +1,11 @@
-import { PARQUET_URLS } from "../config";
-import { log, state } from "../config";
-import { useParquet } from "./useParquet";
-import { buildGeoPackage } from "./useGpkg";
-import { UseNetwork } from "./useNetwork";
+import { log, state, PARQUET_URLS } from "../config.js";
+import { useParquet } from "../composables/useParquet.js";
+import { useGpkg } from "./useGpkg.js";
+import { useNetwork } from "../composables/useNetwork.js";
+
+const { initHyparquet, readParquetFiltered } = useParquet();
+const { buildGeoPackage } = useGpkg();
+const { getUpstreamIds } = useNetwork();
 
 export function useSubset() {
     // ============================================================

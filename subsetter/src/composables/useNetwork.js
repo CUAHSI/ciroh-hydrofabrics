@@ -1,7 +1,6 @@
-import { log, state } from "../config";
-import { NETWORK_GRAPH_URL } from "../config";
+import { log, state, NETWORK_GRAPH_URL } from "../config.js";
 
-export function UseNetwork() {
+export function useNetwork() {
     async function loadNetworkGraph() {
       log('Loading network graph...', 'info');
       const t0 = performance.now();

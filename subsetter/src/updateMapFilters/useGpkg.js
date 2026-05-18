@@ -1,4 +1,4 @@
-import { log } from "../config";
+import { log } from "../config.js";
 function _ensureBytes(v) {
     if (v instanceof Uint8Array) return v;
     if (v instanceof ArrayBuffer) return new Uint8Array(v);

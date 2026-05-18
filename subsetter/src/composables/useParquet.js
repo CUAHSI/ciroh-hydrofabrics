@@ -1,7 +1,7 @@
-import { log, state } from '../config';
+import { log, state } from '../config.js';
 
 export function useParquet() {
-        async function initHyparquet() {
+    async function initHyparquet() {
       if (state.hp) return;
       log('Loading hyparquet...', 'info');
       const t0 = performance.now();

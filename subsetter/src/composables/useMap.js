@@ -1,5 +1,4 @@
-import { S3_MAP } from '../config.js';
-import { log, state } from '../config.js';
+import { S3_MAP, S3_ORIGIN, REF_DIVIDES_PMTILES_URL, REF_FLOWPATHS_PMTILES_URL, log, state } from '../config.js';
 import { ensurePmtilesProtocol } from '../auth.js';
 
 export function useMap() {
@@ -79,7 +78,7 @@ export function useMap() {
 
     function updateMapFilters() {
         const maps = [state.map];
-        if (splitActive && state.mapRight && state.mapRight.isStyleLoaded()) maps.push(state.mapRight);
+        if (state.splitActive && state.mapRight && state.mapRight.isStyleLoaded()) maps.push(state.mapRight);
 
         for (const m of maps) {
         if (!m || !m.isStyleLoaded()) continue;
@@ -107,7 +106,7 @@ export function useMap() {
         const lightStyle = `${S3_MAP}/styles/light-style.json`;
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        mapRight = new maplibregl.Map({
+        state.mapRight = new maplibregl.Map({
         container: 'map-right',
         style: prefersDark ? darkStyle : lightStyle,
         center: state.map.getCenter(),
@@ -164,22 +163,22 @@ export function useMap() {
 
     // Sync camera between maps
     function onMove(source, target) {
-        if (syncing) return;
-        syncing = true;
+        if (state.syncing) return;
+        state.syncing = true;
         target.jumpTo({
             center: source.getCenter(),
             zoom: source.getZoom(),
             bearing: source.getBearing(),
             pitch: source.getPitch(),
         });
-        syncing = false;
+        state.syncing = false;
         }
-        state.map.on('move', () => { if (splitActive && state.mapRight) onMove(state.map, state.mapRight); });
-        state.mapRight.on('move', () => { if (splitActive) onMove(state.mapRight, state.map); });
+        state.map.on('move', () => { if (state.splitActive && state.mapRight) onMove(state.map, state.mapRight); });
+        state.mapRight.on('move', () => { if (state.splitActive) onMove(state.mapRight, state.map); });
     }
 
     function toggleSplitView(active) {
-        splitActive = active;
+        state.splitActive = active;
         document.body.classList.toggle('split-view', active);
 
         if (active) {
@@ -221,6 +220,6 @@ export function useMap() {
         setTimeout(() => state.map.resize(), 0);
         }
         }
-        return { initMap, updateMapFilters };
+        return { initMap, updateMapFilters, toggleSplitView };
 }
 

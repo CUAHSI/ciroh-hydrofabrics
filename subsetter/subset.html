@@ -62,11 +62,18 @@
   </body>
 
   <script type="module">
-    import { initMap, updateMapFilters, toggleSplitView } from './map.js';
-    import { loadNetworkGraph, getUpstreamIds } from './networkGraph.js';
-    import { initHyparquet, buildGeoPackage } from './hyparquet.js';
-    import { subsetAndDownload } from './useSubset.js';
-    import { state, log } from './state.js';
+    import { useMap } from './src/composables/useMap.js';
+    import { useNetwork } from './src/composables/useNetwork.js';
+    import { useParquet } from './src/composables/useParquet.js';
+    import { useSubset } from './src/updateMapFilters/useSubset.js';
+    import { state, log } from './src/config.js';
+
+    const { initHyparquet } = useParquet();
+    const { loadNetworkGraph, getUpstreamIds } = useNetwork();
+    const { subsetAndDownload } = useSubset();
+    const { initMap, updateMapFilters, toggleSplitView } = useMap();
+
+
 
     // ============================================================
     // SELECTION
@@ -93,7 +100,6 @@
       updateMapFilters();
     }
 
- 
     // ============================================================
     // EVENT HANDLERS
     // ============================================================

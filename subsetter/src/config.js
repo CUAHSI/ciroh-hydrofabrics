@@ -1,14 +1,14 @@
-const S3_ORIGIN = `${window.location.protocol}//s3.${window.location.hostname}`;
-const RESOURCE_ID = (() => {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const idx = parts.indexOf('hydrofabric-subsetter');
-  return (idx >= 0 && parts[idx + 1]) ? parts[idx + 1] : '';
-})();
+export const S3_ORIGIN = "https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/";
+export const RESOURCE_ID = "https://s3.hydroshare.org/sblack/4219997533bf46a1893e9ba0232403eb/data/contents/" //(() => {
+//   const parts = window.location.pathname.split('/').filter(Boolean);
+//   const idx = parts.indexOf('hydrofabric-subsetter');
+//   return (idx >= 0 && parts[idx + 1]) ? parts[idx + 1] : '';
+// })();
 export const S3_PARQUET = `${S3_ORIGIN}/${RESOURCE_ID}/data/contents/parquet`;
 export const S3_MAP = `${S3_ORIGIN}/${RESOURCE_ID}/data/contents/map`;
 export const NETWORK_GRAPH_URL = `${S3_PARQUET}/network_graph.json`;
-const REF_FLOWPATHS_PMTILES_URL = `${S3_MAP}/only_geometry/reference/flowpaths.pmtiles`;
-const REF_DIVIDES_PMTILES_URL = `${S3_MAP}/only_geometry/reference/divides.pmtiles`;
+export const REF_FLOWPATHS_PMTILES_URL = `${S3_MAP}/only_geometry/reference/flowpaths.pmtiles`;
+export const REF_DIVIDES_PMTILES_URL = `${S3_MAP}/only_geometry/reference/divides.pmtiles`;
 export let pmtilesProtocolRegistered = false;
 
 export const PARQUET_URLS = {
