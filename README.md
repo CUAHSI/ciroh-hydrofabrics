@@ -110,14 +110,6 @@ cat pipelines/demo/devcon/params.yaml
 
 The devcon pipeline stages are defined in [pipelines/demo/devcon/dvc.yaml](pipelines/demo/devcon/dvc.yaml).
 
-Compared with the older demo flow, the devcon-specific additions are:
-
-- `reference_corrections`
-- `build_fac_vrt`
-- `build_fdr_vrt`
-- `vaa`
-- `reconcile`
-
 Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
 
 ### 1. reference_corrections
@@ -160,7 +152,7 @@ Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg.
 
 ## Devcon Run Outputs
 
-For the default params (`output_folder: demo/devcon`), a successful run creates outputs under [ngen-workflow/output/demo/devcon](ngen-workflow/output/demo/devcon).
+For the default params (`output_folder: demo/devcon`), a successful run creates outputs under `ngen-workflow/output/demo/devcon`.
 
 Key outputs:
 
