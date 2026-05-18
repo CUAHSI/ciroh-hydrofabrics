@@ -40,6 +40,7 @@ For DVC to access the input files on HydroShare, configure your AWS credentials 
     pip install awscli
     ```
 2. Get an access token and key from HydroShare (POST to https://www.hydroshare.org/hsapi/user/service/accounts/s3/ with basic authentication, use the [Swagger page](https://www.hydroshare.org/hsapi/) to do this easily)
+![Create S3 service account with HydroShare](images/openapi-hydroshare.png)
 3. Run the following command and enter your credentials:
     ```sh
     aws configure --profile hydroshare
