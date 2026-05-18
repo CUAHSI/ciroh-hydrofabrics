@@ -33,6 +33,8 @@ The pipeline relies on several key input datasets, organized in the `ngen-workfl
 
 Each subdirectory contains files for multiple regions or VPUs, typically named by region code (e.g., `01a_fac.tif`, `vpuid_01.parquet`). These datasets are tracked with DVC and may require pulling from remote storage before running the pipeline.
 
+### HydroShare S3 credentials
+
 For DVC to access the input files on HydroShare, configure your AWS credentials with a profile named `hydroshare`:
 
 1. Install the AWS CLI if not already installed.
