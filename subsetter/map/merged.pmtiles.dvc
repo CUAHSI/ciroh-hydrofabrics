@@ -1,0 +1,10 @@
+md5: 5f2d6b694f0e3339974a9dad0574d072
+frozen: true
+deps:
+- etag: 648a5905e53b69eb5ac50a99664fd5cc-6
+  size: 549019648
+  hash: md5
+  path: remote://subsetter/map/merged.pmtiles
+outs:
+- hash: md5
+  path: merged.pmtiles

@@ -1,0 +1,10 @@
+md5: d23a7b29e6d8a970a137b02567414d63
+frozen: true
+deps:
+- etag: dacc49dfaf1e30a2c48585a01f468d23-39
+  size: 640150833
+  hash: md5
+  path: remote://subsetter/parquet/divides.parquet
+outs:
+- hash: md5
+  path: divides.parquet

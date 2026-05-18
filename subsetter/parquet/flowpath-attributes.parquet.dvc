@@ -1,0 +1,10 @@
+md5: 5fefc8900780673271b0de1064c9151f
+frozen: true
+deps:
+- etag: 1a9af02c9d3e6dec553fd30b4e2358e1
+  size: 66301502
+  hash: md5
+  path: remote://subsetter/parquet/flowpath-attributes.parquet
+outs:
+- hash: md5
+  path: flowpath-attributes.parquet
