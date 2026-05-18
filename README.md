@@ -64,20 +64,27 @@ You can reproduce the demo/devcon pipeline with:
 dvc repro pipelines/demo/devcon/dvc.yaml
 ```
 
-This will execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary. If any required data is missing, DVC will attempt to pull it automatically from the remote during execution.
+This will execute all stages in [pipelines/demo/devcon/dvc.yaml](pipelines/demo/devcon/dvc.yaml) in dependency order, rebuilding outputs as needed. If required inputs are missing, DVC will try to pull them from the configured remote.
+
+To rerun only one stage without recursively reproducing upstream stages:
+
+```sh
+dvc repro -s pipelines/demo/devcon/dvc.yaml:<stage_name>
+```
+
+Example:
+
+```sh
+dvc repro -s pipelines/demo/devcon/dvc.yaml:reconcile
+```
 
 ### Pipeline Parameters
 
-Parameters are defined in `params.yaml` and referenced in the pipeline stages. The following parameters are available:
+Parameters for the devcon pipeline are defined in [pipelines/demo/devcon/params.yaml](pipelines/demo/devcon/params.yaml):
 
-#### Global
-- `vpuids`: List of Vector Processing Unit entries used by the `foreach` stages
-
-- **id**: A VPU identifier such as `01`, `03N`, or `10U`.
-- **prefix**: The raster file prefix paired with that VPU entry (for example, `03` for `03N` and `10` for `10U`).
-
-#### prepare
-Uses vpuids to read input files and write an output file, no other parameters necessary.
+- `ngen_workflow_dir_relative_input_geopackage`: Input reference hydrofabric geopackage path relative to [ngen-workflow](ngen-workflow).
+- `vpuid`: VPU code used to select FAC/FDR/DEM inputs.
+- `output_folder`: Output directory root under [ngen-workflow/output](ngen-workflow/output).
 
 #### refactor
 - `split_flines_meters`: Split flowlines at this length (meters)
@@ -90,35 +97,80 @@ Uses vpuids to read input files and write an output file, no other parameters ne
 - `min_length_km`: Minimum flowpath length (km)
 - `min_area_sqkm`: Minimum catchment area (sq km)
 
-#### minimal_attributes
-- `output_geopackage_name`: File name for the enriched hydrofabric written to `ngen-workflow/data/ngen/{vpuid}/`
-
-You can modify these parameters in `params.yaml` to customize pipeline behavior. To see current parameters:
+You can modify these values in [pipelines/demo/devcon/params.yaml](pipelines/demo/devcon/params.yaml). To print current values:
 
 ```sh
-cat pipelines/demo/params.yaml
+cat pipelines/demo/devcon/params.yaml
 ```
 
 ## DVC Pipeline Stages
 
-The pipeline is composed of the following stages, as defined in `dvc.yaml`:
+The devcon pipeline stages are defined in [pipelines/demo/devcon/dvc.yaml](pipelines/demo/devcon/dvc.yaml).
+
+Compared with the older demo flow, the devcon-specific additions are:
+
+- `reference_corrections`
+- `build_fac_vrt`
+- `build_fdr_vrt`
+- `vaa`
+- `reconcile`
 
 Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
 
-### 1. prepare
-Prepares the reference hydrofabric for a given VPU by combining divides, flowpaths, hydrolocations, network, and POI data into a single GeoPackage. Output: `ngen-workflow/data/prepared/{vpuid}/reference_hydrofabric.gpkg`.
+### 1. reference_corrections
+Applies topology corrections to the input hydrofabric.
+Output: [ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg](ngen-workflow/output).
 
-### 2. refactor
-Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direction (FDR) rasters, splitting and simplifying flowlines as specified by parameters. Output: `ngen-workflow/data/refactored/{vpuid}/refactored_reference_hydrofabric.gpkg`.
+### 2. build_fac_vrt
+Builds a FAC VRT mosaic for the selected VPU.
+Output: [ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt](ngen-workflow/output).
 
-### 3. aggregate
-Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
+### 3. build_fdr_vrt
+Builds an FDR VRT mosaic for the selected VPU.
+Output: [ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt](ngen-workflow/output).
 
-### 4. hfngen
-Builds an ngen-ready hydrofabric by combining the aggregate distribution output with the refactored hydrofabric. Output: `ngen-workflow/data/ngen/{vpuid}/ngen_hydrofabric.gpkg`.
+### 4. refactor
+Refactors hydrofabric flowlines with FAC/FDR rasters and refactor parameters.
+Output: [ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg](ngen-workflow/output).
 
-### 5. minimal_attributes
-Adds the minimal attribute set required by downstream ngen workflows using gridded and tabular superconus inputs. Output: `ngen-workflow/data/ngen/{vpuid}/{minimal_attributes.output_geopackage_name}`.
+### 5. aggregate
+Aggregates refactored catchments using the aggregate parameter thresholds.
+Outputs:
+- [ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg](ngen-workflow/output)
+- [ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg](ngen-workflow/output)
+
+### 6. hfngen
+Builds the ngen hydrofabric from aggregate distribution and refactored hydrofabric.
+Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg](ngen-workflow/output).
+
+### 7. minimal_attributes
+Adds required minimal attributes from gridded and tabular sources.
+Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg](ngen-workflow/output).
+
+### 8. vaa
+Computes and appends value-added attributes (terrain, soil, and related variables).
+Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg](ngen-workflow/output).
+
+### 9. reconcile
+Reconciles hydrofabric attributes and writes the final devcon hydrofabric.
+Output: [ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg](ngen-workflow/output).
+
+## Devcon Run Outputs
+
+For the default params (`output_folder: demo/devcon`), a successful run creates outputs under [ngen-workflow/output/demo/devcon](ngen-workflow/output/demo/devcon).
+
+Key outputs:
+
+- [ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg](ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg)
+- [ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt](ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt)
+- [ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt](ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt)
+- [ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg](ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg)
+- [ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg](ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg)
+- [ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg](ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg)
+- [ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg)
+- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg)
+- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg)
+- [ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg](ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg)
 
 ## Adding Your Own DVC Remote
 
