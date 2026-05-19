@@ -1,0 +1,12 @@
+md5: fa36d39121217f088fef7217b9736e2a
+frozen: true
+deps:
+- etag: a1668790140bfc29ba693c104f4dbf90-1
+  size: 129608
+  hash: md5
+  path: remote://subsetter/map/styles/dark-style.json
+outs:
+- md5: 448641e2484bb5c0e168e3b1b8bdcb64
+  size: 129608
+  hash: md5
+  path: dark-style.json

@@ -33,6 +33,8 @@ The pipeline relies on several key input datasets, organized in the `ngen-workfl
 
 Each subdirectory contains files for multiple regions or VPUs, typically named by region code (e.g., `01a_fac.tif`, `vpuid_01.parquet`). These datasets are tracked with DVC and may require pulling from remote storage before running the pipeline.
 
+### HydroShare S3 credentials
+
 For DVC to access the input files on HydroShare, configure your AWS credentials with a profile named `hydroshare`:
 
 1. Install the AWS CLI if not already installed.
@@ -40,6 +42,7 @@ For DVC to access the input files on HydroShare, configure your AWS credentials 
     pip install awscli
     ```
 2. Get an access token and key from HydroShare (POST to https://www.hydroshare.org/hsapi/user/service/accounts/s3/ with basic authentication, use the [Swagger page](https://www.hydroshare.org/hsapi/) to do this easily)
+![Create S3 service account with HydroShare](images/openapi-hydroshare.png)
 3. Run the following command and enter your credentials:
     ```sh
     aws configure --profile hydroshare
@@ -64,20 +67,27 @@ You can reproduce the demo/devcon pipeline with:
 dvc repro pipelines/demo/devcon/dvc.yaml
 ```
 
-This will execute all stages defined in `dvc.yaml` in the correct order, rebuilding outputs as necessary. If any required data is missing, DVC will attempt to pull it automatically from the remote during execution.
+This will execute all stages in [pipelines/demo/devcon/dvc.yaml](pipelines/demo/devcon/dvc.yaml) in dependency order, rebuilding outputs as needed. If required inputs are missing, DVC will try to pull them from the configured remote.
+
+To rerun only one stage without recursively reproducing upstream stages:
+
+```sh
+dvc repro -s pipelines/demo/devcon/dvc.yaml:<stage_name>
+```
+
+Example:
+
+```sh
+dvc repro -s pipelines/demo/devcon/dvc.yaml:reconcile
+```
 
 ### Pipeline Parameters
 
-Parameters are defined in `params.yaml` and referenced in the pipeline stages. The following parameters are available:
+Parameters for the devcon pipeline are defined in [pipelines/demo/devcon/params.yaml](pipelines/demo/devcon/params.yaml):
 
-#### Global
-- `vpuids`: List of Vector Processing Unit entries used by the `foreach` stages
-
-- **id**: A VPU identifier such as `01`, `03N`, or `10U`.
-- **prefix**: The raster file prefix paired with that VPU entry (for example, `03` for `03N` and `10` for `10U`).
-
-#### prepare
-Uses vpuids to read input files and write an output file, no other parameters necessary.
+- `ngen_workflow_dir_relative_input_geopackage`: Input reference hydrofabric geopackage path relative to [ngen-workflow](ngen-workflow).
+- `vpuid`: VPU code used to select FAC/FDR/DEM inputs.
+- `output_folder`: Output directory root under [ngen-workflow/output](ngen-workflow/output).
 
 #### refactor
 - `split_flines_meters`: Split flowlines at this length (meters)
@@ -90,39 +100,141 @@ Uses vpuids to read input files and write an output file, no other parameters ne
 - `min_length_km`: Minimum flowpath length (km)
 - `min_area_sqkm`: Minimum catchment area (sq km)
 
-#### minimal_attributes
-- `output_geopackage_name`: File name for the enriched hydrofabric written to `ngen-workflow/data/ngen/{vpuid}/`
-
-You can modify these parameters in `params.yaml` to customize pipeline behavior. To see current parameters:
+You can modify these values in [pipelines/demo/devcon/params.yaml](pipelines/demo/devcon/params.yaml). To print current values:
 
 ```sh
-cat pipelines/demo/params.yaml
+cat pipelines/demo/devcon/params.yaml
 ```
 
 ## DVC Pipeline Stages
 
-The pipeline is composed of the following stages, as defined in `dvc.yaml`:
+The devcon pipeline stages are defined in [pipelines/demo/devcon/dvc.yaml](pipelines/demo/devcon/dvc.yaml).
 
 Each stage is run in a containerized environment using Docker Compose, and all dependencies and outputs are tracked by DVC for reproducibility.
 
-### 1. prepare
-Prepares the reference hydrofabric for a given VPU by combining divides, flowpaths, hydrolocations, network, and POI data into a single GeoPackage. Output: `ngen-workflow/data/prepared/{vpuid}/reference_hydrofabric.gpkg`.
+### 1. reference_corrections
+Applies topology corrections to the input hydrofabric.
+Output: ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg.
 
-### 2. refactor
-Refactors the prepared hydrofabric using flow accumulation (FAC) and flow direction (FDR) rasters, splitting and simplifying flowlines as specified by parameters. Output: `ngen-workflow/data/refactored/{vpuid}/refactored_reference_hydrofabric.gpkg`.
+### 2. build_fac_vrt
+Builds a FAC VRT mosaic for the selected VPU.
+Output: ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt.
 
-### 3. aggregate
-Aggregates the refactored hydrofabric into larger catchments based on ideal size and minimum thresholds. Outputs: `ngen-workflow/data/aggregated/{vpuid}/aggregate_outlets.gpkg` and `ngen-workflow/data/aggregated/{vpuid}/aggregate_distribution.gpkg`.
+### 3. build_fdr_vrt
+Builds an FDR VRT mosaic for the selected VPU.
+Output: ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt.
 
-### 4. hfngen
-Builds an ngen-ready hydrofabric by combining the aggregate distribution output with the refactored hydrofabric. Output: `ngen-workflow/data/ngen/{vpuid}/ngen_hydrofabric.gpkg`.
+### 4. refactor
+Refactors hydrofabric flowlines with FAC/FDR rasters and refactor parameters.
+Output: ngen-workflow/output/${output_folder}/refactored_reference_hydrofabric.gpkg.
 
-### 5. minimal_attributes
-Adds the minimal attribute set required by downstream ngen workflows using gridded and tabular superconus inputs. Output: `ngen-workflow/data/ngen/{vpuid}/{minimal_attributes.output_geopackage_name}`.
+### 5. aggregate
+Aggregates refactored catchments using the aggregate parameter thresholds.
+Outputs:
+- ngen-workflow/output/${output_folder}/aggregate_outlets.gpkg
+- ngen-workflow/output/${output_folder}/aggregate_distribution.gpkg
+
+### 6. hfngen
+Builds the ngen hydrofabric from aggregate distribution and refactored hydrofabric.
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric.gpkg.
+
+### 7. minimal_attributes
+Adds required minimal attributes from gridded and tabular sources.
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg.
+
+### 8. vaa
+Computes and appends value-added attributes (terrain, soil, and related variables).
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg.
+
+### 9. reconcile
+Reconciles hydrofabric attributes and writes the final devcon hydrofabric.
+Output: ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg.
+
+## Devcon Run Outputs
+
+For the default params (`output_folder: demo/devcon`), a successful run creates outputs under `ngen-workflow/output/demo/devcon`.
+
+Key outputs:
+
+- ngen-workflow/output/demo/devcon/corrections/reference_hydrofabric_fixed.gpkg
+- ngen-workflow/output/demo/devcon/NHDSnapshot/FAC_vrt/fac.vrt
+- ngen-workflow/output/demo/devcon/NHDSnapshot/FDR_vrt/fdr.vrt
+- ngen-workflow/output/demo/devcon/refactored_reference_hydrofabric.gpkg
+- ngen-workflow/output/demo/devcon/aggregate_outlets.gpkg
+- ngen-workflow/output/demo/devcon/aggregate_distribution.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_with_atts.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_vaa.gpkg
+- ngen-workflow/output/demo/devcon/ngen_hydrofabric_reconciled.gpkg
+
+## DVC Metadata After A Pipeline Run
+
+After running a pipeline (for example with `dvc repro pipelines/demo/devcon/dvc.yaml`), DVC tracks files by checksums in two places:
+
+1. `.dvc` files for file-tracked artifacts.
+2. The pipeline lock file generated by DVC for stage-tracked artifacts.
+
+### `.dvc` Files
+
+In this repository, a typical `.dvc` file looks like [ngen-workflow/data/superconus/pois.parquet.dvc](ngen-workflow/data/superconus/pois.parquet.dvc):
+
+```yaml
+md5: 8b551ff420951325001313aa3f83a26e
+deps:
+- etag: 2578ead006906994bf60682136bc5c00-1
+    size: 310951
+    hash: md5
+    path: remote://superconus/pois.parquet
+outs:
+- hash: md5
+    path: pois.parquet
+```
+
+What to look for:
+
+- Top-level `md5`: checksum of the `.dvc` metadata definition itself.
+- `deps` checksums (`etag` or hash): identity of the source object pulled from remote storage.
+- `outs` hash type (`hash: md5`): checksum algorithm DVC uses for the output object in cache/remote.
+
+### Lock File Checksums (`dvc.lock`)
+
+After a successful pipeline run, DVC writes/updates a lock file in the pipeline directory. That file records resolved dependency and output checksums for each stage that ran.
+
+Typical fields to inspect in the lock file:
+
+- Stage-level signature (often `md5`) for the stage definition.
+- `deps`: resolved hashes/sizes for stage inputs.
+- `outs`: resolved hashes/sizes for stage outputs.
+
+Practical checks after a run:
+
+```sh
+dvc status
+dvc diff
+```
+
+- `dvc status` verifies whether workspace files still match recorded checksums.
+- `dvc diff` shows data or metadata changes between revisions.
+
+If you need to inspect tracked metadata directly:
+
+```sh
+find . -name "*.dvc"
+find . -name "dvc.lock"
+```
 
 ## Adding Your Own DVC Remote
 
 To use your own remote storage (such as S3, Azure, GCP, or a local directory) for DVC data, you can add and configure a DVC remote as follows:
+
+Using a shared DVC remote is important for collaboration: git commits only store lightweight metadata (`.dvc` and `dvc.lock`), while the actual large artifacts live in remote object storage. With a remote configured, collaborators can pull exactly the data version referenced by a commit, reproduce results consistently, and avoid copying large files manually.
+
+Typical collaborator update flow:
+
+```sh
+git pull
+dvc pull
+```
 
 1. **Add a new remote:**
     ```sh
@@ -146,6 +258,32 @@ To use your own remote storage (such as S3, Azure, GCP, or a local directory) fo
     dvc push
     dvc pull
     ```
+
+5. **After a pipeline run, commit checksum metadata to git and push data to the DVC remote:**
+
+    Run your pipeline first:
+    ```sh
+    dvc repro pipelines/demo/devcon/dvc.yaml
+    ```
+
+    Review changed DVC metadata files (`.dvc` and `dvc.lock`):
+    ```sh
+    git status --short
+    ```
+
+    Stage and commit the updated checksums and pipeline metadata:
+    ```sh
+    git add <changed .dvc files> <changed dvc.lock files> <changed dvc.yaml/params files>
+    git commit -m "Update DVC checksums after pipeline run"
+    ```
+
+    Upload data artifacts to the configured DVC remote, then push git metadata:
+    ```sh
+    dvc push
+    git push
+    ```
+
+    Recommended order is `dvc push` before `git push` so collaborators can pull data referenced by the new commit immediately.
 
 You can add multiple remotes and switch the default with:
 ```sh

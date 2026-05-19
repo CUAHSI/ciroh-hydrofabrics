@@ -1,0 +1,10 @@
+md5: 56845ae04ab701b598ac8465d69a84bc
+frozen: true
+deps:
+- etag: 12e939501cb6e1b5a750907c6699e70f-1
+  size: 73767970
+  hash: md5
+  path: remote://subsetter/parquet/network_graph.json
+outs:
+- hash: md5
+  path: network_graph.json

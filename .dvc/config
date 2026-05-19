@@ -10,3 +10,6 @@
 ['remote "bear_river"']
     url = s3://igarousi/00694408e2ee4d00b3941de92889b624/data/contents/
     profile = hydroshare
+['remote "subsetter"']
+    url = s3://sblack/4219997533bf46a1893e9ba0232403eb/data/contents/
+    profile = hydroshare

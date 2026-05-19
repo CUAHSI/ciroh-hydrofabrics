@@ -1,0 +1,10 @@
+md5: 2e95413fdf96e64752310e8043cea04a
+frozen: true
+deps:
+- etag: 92a627dd51972b573a21daa5b5b086f5
+  size: 113860836
+  hash: md5
+  path: remote://subsetter/parquet/network.parquet
+outs:
+- hash: md5
+  path: network.parquet

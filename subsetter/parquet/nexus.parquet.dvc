@@ -1,0 +1,10 @@
+md5: eee56dcbab67f252025ff68b747cac67
+frozen: true
+deps:
+- etag: 73d9305c3840f35e5cd45f981a8b1688
+  size: 11424122
+  hash: md5
+  path: remote://subsetter/parquet/nexus.parquet
+outs:
+- hash: md5
+  path: nexus.parquet

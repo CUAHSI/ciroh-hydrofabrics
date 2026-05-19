@@ -1,0 +1,11 @@
+/divides.parquet
+/divide-attributes.parquet
+/flowpath-attributes-ml.parquet
+/flowpath-attributes.parquet
+/flowpaths.parquet
+/hydrolocations.parquet
+/lakes.parquet
+/network.parquet
+/nexus.parquet
+/pois.parquet
+/network_graph.json

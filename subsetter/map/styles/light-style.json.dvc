@@ -1,0 +1,10 @@
+md5: 1b06403b0ede2b8626a44a32be9429a8
+frozen: true
+deps:
+- etag: 9077592e9af4ba5492524e12a3662346-1
+  size: 129695
+  hash: md5
+  path: remote://subsetter/map/styles/light-style.json
+outs:
+- hash: md5
+  path: light-style.json
