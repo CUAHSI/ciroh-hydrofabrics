@@ -10,3 +10,18 @@ services:
     working_dir: /ngen-workflow
     ulimits:
       stack: 67108864
+  tippecanoe:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM ubuntu:24.04
+        RUN apt-get update \
+         && apt-get install -y --no-install-recommends \
+            ca-certificates git build-essential libsqlite3-dev zlib1g-dev \
+         && git clone --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe \
+         && cd /tmp/tippecanoe && make -j$(nproc) && make install \
+         && rm -rf /tmp/tippecanoe /var/lib/apt/lists/*
+        ENTRYPOINT ["tippecanoe"]
+    volumes:
+      - ./ngen-workflow:/ngen-workflow
+    working_dir: /ngen-workflow
