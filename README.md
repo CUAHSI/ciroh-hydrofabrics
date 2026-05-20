@@ -206,15 +206,13 @@ Typical fields to inspect in the lock file:
 - `deps`: resolved hashes/sizes for stage inputs.
 - `outs`: resolved hashes/sizes for stage outputs.
 
-Practical checks after a run:
+Practical check after a run:
 
 ```sh
 dvc status
-dvc diff
 ```
 
 - `dvc status` verifies whether workspace files still match recorded checksums.
-- `dvc diff` shows data or metadata changes between revisions.
 
 If you need to inspect tracked metadata directly:
 
