@@ -1,9 +1,12 @@
 [core]
-    remote = superconus
+    remote = results
     autostage = false
 ['remote "superconus"']
     url = s3://sblack/7056bc5d6de14c5e9fbece9735124ca1/data/contents/
     profile = hydroshare
 ['remote "subsetter"']
     url = s3://sblack/4219997533bf46a1893e9ba0232403eb/data/contents/
+    profile = hydroshare
+['remote "results"']
+    url = s3://s3.hydroshare.org/sblack/f61756756cf543208dca800213bb4ca3/data/contents/
     profile = hydroshare
