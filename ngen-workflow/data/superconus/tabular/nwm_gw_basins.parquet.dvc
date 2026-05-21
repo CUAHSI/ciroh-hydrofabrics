@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: nwm_gw_basins.parquet
+  md5: 5376b5d2ddbb16610c001f4cf1553c65
+  size: 48798640

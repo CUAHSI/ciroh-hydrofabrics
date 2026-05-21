@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: dem16.vrt
+  md5: ebbd8dec01a86fcd81835913e47611a6
+  size: 1887

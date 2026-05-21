@@ -1,9 +1,11 @@
-md5: 3f69f109b626abfe229afcb245ddf2df
+md5: 54096c780d3164707c739160c821743e
 deps:
-- etag: e6c4cbd1296500efa484c99b6b33a26c
-  size: 658247067
+- etag: a4ce415dddab8d25e1ab2efb3dcc257a-4
+  size: 371586606
   hash: md5
   path: remote://superconus/NHDSnapshot/DEM/16/Ned16b.tif
 outs:
 - hash: md5
   path: Ned16b.tif
+  md5: f41c15c070f609516ff6f21e10682dde
+  size: 371586606
