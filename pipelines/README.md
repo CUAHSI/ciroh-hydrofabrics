@@ -39,8 +39,9 @@ Using HydroShare as a remote:
 - Use the `resource_id` with the swagger api at https://hydroshare.org/hsapi to retrieve the S3 path to the resource.
 ![Get S3 path to a hydroshare resource](../images/openapi-hs-s3-path.png)
 
+*If an aws s3 profile `hydroshare` has not been created. directions are in root ![README](../README.md)*
 ```bash
-dvc remote add -d myremote <s3://s3.hydroshare.org/{bucket}/{prefix}> 
+dvc remote add -d myremote <s3://{bucket}/{prefix}> 
 dvc remote modify myremote profile hydroshare
 ```
 
