@@ -26,7 +26,6 @@ Example (replace with project-specific commands if different):
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
 pip install dvc-s3
 ```
 
