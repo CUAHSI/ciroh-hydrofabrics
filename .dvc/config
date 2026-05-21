@@ -8,5 +8,5 @@
     url = s3://sblack/4219997533bf46a1893e9ba0232403eb/data/contents/
     profile = hydroshare
 ['remote "results"']
-    url = s3://s3.hydroshare.org/sblack/f61756756cf543208dca800213bb4ca3/data/contents/
+    url = s3://sblack/f61756756cf543208dca800213bb4ca3/data/contents/
     profile = hydroshare
