@@ -8,3 +8,5 @@ deps:
 outs:
 - hash: md5
   path: subset_reference_v2_3_4608830_bearriver.gpkg
+  md5: 7979209307859b25fd628f76ae8f9ac5
+  size: 12472320

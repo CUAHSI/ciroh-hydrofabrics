@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: smcmax_soil_layers_stag=4.tif
+  md5: 0bfd9a08fb10101a8d821034db73ecfb
+  size: 2547819
