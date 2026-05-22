@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: dksat_soil_layers_stag=4.tif
+  md5: 8625a94e4b39038abd41c9e0c103fb1d
+  size: 2573484

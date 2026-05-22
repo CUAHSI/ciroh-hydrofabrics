@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: bexp_soil_layers_stag=4.tif
+  md5: dacd95e687f6a7e2d13ad589698853fa
+  size: 2576608
