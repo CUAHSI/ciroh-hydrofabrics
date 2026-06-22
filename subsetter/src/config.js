@@ -9,9 +9,7 @@ const _viewerIdx  = parts.indexOf('hydrofabric-subsetter');
 const _matchIdx   = _subsetIdx >= 0 ? _subsetIdx : _viewerIdx;
 
 export const VIEWER_MODE = true;
-export const RESOURCE_ID = (_matchIdx >= 0 && parts[_matchIdx + 1])
-  ? parts[_matchIdx + 1]
-  : '';
+export const RESOURCE_ID = '4219997533bf46a1893e9ba0232403eb';
 
 const S3_BUCKET_NAME = 'ciroh-data';
 export const S3_PARQUET = `${S3_ORIGIN}/${S3_BUCKET_NAME}/${RESOURCE_ID}/data/contents/parquet`;

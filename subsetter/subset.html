@@ -9,7 +9,7 @@
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet"/>
   <script src="https://unpkg.com/pmtiles@4.0.1/dist/pmtiles.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.js"></script>
-  <style>@import "{% static 'css/style.css' %}";</style>
+  <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
 
@@ -103,9 +103,9 @@
 </div>
 
 <script type="module">
-  import { useMap } from "{% static 'js/src/composables/useMap.js' %}";
-  import { useViewer, ensureNexusLayer } from "{% static 'js/src/useViewer.js' %}";
-  import { state, log, setProgress } from "{% static 'js/src/config.js' %}";
+  import { useMap } from "./src/composables/useMap.js";
+  import { useViewer, ensureNexusLayer } from "./src/useViewer.js";
+  import { state, log, setProgress } from "./src/config.js";
 
   const { initMap, toggleSplitView, fitToBbox } = useMap();
   const { bootViewer, setLayerVisibility } = useViewer();
