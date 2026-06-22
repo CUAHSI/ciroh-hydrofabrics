@@ -1,4 +1,5 @@
 import { log, state } from '../config.js';
+import { getAuthorizedS3Url } from '../auth.js';
 
 export function useParquet() {
   async function initHyparquet() {
@@ -20,9 +21,9 @@ export function useParquet() {
 
   async function getFileHandle(url) {
     if (!state.fileHandleCache[url]) {
+      const authorizedUrl = await getAuthorizedS3Url(url);
       state.fileHandleCache[url] = await state.hp.asyncBufferFromUrl({
-        url,
-        requestInit: { credentials: 'include' },
+        url: authorizedUrl,
       });
     }
     return state.fileHandleCache[url];

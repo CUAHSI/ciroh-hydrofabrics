@@ -1,6 +1,5 @@
 import { 
-  S3_MAP, S3_ORIGIN, REF_DIVIDES_PMTILES_URL, RES_FLOWPATHS_PMTILES_URL, 
-  COMMUNITY_HF_ORIGIN,
+  S3_MAP, REF_DIVIDES_PMTILES_URL, RES_FLOWPATHS_PMTILES_URL,
   COMMUNITY_HF_DIVIDES, COMMUNITY_HF_FLOWPATHS,
   log, state,
 } from '../config.js';
@@ -19,9 +18,6 @@ export function useMap() {
         style: prefersDark ? useDarkStyle() : useLightStyle(),
         center: [-96, 40],
         zoom: 4,
-        transformRequest: (url) => {
-          if(url.startsWith(S3_ORIGIN)) return { url, credentials: 'include' };
-        },
         });
         state.map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
       }
@@ -38,10 +34,6 @@ export function useMap() {
       zoom: state.map.getZoom(),
       bearing: state.map.getBearing(),
       pitch:   state.map.getPitch(),
-      transformRequest: (url) => {
-        if (url.startsWith(S3_ORIGIN) || url.startsWith(COMMUNITY_HF_ORIGIN))
-          return { url, credentials: 'include' };
-      },
     });
     state.mapRight.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 

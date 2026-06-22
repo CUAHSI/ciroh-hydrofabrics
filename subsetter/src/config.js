@@ -1,4 +1,6 @@
-export const S3_ORIGIN = `http://localhost:9002`;
+export const S3_ORIGIN = `https://s3.hydroshare.org`;
+export const PUBLIC_RESOURCE_ACCESS_KEY = '0BDFD1ZG5ANHRM4HATDE';
+export const PUBLIC_RESOURCE_SECRET_KEY = 'cdLtDB2fjcJSoKYwgSuVUMonYMEckdTVGK57ieSm';
 
 // Detect which tool we're running as based on the URL path segment
 const parts = window.location.pathname.split('/').filter(Boolean);
@@ -11,7 +13,7 @@ export const RESOURCE_ID = (_matchIdx >= 0 && parts[_matchIdx + 1])
   ? parts[_matchIdx + 1]
   : '';
 
-const S3_BUCKET_NAME = 'resource';
+const S3_BUCKET_NAME = 'ciroh-data';
 export const S3_PARQUET = `${S3_ORIGIN}/${S3_BUCKET_NAME}/${RESOURCE_ID}/data/contents/parquet`;
 export const S3_MAP = `${S3_ORIGIN}/${S3_BUCKET_NAME}/${RESOURCE_ID}/data/contents/map`;
 export const NETWORK_GRAPH_URL = `${S3_PARQUET}/network_graph.json`;
