@@ -41,8 +41,9 @@ output_nextgen_geopackage <- file.path(output_basepath, "ngen_hydrofabric_vaa.gp
 message("reading layers from the input nextgen geopackage")
 divides <- read_sf(params$nextgen_geopackage, "divides")
 
-
-
+###################
+# SOIL PARAMETERS #
+###################
 
 nom_vars <- c("bexp", "dksat", "psisat", "smcmax", "smcwlt")
 layers <- 1:4
@@ -54,6 +55,7 @@ dksat_rasters <- rast(files[5:8])
 psisat_rasters <- rast(files[9:12]) 
 smcmax_rasters <- rast(files[13:16]) 
 smcwlt_rasters <- rast(files[17:20]) 
+refkdt_raster <- rast(glue("{params$soil_data}/refkdt.tif"))
 
 # Get Mode Beta parameter
 message("deriving the 'beta' parameter using zonal statistics")
@@ -61,8 +63,6 @@ modes = execute_zonal(bexp_rasters,
                     fun = "mode",
                     divides, ID = "divide_id", 
                     join = FALSE)
-#%>% 
-#        setNames(gsub("fun.", "mode.", names(.)))
 
 # Get Geometric Mean of Saturated soil hydraulic conductivity, and matric potential
 message("deriving saturated soil hydraulic conductivity using zonal statistics")
@@ -79,15 +79,24 @@ m = execute_zonal(c(smcmax_rasters, smcwlt_rasters),
                     fun = "mean",
                     divides, ID = "divide_id", 
                     join = FALSE)
-#%>% 
-#    setNames(gsub("mean.", "", names(.)))
+
+
+# Compute the mean refkdt for each divide_id
+message("deriving the mean refkdt for each divide")
+refkdt = execute_zonal(refkdt_raster,
+                    fun = "mean",
+                    divides, ID = "divide_id", 
+                    join = FALSE)
 
 # Merge all tables into one
 message("merging the derived parameters into a single table")
-d1 <- power_full_join(list(modes, gm, m),  by = "divide_id")
+d1 <- power_full_join(list(modes, gm, m, refkdt),  by = "divide_id")
 message(paste(names(d1), collapse = ", "))
 
-## Groundwater Routing Parameters
+
+##################################
+# GROUNDWATER ROUTING PARAMETERS #
+##################################
 
 
 # what was once refered to as "conus_routelink" appears to be the
@@ -124,6 +133,11 @@ d2 <- open_dataset(params$gw_params) |>
       mean.Expon = mode(floor(Expon))
     )
 message(paste(names(d2), collapse = ", "))
+
+
+################################
+# ELEVATION-DERIVED PARAMETERS #
+################################
 
 # centroid of each divide
 message("computing the centroid of each divide")
@@ -176,6 +190,9 @@ d5 <- execute_zonal(rast('/tmp/aspect.tif'),
 message(paste(names(d5), collapse = ", "))
 
 
+##################################
+# BUILDING FINAL ATTRIBUTE TABLE #
+##################################
 
 # Save the attributes to a sidecar parquet file.
 message("combining all derived attributes into a single table")
