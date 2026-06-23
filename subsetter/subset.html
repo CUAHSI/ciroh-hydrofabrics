@@ -38,6 +38,15 @@
         <span id="status-text">Initializing...</span>
       </div>
 
+      <div id="resource-panel">
+        <label for="resource-id-select">Resource ID</label>
+        <div class="resource-row">
+          <select id="resource-id-select" aria-label="Resource ID selector" onchange="handlers.onResourceSelectChange(this.value)"></select>
+          <button id="resource-id-apply" type="button" onclick="handlers.applyResourceId()">Load</button>
+        </div>
+        <input id="resource-id-custom" type="text" placeholder="Enter resource ID…" autocomplete="off" spellcheck="false" style="display:none" />
+      </div>
+
       <div id="meta-panel">
         <div class="meta-row">
           <span class="meta-label">VPU ID</span>
@@ -105,10 +114,38 @@
 <script type="module">
   import { useMap } from "./src/composables/useMap.js";
   import { useViewer, ensureNexusLayer } from "./src/useViewer.js";
-  import { state, log, setProgress } from "./src/config.js";
+  import { state, log, setProgress, RESOURCE_ID, DEFAULT_RESOURCE_ID } from "./src/config.js";
 
   const { initMap, toggleSplitView, fitToBbox } = useMap();
   const { bootViewer, setLayerVisibility } = useViewer();
+
+  function initResourceSelector() {
+    const select = document.getElementById('resource-id-select');
+    const resourceOptions = [
+      { label: 'Default Resource', value: DEFAULT_RESOURCE_ID },
+      { label: 'Placeholder Resource A', value: 'replace-with-resource-id-a' },
+      { label: 'Placeholder Resource B', value: 'replace-with-resource-id-b' },
+    ];
+
+    resourceOptions.push({ label: 'Custom…', value: '__custom__' });
+
+    for (const optionConfig of resourceOptions) {
+      const option = document.createElement('option');
+      option.value = optionConfig.value;
+      option.textContent = optionConfig.label;
+      select.appendChild(option);
+    }
+
+    const isKnown = resourceOptions.some(opt => opt.value !== '__custom__' && opt.value === RESOURCE_ID);
+    if (isKnown) {
+      select.value = RESOURCE_ID;
+    } else {
+      select.value = '__custom__';
+      const customInput = document.getElementById('resource-id-custom');
+      customInput.value = RESOURCE_ID;
+      customInput.style.display = 'block';
+    }
+  }
 
   function setStatus(text, dotClass = 'loading') {
     document.getElementById('status-text').textContent = text;
@@ -160,9 +197,28 @@
     toggleSplit(checked) {
       toggleSplitView(checked);
     },
+    onResourceSelectChange(value) {
+      const customInput = document.getElementById('resource-id-custom');
+      customInput.style.display = value === '__custom__' ? 'block' : 'none';
+      if (value === '__custom__') customInput.focus();
+    },
+    applyResourceId() {
+      const select = document.getElementById('resource-id-select');
+      const customInput = document.getElementById('resource-id-custom');
+      const resourceId = (select?.value === '__custom__'
+        ? customInput?.value
+        : select?.value
+      || '').trim();
+      if (!resourceId || resourceId === '__custom__') return;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('resource_id', resourceId);
+      window.location.href = url.toString();
+    },
   };
 
   (async () => {
+    initResourceSelector();
     initMap();
     await new Promise(resolve => state.map.on('load', resolve));
     setStatus('Loading data...', 'loading');

@@ -2,14 +2,12 @@ export const S3_ORIGIN = `https://s3.hydroshare.org`;
 export const PUBLIC_RESOURCE_ACCESS_KEY = '0BDFD1ZG5ANHRM4HATDE';
 export const PUBLIC_RESOURCE_SECRET_KEY = 'cdLtDB2fjcJSoKYwgSuVUMonYMEckdTVGK57ieSm';
 
-// Detect which tool we're running as based on the URL path segment
-const parts = window.location.pathname.split('/').filter(Boolean);
-const _subsetIdx  = parts.indexOf('hydrofabric-fdxubsetter');
-const _viewerIdx  = parts.indexOf('hydrofabric-subsetter');
-const _matchIdx   = _subsetIdx >= 0 ? _subsetIdx : _viewerIdx;
+// Read resource id from query params, e.g. ?resource_id=<id>
+const _queryResourceId = (new URLSearchParams(window.location.search).get('resource_id') || '').trim();
+export const DEFAULT_RESOURCE_ID = 'e280863b7c31415f880432764c5b8eb1';
 
 export const VIEWER_MODE = true;
-export const RESOURCE_ID = 'e280863b7c31415f880432764c5b8eb1';
+export const RESOURCE_ID = _queryResourceId || DEFAULT_RESOURCE_ID;
 
 const S3_BUCKET_NAME = 'ciroh-data';
 export const S3_PARQUET = `${S3_ORIGIN}/${S3_BUCKET_NAME}/${RESOURCE_ID}/data/contents/parquet`;
