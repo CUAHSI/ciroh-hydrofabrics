@@ -56,7 +56,7 @@ smcmax_rasters <- rast(files[13:16])
 smcwlt_rasters <- rast(files[17:20]) 
 
 # Get Mode Beta parameter
-message("deriving the 'mode' parameter using zonal statistics")
+message("deriving the 'beta' parameter using zonal statistics")
 modes = execute_zonal(bexp_rasters,
                     fun = "mode",
                     divides, ID = "divide_id", 
@@ -65,7 +65,7 @@ modes = execute_zonal(bexp_rasters,
 #        setNames(gsub("fun.", "mode.", names(.)))
 
 # Get Geometric Mean of Saturated soil hydraulic conductivity, and matric potential
-message("deriving the 'geometric mean' parameter using zonal statistics")
+message("deriving saturated soil hydraulic conductivity using zonal statistics")
 gm = execute_zonal(c(dksat_rasters, psisat_rasters), 
                    fun = geometric_mean,
                    divides, ID = "divide_id", 
@@ -74,7 +74,7 @@ gm <- gm %>%
      rename_with(~paste0("geom_mean.", .), -divide_id)
 
 # Get Mean Saturated value of soil moisture and Wilting point soil moisture
-message("deriving the 'mean' parameter using zonal statistics")
+message("deriving the saturated soil moisture and wilting point soil moisture parameters")
 m = execute_zonal(c(smcmax_rasters, smcwlt_rasters),
                     fun = "mean",
                     divides, ID = "divide_id", 
@@ -85,7 +85,7 @@ m = execute_zonal(c(smcmax_rasters, smcwlt_rasters),
 # Merge all tables into one
 message("merging the derived parameters into a single table")
 d1 <- power_full_join(list(modes, gm, m),  by = "divide_id")
-
+message(paste(names(d1), collapse = ", "))
 
 ## Groundwater Routing Parameters
 
@@ -123,7 +123,7 @@ d2 <- open_dataset(params$gw_params) |>
       mean.Zmax  = round(weighted.mean(Zmax,  w = Area_sqkm, na.rm = TRUE), 9),
       mean.Expon = mode(floor(Expon))
     )
-
+message(paste(names(d2), collapse = ", "))
 
 # centroid of each divide
 message("computing the centroid of each divide")
@@ -132,6 +132,7 @@ d3 <- st_centroid(divides) |>
   data.frame() |>
   rename(centroid_x = X, centroid_y = Y) |>
   mutate(divide_id = divides$divide_id)
+message(paste(names(d3), collapse = ", "))
 
 # Load the input DEM and then compute slope and aspect
 # rasters using the terra package.
@@ -164,6 +165,7 @@ d4 <- execute_zonal(c(dem_raster, rast('/tmp/slope.tif')),
                     join = FALSE) |>
     setNames(c("divide_id", "mean.elevation", "mean.slope"))
 
+message(paste(names(d4), collapse = ", "))
 
 message("computing circular mean aspect for each divide_id")
 d5 <- execute_zonal(rast('/tmp/aspect.tif'),
@@ -171,10 +173,8 @@ d5 <- execute_zonal(rast('/tmp/aspect.tif'),
                      fun = circular_mean,
                      join = FALSE) |>
     setNames(c("divide_id", "circ_mean.aspect"))
+message(paste(names(d5), collapse = ", "))
 
-
-
-## Save the computed attributes
 
 
 # Save the attributes to a sidecar parquet file.
@@ -185,13 +185,19 @@ model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
 message('saving the derived attributes to a parquet file')
 write_parquet(model_attributes, output_parquet)
 
-message("adding the derived attributes to the nextgen geopackage")
 # Copy the input geopackage to a new file, then add the attributes
+message("adding the derived attributes to the nextgen geopackage")
 file.copy(params$nextgen_geopackage, output_nextgen_geopackage)
 
 # add the model_attributes to the divide_attributes layer in the nextgen geopackage. 
+# drop Zmax if it already exists in the geopackage,
+# this may have already been added during the 'calculate minimal attributes'
+# stage of the workflow. We want to replace this value with what we've computed here.
 gdf <- st_read(output_nextgen_geopackage, layer = "divide-attributes")
+gdf <- gdf |> select(-any_of("mean.Zmax"))
+
+# add the model_attributes to the divide_attributes layer in the nextgen
+# geopackage, then save the updated geopackage to disk.
 gdf_joined <- left_join(gdf, model_attributes, by = "divide_id")
 st_write(gdf_joined, output_nextgen_geopackage, layer = "divide-attributes", delete_layer = TRUE)
 
-message('processing complete!')
