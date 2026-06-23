@@ -1,5 +1,4 @@
-md5: cd7dfcc819f9115f539b90015c3ab6d0
-frozen: true
+md5: 41f050c0caf404fd718e72c0cad73de0
 deps:
 - etag: c1154c17b75c45b2be84f8b4c258439e-1
   size: 890721
@@ -8,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: cwpvt.tif
+  md5: cef114371f1c621ce5e494221e281fdf
+  size: 890721
