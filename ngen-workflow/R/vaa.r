@@ -56,6 +56,10 @@ psisat_rasters <- rast(files[9:12])
 smcmax_rasters <- rast(files[13:16]) 
 smcwlt_rasters <- rast(files[17:20]) 
 refkdt_raster <- rast(glue("{params$soil_data}/refkdt.tif"))
+mp_raster <- rast(glue("{params$soil_data}/mp.tif"))
+mfsno_raster <- rast(glue("{params$soil_data}/mfsno.tif"))
+cwpvt_raster <- rast(glue("{params$soil_data}/cwpvt.tif"))
+vcmx25_raster <- rast(glue("{params$soil_data}/vcmx25.tif"))
 
 # Get Mode Beta parameter
 message("deriving the 'beta' parameter using zonal statistics")
@@ -81,16 +85,16 @@ m = execute_zonal(c(smcmax_rasters, smcwlt_rasters),
                     join = FALSE)
 
 
-# Compute the mean refkdt for each divide_id
-message("deriving the mean refkdt for each divide")
-refkdt = execute_zonal(refkdt_raster,
+# Compute the mean refkdt, mp, mfsno, cwpvt, and vcmx25 for each divide_id
+message("deriving mean refkdt, mp, mfsno, cwpvt, and vcmx25 for each divide")
+noah_divide_params = execute_zonal(c(refkdt_raster, mp_raster, mfsno_raster, cwpvt_raster, vcmx25_raster),
                     fun = "mean",
                     divides, ID = "divide_id", 
                     join = FALSE)
 
 # Merge all tables into one
 message("merging the derived parameters into a single table")
-d1 <- power_full_join(list(modes, gm, m, refkdt),  by = "divide_id")
+d1 <- power_full_join(list(modes, gm, m, noah_divide_params),  by = "divide_id")
 message(paste(names(d1), collapse = ", "))
 
 
