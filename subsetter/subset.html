@@ -33,6 +33,11 @@
     </button>
 
     <div id="controls-content">
+      <div id="auth-strip">
+        <span id="auth-status-text">Not signed in</span>
+        <button id="auth-btn" type="button" onclick="handlers.authAction()">Sign in</button>
+      </div>
+
       <div id="status-bar">
         <div id="status-dot" class="loading"></div>
         <span id="status-text">Initializing...</span>
@@ -114,10 +119,19 @@
 <script type="module">
   import { useMap } from "./src/composables/useMap.js";
   import { useViewer, ensureNexusLayer } from "./src/useViewer.js";
-  import { state, log, setProgress, RESOURCE_ID, DEFAULT_RESOURCE_ID } from "./src/config.js";
+  import { state, log, setProgress, RESOURCE_ID, DEFAULT_RESOURCE_ID, initBucketName, setResourceId } from "./src/config.js";
+  import { ensurePmtilesProtocol } from "./src/auth.js";
+  import { handleOidcCallback, beginLogin, logout, isAuthenticated } from "./src/oidc.js";
 
-  const { initMap, toggleSplitView, fitToBbox } = useMap();
+  const { initMap, toggleSplitView, fitToBbox, refreshStyleSources } = useMap();
   const { bootViewer, setLayerVisibility } = useViewer();
+
+  function updateAuthUi() {
+    const authed = isAuthenticated();
+    document.getElementById('auth-status-text').textContent = authed ? 'Signed in' : 'Not signed in';
+    document.getElementById('auth-btn').textContent = authed ? 'Sign out' : 'Sign in';
+    document.getElementById('auth-strip').classList.toggle('authed', authed);
+  }
 
   function initResourceSelector() {
     const select = document.getElementById('resource-id-select');
@@ -170,6 +184,14 @@
     }
   }
   window.handlers = {
+    authAction() {
+      if (isAuthenticated()) {
+        logout();
+        updateAuthUi();
+      } else {
+        beginLogin();
+      }
+    },
     toggleControls() {
       const wrapper = document.getElementById('controls-collapsible');
       const button = document.getElementById('controls-toggle');
@@ -213,27 +235,81 @@
 
       const url = new URL(window.location.href);
       url.searchParams.set('resource_id', resourceId);
-      window.location.href = url.toString();
+      window.history.replaceState(null, '', url.toString());
+
+      runBoot(resourceId);
     },
   };
 
+  let bootInFlight = null;
+  let pendingResourceId = null;
+
+  async function runBoot(resourceId) {
+    if (bootInFlight) {
+      pendingResourceId = resourceId;
+      return bootInFlight;
+    }
+
+    const applyBtn = document.getElementById('resource-id-apply');
+    applyBtn.disabled = true;
+
+    bootInFlight = (async () => {
+      setResourceId(resourceId);
+      setStatus('Loading data...', 'loading');
+      document.getElementById('meta-panel').classList.remove('visible');
+      try {
+        if (resourceId !== DEFAULT_RESOURCE_ID && !isAuthenticated()) {
+          throw new Error('Sign in required to load a custom resource.');
+        }
+        await initBucketName(resourceId);
+        ensurePmtilesProtocol();
+        refreshStyleSources();
+        const meta = await bootViewer();
+        showMeta(meta);
+        setProgress(100);
+        if (meta.bbox) fitToBbox(meta.bbox);
+        setStatus('Ready', 'ready');
+        log('Viewer ready.', 'success');
+      } catch(err) {
+        log(`Fatal: ${err.message}`, 'error');
+        setStatus('Error loading data', 'error');
+        console.error(err);
+      }
+    })();
+
+    try {
+      await bootInFlight;
+    } finally {
+      bootInFlight = null;
+      applyBtn.disabled = false;
+      if (pendingResourceId && pendingResourceId !== resourceId) {
+        const nextResourceId = pendingResourceId;
+        pendingResourceId = null;
+        runBoot(nextResourceId);
+      } else {
+        pendingResourceId = null;
+      }
+    }
+  }
+
   (async () => {
+    try {
+      await handleOidcCallback();
+    } catch (err) {
+      console.error('OIDC callback error:', err);
+    }
+
+    if (!isAuthenticated()) {
+      beginLogin();
+      return;
+    }
+
+    await initBucketName(RESOURCE_ID);
+    updateAuthUi();
     initResourceSelector();
     initMap();
     await new Promise(resolve => state.map.on('load', resolve));
-    setStatus('Loading data...', 'loading');
-    try {
-      const meta = await bootViewer();
-      showMeta(meta);
-      setProgress(100);
-      if (meta.bbox) fitToBbox(meta.bbox);
-      setStatus('Ready', 'ready');
-      log('Viewer ready.', 'success');
-    } catch(err) {
-      log(`Fatal: ${err.message}`, 'error');
-      setStatus('Error loading data', 'error');
-      console.error(err);
-    }
+    await runBoot(RESOURCE_ID);
   })();
 </script>
 </body>
