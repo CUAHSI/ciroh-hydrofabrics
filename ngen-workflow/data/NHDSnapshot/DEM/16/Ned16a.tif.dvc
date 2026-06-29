@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: Ned16a.tif
+  md5: f0975ea436f87d4eae36f26cb8840db9
+  size: 543678660

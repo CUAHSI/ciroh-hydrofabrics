@@ -1,10 +1,11 @@
 import { log, state, NETWORK_GRAPH_URL } from "../config.js";
+import { fetchWithS3Auth } from "../auth.js";
 
 export function useNetwork() {
     async function loadNetworkGraph() {
       log('Loading network graph...', 'info');
       const t0 = performance.now();
-      const resp = await fetch(NETWORK_GRAPH_URL, { credentials: 'include' });
+      const resp = await fetchWithS3Auth(NETWORK_GRAPH_URL);
       if (!resp.ok) throw new Error(`Failed: ${resp.status}`);
       state.networkGraph = await resp.json();
       log(`  ${state.networkGraph.meta.total_edges} edges in ${((performance.now()-t0)/1000).toFixed(1)}s`, 'success');

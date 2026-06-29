@@ -7,3 +7,5 @@ deps:
 outs:
 - hash: md5
   path: 16a_fdr.tif
+  md5: 8862d70ee7bca2ccac9ecd16caa8bd40
+  size: 71889075

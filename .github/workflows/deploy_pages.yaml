@@ -3,9 +3,9 @@ name: Deploy Subsetter to GitHub Pages
 on:
   push:
     branches:
-      - CAM-1227-subsetter-hydroshare-dataset
+      - main
     paths:
-      - 'subsetter/subset.html'
+      - 'subsetter/'
   workflow_dispatch:
 
 permissions:
