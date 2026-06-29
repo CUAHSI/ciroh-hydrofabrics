@@ -19,14 +19,27 @@ export function useParquet() {
     }
   }
 
+  // Deduplicate concurrent requests for the same URL
+  const _inflight = new Map();
+
   async function getFileHandle(url) {
-    if (!state.fileHandleCache[url]) {
-      const authorizedUrl = await getAuthorizedS3Url(url);
-      state.fileHandleCache[url] = await state.hp.asyncBufferFromUrl({
-        url: authorizedUrl,
+    if (state.fileHandleCache[url]) return state.fileHandleCache[url];
+    if (_inflight.has(url)) return _inflight.get(url);
+
+    const p = getAuthorizedS3Url(url)
+      .then(authorizedUrl => state.hp.asyncBufferFromUrl({ url: authorizedUrl }))
+      .then(handle => {
+        state.fileHandleCache[url] = handle;
+        _inflight.delete(url);
+        return handle;
+      })
+      .catch(err => {
+        _inflight.delete(url);
+        throw err;
       });
-    }
-    return state.fileHandleCache[url];
+
+    _inflight.set(url, p);
+    return p;
   }
 
   const _td = new TextDecoder();

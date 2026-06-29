@@ -1,10 +1,9 @@
 import {
   state, log, setProgress,
   PARQUET_URLS,
-  RES_DIVIDES_PMTILES_URL,
-  RES_FLOWPATHS_PMTILES_URL,
 } from './config.js';
 import { useParquet } from './composables/useParquet.js';
+import { clearPresignedUrlCache } from './auth.js';
 
 const { initHyparquet, readParquetAll } = useParquet();
 
@@ -93,78 +92,44 @@ function inferVpuid(rows) {
   return val!=null?String(val):null;
 }
 
-// ── Layer adders ──────────────────────────────────────────
-function addPmtilesLayers() {
+// ── Layer management ──────────────────────────────────────
+const VIEWER_LAYERS  = ['res-divides-fill', 'res-divides-line', 'res-flowpaths-line', 'res-nexus-circle'];
+const VIEWER_SOURCES = ['res-divides-src', 'res-flowpaths-src', 'res-nexus-src'];
+
+function teardownViewer() {
   const { map } = state;
-  map.addSource('res-divides-src', {
-    type: 'vector',
-    url: `pmtiles://${RES_DIVIDES_PMTILES_URL}`,
+  if (!map) return;
+  for (const id of VIEWER_LAYERS)  { if (map.getLayer(id))  map.removeLayer(id); }
+  for (const id of VIEWER_SOURCES) { if (map.getSource(id)) map.removeSource(id); }
+  state.fileHandleCache = {};
+  state.researcherBbox = null;
+  clearPresignedUrlCache();
+}
+
+function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
+  const { map } = state;
+
+  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON });
+  map.addLayer({
+    id: 'res-divides-fill', type: 'fill', source: 'res-divides-src',
+    layout: { visibility: 'visible' },
+    paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.15 },
   });
   map.addLayer({
-    id: 'res-divides-fill',
-    type: 'fill',source:'res-divides-src',
-    'source-layer':'divides',
-    layout: {
-      visibility: 'visible'
-
-    },
-    paint:{
-      'fill-color': '#a78bfa',
-      'fill-opacity': 0.15
-
-    }
+    id: 'res-divides-line', type: 'line', source: 'res-divides-src',
+    layout: { visibility: 'visible' },
+    paint: { 'line-color': '#a78bfa', 'line-width': 0.8, 'line-opacity': 0.9 },
   });
+
+  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON });
   map.addLayer({
-    id: 'res-divides-line',
-    type: 'line',
-    source: 'res-divides-src',
-    'source-layer': 'divides',
-    layout: {
-      visibility: 'visible'
-
-    },
-    paint:{
-      'line-color': '#a78bfa',
-      'line-width': 0.8,
-      'line-opacity': 0.9
-
-    }
-  });
-  map.addSource('res-flowpaths-src',
-    {
-    type: 'vector',
-    url: `pmtiles://${RES_FLOWPATHS_PMTILES_URL}` 
-  });
-  map.addLayer({
-    id:  'res-flowpaths-line',
-    type: 'line',
-    source: 'res-flowpaths-src',
-    'source-layer': 'flowpaths',
-    ayout:{
-      visibility:'visible'
-
-    },
-    paint:{
-      'line-color': '#38bdf8',
-      'line-width': 1.2,
-      'line-opacity': 0.9
-
-    }
-  });
-
-  // Fit to bounds once source metadata is loaded
-  map.on('sourcedata', function onSourceData(e) {
-    if (e.sourceId !== 'res-divides-src' || !e.isSourceLoaded) return;
-    const src = map.getSource('res-divides-src');
-    if (src?.bounds) {
-      state.researcherBbox = src.bounds;
-      map.fitBounds( [[src.bounds[0], src.bounds[1]], [src.bounds[2], src.bounds[3]]],{padding: 60, maxZoom: 12, duration: 1200});
-      map.off('sourcedata',onSourceData);
-    }
+    id: 'res-flowpaths-line', type: 'line', source: 'res-flowpaths-src',
+    layout: { visibility: 'visible' },
+    paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
   });
 }
 
-// Nexus always loaded lazily from parquet — no nexus pmtiles in pipeline
+// Nexus loaded lazily on demand
 export async function ensureNexusLayer() {
   const { map } = state;
   if (map.getSource('res-nexus-src')) return;
@@ -175,72 +140,65 @@ export async function ensureNexusLayer() {
     const col = geomCol(rows);
     if (col && rows.length > 0) {
       const gj = rowsToGeojson(rows, col);
-      map.addSource('res-nexus-src',
-        {
-        type: 'geojson',
-        data: gj
-        }
-      );
+      map.addSource('res-nexus-src', { type: 'geojson', data: gj });
       map.addLayer({
-        id: 'res-nexus-circle',
-        type: 'circle',
-        source: 'res-nexus-src',
-        layout: {
-        visibility: 'none' },
-        paint: {
-        'circle-color': '#f59e0b',
-        'circle-radius': 3,
-        'circle-opacity': 0.85
-
-      }
+        id: 'res-nexus-circle', type: 'circle', source: 'res-nexus-src',
+        layout: { visibility: 'none' },
+        paint: { 'circle-color': '#f59e0b', 'circle-radius': 3, 'circle-opacity': 0.85 },
       });
       log(`  nexus: ${rows.length} points`, 'success');
     }
-  } catch(e){log(`nexus error: ${e.message}`, 'error');}
+  } catch (e) { log(`nexus error: ${e.message}`, 'error'); }
 }
 
 // ── Main boot ─────────────────────────────────────────────
 export function useViewer() {
   async function bootViewer() {
+    teardownViewer();
     await initHyparquet();
-    log('Loading viewer...','info');
+
+    log('Loading divides...', 'info');
+    log(`  url: ${PARQUET_URLS['divides']}`, 'info');
     setProgress(20);
-    addPmtilesLayers();
+    const divRows = await readParquetAll(PARQUET_URLS['divides']);
+    const divCol = geomCol(divRows);
+    if (!divCol) throw new Error('No geometry column found in divides parquet');
+    const divGeoJSON = rowsToGeojson(divRows, divCol);
 
-    log('Reading metadata...','info');
-    setProgress(40);
+    log('Loading flowpaths...', 'info');
+    setProgress(50);
+    let fpRows = [], fpGeoJSON = { type: 'FeatureCollection', features: [] };
     try {
-      const divRows = await readParquetAll(PARQUET_URLS['divides']);
-      state.inferredVpuid = inferVpuid(divRows);
-      let fpCount=null;
-      try{fpCount=(await readParquetAll(PARQUET_URLS['flowpaths'])).length;}catch(_){}
-      log(`  vpuid: ${state.inferredVpuid}, catchments: ${divRows.length}`,'success');
-      setProgress(100);
-      return {
-        vpuid: state.inferredVpuid,
-        catchments: divRows.length,
-        flowpaths: fpCount,
-        renderMode: 'PMTiles',
-        bbox: state.researcherBbox
+      fpRows = await readParquetAll(PARQUET_URLS['flowpaths']);
+      const fpCol = geomCol(fpRows);
+      if (fpCol) fpGeoJSON = rowsToGeojson(fpRows, fpCol);
+    } catch (e) { log(`  flowpaths unavailable: ${e.message}`, 'info'); }
 
-      };
-    } catch(e) {
-      log(`  metadata error: ${e.message}`,'warn');
-      setProgress(100);
-      return {
-        vpuid: '?',
-        catchments: null,
-        flowpaths: null,
-        renderMode: 'PMTiles',
-        bbox: null
-      };
+    log('Rendering layers...', 'info');
+    setProgress(80);
+    addGeojsonLayers(divGeoJSON, fpGeoJSON);
+
+    if (divGeoJSON.bbox) {
+      state.researcherBbox = divGeoJSON.bbox;
     }
+
+    const vpuid = inferVpuid(divRows);
+    state.inferredVpuid = vpuid;
+    log(`  vpuid: ${vpuid}, catchments: ${divRows.length}`, 'success');
+
+    return {
+      vpuid,
+      catchments: divRows.length,
+      flowpaths: fpRows.length || null,
+      renderMode: 'GeoJSON',
+      bbox: divGeoJSON.bbox ?? null,
+    };
   }
 
   function setLayerVisibility(layerIds, visible) {
     const v = visible ? 'visible' : 'none';
-    for(const id of layerIds){
-      if(state.map?.getLayer(id)) state.map.setLayoutProperty(id, 'visibility', v);
+    for (const id of layerIds) {
+      if (state.map?.getLayer(id)) state.map.setLayoutProperty(id, 'visibility', v);
     }
   }
 
