@@ -127,6 +127,67 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
     layout: { visibility: 'visible' },
     paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
   });
+
+   // ── Click handlers for tooltip ────────────────────────
+  map.on('click', 'res-divides-fill', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildDivideTooltip(f.properties), map);
+  });
+  map.on('click', 'res-flowpaths-line', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildFlowpathTooltip(f.properties), map);
+  });
+
+  map.on('mouseenter', 'res-divides-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'res-divides-fill', () => { map.getCanvas().style.cursor = ''; });
+  map.on('mouseenter', 'res-flowpaths-line', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'res-flowpaths-line', () => { map.getCanvas().style.cursor = ''; });
+}
+
+//Tooltip content builders (mock data for now)
+function buildDivideTooltip(props) {
+  return {
+    title: props.divide_id || 'Unknown Catchment',
+    rows: [
+      ['Mean Elevation', '1,842 m'],     
+      ['Land Cover', 'Forest (62%)'],    
+      ['Soil Type', 'Loam'],             
+    ],
+  };
+}
+
+function buildFlowpathTooltip(props) {
+  return {
+    title: props.id || 'Unknown Flowpath',
+    rows: [
+      ['Stream Order', '3'],             
+      ['Mean Slope', '4.2%'],            
+      ['Discharge (est.)', '12.4 m/s'], 
+    ],
+  };
+}
+
+//Tooltip Popup
+let _activePopup = null;
+function showTooltip(lngLat, { title, rows }, map) {
+  if (_activePopup) _activePopup.remove();
+
+  const html = `
+    <div class="hf-tooltip">
+      <div class="hf-tooltip-title">${title}</div>
+      ${rows.map(([k, v]) => `
+        <div class="hf-tooltip-row">
+          <span class="hf-tooltip-key">${k}</span>
+          <span class="hf-tooltip-val">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  _activePopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '260px' })
+    .setLngLat(lngLat)
+    .setHTML(html)
+    .addTo(map);
 }
 
 // Nexus loaded lazily on demand
