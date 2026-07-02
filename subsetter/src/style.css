@@ -357,6 +357,107 @@ button{
     font-size: 11px;
     color: var(--text-dim);
 }
+#auth-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--surface2);
+}
+#auth-status-text {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+}
+#auth-strip.authed #auth-status-text {
+    color: var(--success);
+}
+#auth-btn {
+    flex: 0 0 auto;
+    padding: 4px 12px;
+    font-size: 11px;
+    background: var(--surface);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+#auth-btn:hover {
+    color: var(--text);
+    border-color: var(--text-dim);
+}
+#auth-strip.authed #auth-btn {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+#auth-strip.authed #auth-btn:hover {
+    background: var(--danger);
+    color: #fff;
+}
+#resource-panel {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+#resource-panel label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+}
+.resource-row {
+    display: flex;
+    gap: 8px;
+}
+#resource-id-select {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}
+#resource-id-select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+#resource-id-apply {
+    flex: 0 0 auto;
+    width: 72px;
+    background: var(--accent-dim);
+    color: #000;
+    border-color: var(--accent);
+    text-transform: uppercase;
+}
+#resource-id-apply:hover {
+    background: var(--accent);
+}
+#resource-id-custom {
+    margin-top: 8px;
+    width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}
+#resource-id-custom:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(56,189,248,.2);
+}
 #meta-panel {
     padding: 12px 20px;
     border-bottom: 1px solid var(--border);
