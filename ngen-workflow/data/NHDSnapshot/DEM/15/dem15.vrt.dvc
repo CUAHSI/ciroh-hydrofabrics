@@ -3,7 +3,7 @@ deps:
 - etag: ea16d32b0941f024bd6666bfb7e67884-1
   size: 1888
   hash: md5
-  path: remote://superconus/NHDSnapshot/DEM/15/dem15.vrt
+  path: remote://v2.3/NHDSnapshot/DEM/15/dem15.vrt
 outs:
 - hash: md5
   path: dem15.vrt

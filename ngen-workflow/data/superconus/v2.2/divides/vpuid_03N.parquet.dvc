@@ -1,0 +1,12 @@
+md5: 4fb0dcda25033a3ab3de627e46f1e23f
+frozen: true
+deps:
+- etag: 320e8f92b8504dcc106ca759acda784e-5
+  size: 76851561
+  hash: md5
+  path: remote://v2.2/divides/vpuid_03N.parquet
+outs:
+- md5: ab6ca73ab1d3746e61543519e584f3a2
+  size: 76851561
+  hash: md5
+  path: vpuid_03N.parquet

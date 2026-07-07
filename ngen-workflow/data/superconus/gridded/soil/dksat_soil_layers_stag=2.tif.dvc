@@ -3,7 +3,7 @@ deps:
 - etag: a8eb06bd6d781c19830c1bf7757d85fb-1
   size: 2573484
   hash: md5
-  path: remote://superconus/gridded/dksat_soil_layers_stag=2.tif
+  path: remote://v2.3/gridded/dksat_soil_layers_stag=2.tif
 outs:
 - hash: md5
   path: dksat_soil_layers_stag=2.tif

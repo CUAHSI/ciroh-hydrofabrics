@@ -3,7 +3,7 @@ deps:
 - etag: 13f9e386eb268683ebaa592725f29142-3
   size: 291729883
   hash: md5
-  path: remote://superconus/derived/CONUS_imp_240.tif
+  path: remote://v2.3/derived/CONUS_imp_240.tif
 outs:
 - hash: md5
   path: CONUS_imp_240.tif

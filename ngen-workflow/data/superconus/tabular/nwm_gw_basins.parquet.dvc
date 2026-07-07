@@ -3,7 +3,7 @@ deps:
 - etag: e74f5e438b307226ee9846023a2ba241-1
   size: 48798640
   hash: md5
-  path: remote://superconus/tabular/nwm_gw_basins.parquet
+  path: remote://v2.3/tabular/nwm_gw_basins.parquet
 outs:
 - hash: md5
   path: nwm_gw_basins.parquet

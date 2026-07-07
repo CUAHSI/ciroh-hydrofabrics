@@ -3,7 +3,7 @@ deps:
 - etag: 1566ec0c3a7dccd247d02a8a5a72462c-4
   size: 61150495
   hash: md5
-  path: remote://superconus/NHDSnapshot/FDR/05/05d_fdr.tif
+  path: remote://v2.3/NHDSnapshot/FDR/05/05d_fdr.tif
 outs:
 - hash: md5
   path: 05d_fdr.tif

@@ -3,7 +3,7 @@ deps:
 - etag: 8b48cc810b291329dde389df55a8771c-3
   size: 287573655
   hash: md5
-  path: remote://superconus/NHDSnapshot/DEM/12/Ned12d.tif
+  path: remote://v2.3/NHDSnapshot/DEM/12/Ned12d.tif
 outs:
 - hash: md5
   path: Ned12d.tif
