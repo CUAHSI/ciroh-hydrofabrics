@@ -5,17 +5,17 @@ stages:
       cmd: >
         docker compose run --rm hydrofabric ./bash/prepare_reference_gpkg.sh
         ${item.id}
-        /ngen-workflow/data/superconus/divides/vpuid_${item.id}.parquet
-        /ngen-workflow/data/superconus/flowpaths/vpuid_${item.id}.parquet
+        /ngen-workflow/data/superconus/${superconus_version}/divides/vpuid_${item.id}.parquet
+        /ngen-workflow/data/superconus/${superconus_version}/flowpaths/vpuid_${item.id}.parquet
         /ngen-workflow/data/superconus/hydrolocations/vpuid_${item.id}.parquet
-        /ngen-workflow/data/superconus/network/vpuid_${item.id}.parquet
+        /ngen-workflow/data/superconus/${superconus_version}/network/vpuid_${item.id}.parquet
         /ngen-workflow/data/superconus/pois.parquet
       deps:
         - ../../ngen-workflow/bash/prepare_reference_gpkg.sh
-        - ../../ngen-workflow/data/superconus/divides/vpuid_${item.id}.parquet
-        - ../../ngen-workflow/data/superconus/flowpaths/vpuid_${item.id}.parquet
+        - ../../ngen-workflow/data/superconus/${superconus_version}/divides/vpuid_${item.id}.parquet
+        - ../../ngen-workflow/data/superconus/${superconus_version}/flowpaths/vpuid_${item.id}.parquet
         - ../../ngen-workflow/data/superconus/hydrolocations/vpuid_${item.id}.parquet
-        - ../../ngen-workflow/data/superconus/network/vpuid_${item.id}.parquet
+        - ../../ngen-workflow/data/superconus/${superconus_version}/network/vpuid_${item.id}.parquet
         - ../../ngen-workflow/data/superconus/pois.parquet
       outs:
         - ../../ngen-workflow/data/prepared/${item.id}/reference_hydrofabric.gpkg
