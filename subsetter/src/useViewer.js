@@ -144,14 +144,17 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   map.on('mouseleave', 'res-flowpaths-line', () => { map.getCanvas().style.cursor = ''; });
 }
 
-//Tooltip content builders (mock data for now)
+//Tooltip content builders
 function buildDivideTooltip(props) {
   return {
     title: props.divide_id || 'Unknown Catchment',
     rows: [
-      ['Mean Elevation', '1,842 m'],     
-      ['Land Cover', 'Forest (62%)'],    
-      ['Soil Type', 'Loam'],             
+      ['Area', `${Number(props.areasqkm).toFixed(4)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Type', props.type],
+      ['Has Flowline', props.has_flowline === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
     ],
   };
 }
@@ -160,9 +163,14 @@ function buildFlowpathTooltip(props) {
   return {
     title: props.id || 'Unknown Flowpath',
     rows: [
-      ['Stream Order', '3'],             
-      ['Mean Slope', '4.2%'],            
-      ['Discharge (est.)', '12.4 m/s'], 
+      ['Divide ID', props.divide_id],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Area', `${Number(props.areasqkm).toFixed(3)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Hydro Sequence', props.hydroseq],
+      ['Mainstem', props.mainstem],
+      ['Has Divide', props.has_divide === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
     ],
   };
 }
