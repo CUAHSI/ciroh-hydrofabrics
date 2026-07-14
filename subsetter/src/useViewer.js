@@ -109,23 +109,34 @@ function teardownViewer() {
 function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   const { map } = state;
 
-  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON });
+  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-divides-fill', type: 'fill', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.15 },
+    paint: {
+      'fill-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.35, 0.15],
+    },
   });
   map.addLayer({
     id: 'res-divides-line', type: 'line', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#a78bfa', 'line-width': 0.8, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0.8],
+      'line-opacity': 0.9,
+    },
   });
 
-  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON });
+  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-flowpaths-line', type: 'line', source: 'res-flowpaths-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#7dd3fc', '#38bdf8'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 1.2],
+      'line-opacity': 0.9,
+    },
   });
 
    // ── Click handlers for tooltip ────────────────────────
@@ -138,10 +149,45 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
     showTooltip(e.lngLat, buildFlowpathTooltip(f.properties), map);
   });
 
-  map.on('mouseenter', 'res-divides-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'res-divides-fill', () => { map.getCanvas().style.cursor = ''; });
-  map.on('mouseenter', 'res-flowpaths-line', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'res-flowpaths-line', () => { map.getCanvas().style.cursor = ''; });
+  // ── Divide hover feedback ──────────────────────────────
+  let hoveredDivideId = null;
+  map.on('mousemove', 'res-divides-fill', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredDivideId) return;
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = id;
+    map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-divides-fill', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = null;
+  });
+
+  // ── Flowpath hover feedback ────────────────────────────
+  let hoveredFlowpathId = null;
+  map.on('mousemove', 'res-flowpaths-line', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredFlowpathId) return;
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = id;
+    map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-flowpaths-line', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = null;
+  });
 }
 
 //Tooltip content builders
