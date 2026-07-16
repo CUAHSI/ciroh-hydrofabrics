@@ -17,18 +17,28 @@ simplify_tolerance_m="$8"
 
 mkdir -p "$(dirname "$out_file")"
 
-Rscript -e "
-    rmarkdown::render(
-        'R/refactor.Rmd',
-        params = list(
-            fac_file = '$fac_file',
-            fdr_file = '$fdr_file',
-            gpkg_file = '$gpkg_file',
-            out_file = '$out_file',
-            split_flines_meters = as.numeric('$split_flines_meters'),
-            collapse_flines_meters = as.numeric('$collapse_flines_meters'),
-            collapse_flines_main_meters = as.numeric('$collapse_flines_main_meters'),
-            simplify_tolerance_m = as.numeric('$simplify_tolerance_m')
-        )
-    )
-"
+Rscript R/refactor.R \
+  --fac_file "$fac_file" \
+  --fdr_file "$fdr_file" \
+  --nextgen_geopackage "$gpkg_file" \
+  --out_file "$out_file" \
+  --split_flines_meters "$split_flines_meters" \
+  --collapse_flines_meters "$collapse_flines_meters" \
+  --collapse_flines_main_meters "$collapse_flines_main_meters" \
+  --simplify_tolerance_m "$simplify_tolerance_m"
+
+#Rscript -e "
+#    rmarkdown::render(
+#        'R/refactor.Rmd',
+#        params = list(
+#            fac_file = '$fac_file',
+#            fdr_file = '$fdr_file',
+#            gpkg_file = '$gpkg_file',
+#            out_file = '$out_file',
+#            split_flines_meters = as.numeric('$split_flines_meters'),
+#            collapse_flines_meters = as.numeric('$collapse_flines_meters'),
+#            collapse_flines_main_meters = as.numeric('$collapse_flines_main_meters'),
+#            simplify_tolerance_m = as.numeric('$simplify_tolerance_m')
+#        )
+#    )
+#"
