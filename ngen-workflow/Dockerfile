@@ -1,12 +1,13 @@
 FROM rocker/geospatial:4
 
-
 RUN apt-get update \
  && apt-get install -y \
     wget \
     libglpk40 \
     libglpk-dev \
     libnode-dev \
+    nodejs \
+    npm \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
@@ -51,6 +52,9 @@ RUN conda install -c conda-forge -y \
     geopandas \
     typer \
     && conda clean -a -y
+
+# install mapshaper, required by hfrefactor
+RUN npm install -g mapshaper
 
 RUN ulimit -s unlimited
 
