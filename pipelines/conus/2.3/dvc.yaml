@@ -78,7 +78,7 @@ stages:
         - refactor.simplify_tolerance_meters
       deps:
         - ../../../ngen-workflow/bash/run-refactor.sh
-        - ../../../ngen-workflow/R/refactor.Rmd
+        - ../../../ngen-workflow/R/refactor.r
         - ../../../ngen-workflow/data/corrections/${item.id}/reference_hydrofabric_fixed.gpkg
         - ../../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/${item.prefix}_fac.tif
         - ../../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/${item.prefix}_fdr.tif
