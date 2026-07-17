@@ -2,14 +2,11 @@ import {
     COMMUNITY_HF_DIVIDES,
     COMMUNITY_HF_FLOWPATHS,
     MERGED_PMTILES_URL,
-    PUBLIC_RESOURCE_ACCESS_KEY,
-    PUBLIC_RESOURCE_SECRET_KEY,
     REF_DIVIDES_PMTILES_URL,
     REF_FLOWPATHS_PMTILES_URL,
     S3_ORIGIN,
     VPU_PMTILES_URL,
-    isPmtilesProtocolRegistered,
-    setPmtilesProtocolRegistered,
+    getCredentials,
 } from "./config.js";
 
 const S3_REGION = 'us-east-1';
@@ -70,8 +67,8 @@ async function hmacSha256(key, value) {
     return new Uint8Array(await crypto.subtle.sign('HMAC', cryptoKey, bytes));
 }
 
-async function getSigningKey(dateStamp) {
-    const dateKey = await hmacSha256(`AWS4${PUBLIC_RESOURCE_SECRET_KEY}`, dateStamp);
+async function getSigningKey(secretKey, dateStamp) {
+    const dateKey = await hmacSha256(`AWS4${secretKey}`, dateStamp);
     const regionKey = await hmacSha256(dateKey, S3_REGION);
     const serviceKey = await hmacSha256(regionKey, S3_SERVICE);
     return hmacSha256(serviceKey, 'aws4_request');
@@ -81,7 +78,7 @@ function getAmzDate(date) {
     return date.toISOString().replace(/[:-]|\.\d{3}/g, '');
 }
 
-async function presignS3GetUrl(rawUrl) {
+async function presignS3GetUrl(rawUrl, accessKey, secretKey) {
     const url = new URL(rawUrl);
     const now = new Date();
     const amzDate = getAmzDate(now);
@@ -90,7 +87,7 @@ async function presignS3GetUrl(rawUrl) {
     const signedHeaders = 'host';
     const extraQueryEntries = [
         ['X-Amz-Algorithm', 'AWS4-HMAC-SHA256'],
-        ['X-Amz-Credential', `${PUBLIC_RESOURCE_ACCESS_KEY}/${credentialScope}`],
+        ['X-Amz-Credential', `${accessKey}/${credentialScope}`],
         ['X-Amz-Date', amzDate],
         ['X-Amz-Expires', String(PRESIGN_TTL_SECONDS)],
         ['X-Amz-SignedHeaders', signedHeaders],
@@ -111,7 +108,7 @@ async function presignS3GetUrl(rawUrl) {
         credentialScope,
         await sha256Hex(canonicalRequest),
     ].join('\n');
-    const signingKey = await getSigningKey(dateStamp);
+    const signingKey = await getSigningKey(secretKey, dateStamp);
     const signature = toHex(await hmacSha256(signingKey, stringToSign));
 
     url.search = `${canonicalQuery}&X-Amz-Signature=${signature}`;
@@ -120,19 +117,25 @@ async function presignS3GetUrl(rawUrl) {
 
 export async function getAuthorizedS3Url(rawUrl) {
     if (!isS3OriginUrl(rawUrl)) return rawUrl;
-    if (!PUBLIC_RESOURCE_ACCESS_KEY || !PUBLIC_RESOURCE_SECRET_KEY) return rawUrl;
+    const { accessKey, secretKey } = getCredentials();
+    if (!accessKey || !secretKey) return rawUrl;
 
-    const cached = presignedUrlCache.get(rawUrl);
+    const cacheKey = `${rawUrl}::${accessKey}`;
+    const cached = presignedUrlCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now() + PRESIGN_REFRESH_BUFFER_MS) {
         return cached.url;
     }
 
-    const signedUrl = await presignS3GetUrl(rawUrl);
-    presignedUrlCache.set(rawUrl, {
+    const signedUrl = await presignS3GetUrl(rawUrl, accessKey, secretKey);
+    presignedUrlCache.set(cacheKey, {
         url: signedUrl,
         expiresAt: Date.now() + (PRESIGN_TTL_SECONDS * 1000),
     });
     return signedUrl;
+}
+
+export function clearPresignedUrlCache() {
+    presignedUrlCache.clear();
 }
 
 export async function fetchWithS3Auth(url, init = {}) {
@@ -178,8 +181,22 @@ function createCredentialedPmtilesSource(url) {
     };
 }
 
+let _pmtilesProtocolSignature = '';
+
+function currentPmtilesProtocolSignature() {
+    return [
+        REF_FLOWPATHS_PMTILES_URL,
+        REF_DIVIDES_PMTILES_URL,
+        COMMUNITY_HF_FLOWPATHS,
+        COMMUNITY_HF_DIVIDES,
+        MERGED_PMTILES_URL,
+        VPU_PMTILES_URL,
+    ].join('::');
+}
+
 export function ensurePmtilesProtocol() {
-    if (isPmtilesProtocolRegistered()) return;
+    const signature = currentPmtilesProtocolSignature();
+    if (_pmtilesProtocolSignature === signature) return;
 
     const protocol = new pmtiles.Protocol({ metadata: true });
     protocol.add(new pmtiles.PMTiles(createCredentialedPmtilesSource(REF_FLOWPATHS_PMTILES_URL)));
@@ -190,5 +207,5 @@ export function ensurePmtilesProtocol() {
     protocol.add(new pmtiles.PMTiles(createCredentialedPmtilesSource(VPU_PMTILES_URL)));
 
     maplibregl.addProtocol('pmtiles', protocol.tile);
-    setPmtilesProtocolRegistered(true);
+    _pmtilesProtocolSignature = signature;
 }

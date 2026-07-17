@@ -1,6 +1,7 @@
 import { 
   S3_MAP, REF_DIVIDES_PMTILES_URL, RES_FLOWPATHS_PMTILES_URL,
   COMMUNITY_HF_DIVIDES, COMMUNITY_HF_FLOWPATHS,
+  MERGED_PMTILES_URL, VPU_PMTILES_URL,
   log, state,
 } from '../config.js';
 import { ensurePmtilesProtocol } from '../auth.js';
@@ -112,5 +113,15 @@ export function useMap() {
     );
   }
 
-  return { initMap, toggleSplitView, fitToBbox };
+  function refreshStyleSources() {
+    const maps = [state.map, state.mapRight].filter(Boolean);
+    for (const m of maps) {
+      const hf = m.getSource('hydrofabric');
+      if (hf?.setUrl) hf.setUrl(`pmtiles://${MERGED_PMTILES_URL}`);
+      const vpu = m.getSource('conus_vpu');
+      if (vpu?.setUrl) vpu.setUrl(`pmtiles://${VPU_PMTILES_URL}`);
+    }
+  }
+
+  return { initMap, toggleSplitView, fitToBbox, refreshStyleSources };
 }
