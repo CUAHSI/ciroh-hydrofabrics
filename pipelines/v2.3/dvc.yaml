@@ -45,7 +45,7 @@ stages:
         /ngen-workflow/output/v2.3/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
         /ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/*"
       deps:
-        - ../../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/
+        - ../../ngen-workflow/data/NHDSnapshot/FAC/${item.prefix}/
       outs:
         - ../../ngen-workflow/output/v2.3/NHDSnapshot/FAC_vrt/${item.prefix}_fac.vrt
   build_fdr_vrt:
@@ -58,7 +58,7 @@ stages:
         /ngen-workflow/output/v2.3/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
         /ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/*"
       deps:
-        - ../../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/
+        - ../../ngen-workflow/data/NHDSnapshot/FDR/${item.prefix}/
       outs:
         - ../../ngen-workflow/output/v2.3/NHDSnapshot/FDR_vrt/${item.prefix}_fdr.vrt
   refactor:
