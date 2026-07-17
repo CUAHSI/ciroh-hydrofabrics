@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: vpuid_10U.parquet
-  md5: 645cccdcb5203b86e5f50f3c6b9c7566
-  size: 118542985

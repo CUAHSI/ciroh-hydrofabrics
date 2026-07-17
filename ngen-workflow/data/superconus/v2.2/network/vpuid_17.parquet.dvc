@@ -1,5 +1,4 @@
 md5: c18bd19f6dbe57e7bee2816c6b30972e
-frozen: true
 deps:
 - etag: 7ef4a1726e3f97d9a54d5d4f32417b32-2
   size: 20872396
@@ -7,6 +6,5 @@ deps:
   path: remote://v2.2/network/vpuid_17.parquet
 outs:
 - md5: c38298bd26aa2efca15274ec59846893
-  size: 20872396
   hash: md5
   path: vpuid_17.parquet

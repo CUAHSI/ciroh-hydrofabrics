@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: psisat_soil_layers_stag=3.tif
-  md5: ecf68f9522b620a55d389c94b4c316f8
-  size: 1628088

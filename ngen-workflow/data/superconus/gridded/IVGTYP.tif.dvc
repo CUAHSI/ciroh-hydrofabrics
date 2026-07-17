@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: IVGTYP.tif
-  md5: 175e62422240bc9c5ea8d633452ea8cb
-  size: 3358400

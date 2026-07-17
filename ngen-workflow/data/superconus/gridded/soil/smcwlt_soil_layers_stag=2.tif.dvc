@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: smcwlt_soil_layers_stag=2.tif
-  md5: bb14ae292e5a95d7eebf174045f973c8
-  size: 1627849
