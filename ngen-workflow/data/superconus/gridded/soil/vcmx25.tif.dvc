@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: vcmx25.tif
-  md5: c153258efd2b50a965f9e7128dd622c0
-  size: 3690361

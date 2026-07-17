@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: mp.tif
-  md5: 6fdedce9a91616c4e3b1d820eec7b1e9
-  size: 1900985

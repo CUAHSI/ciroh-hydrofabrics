@@ -6,6 +6,5 @@ deps:
   path: remote://superconus/gridded/refkdt.tif
 outs:
 - md5: 2c358fbdb3e19521c1f297d8f8c62d36
-  size: 219379
   hash: md5
   path: refkdt.tif

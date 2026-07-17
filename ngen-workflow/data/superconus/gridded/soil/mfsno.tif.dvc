@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: mfsno.tif
-  md5: e2ae8966456f7b2bae4769aad567b806
-  size: 520347

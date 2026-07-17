@@ -7,5 +7,3 @@ deps:
 outs:
 - hash: md5
   path: cwpvt.tif
-  md5: cef114371f1c621ce5e494221e281fdf
-  size: 890721
