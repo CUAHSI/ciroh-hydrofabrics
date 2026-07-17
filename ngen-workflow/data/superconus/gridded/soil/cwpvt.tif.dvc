@@ -3,7 +3,7 @@ deps:
 - etag: c1154c17b75c45b2be84f8b4c258439e-1
   size: 890721
   hash: md5
-  path: remote://superconus/gridded/cwpvt.tif
+  path: remote://v2.3/gridded/cwpvt.tif
 outs:
 - hash: md5
   path: cwpvt.tif

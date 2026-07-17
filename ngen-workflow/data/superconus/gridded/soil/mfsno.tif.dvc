@@ -1,9 +1,9 @@
-md5: 98e324cd4446a16d0fbddd448179bb00
+md5: 4784eaa47fc56c03132a96603c09106c
 deps:
 - etag: aa59ebf528409b1e1d63f99433cec8a2-1
   size: 520347
   hash: md5
-  path: remote://superconus/gridded/mfsno.tif
+  path: remote://v2.3/gridded/mfsno.tif
 outs:
 - hash: md5
   path: mfsno.tif
