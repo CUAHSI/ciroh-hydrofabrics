@@ -9,7 +9,6 @@ stages:
         /ngen-workflow/data/superconus/v2.2/flowpaths/vpuid_${item.id}.parquet
         /ngen-workflow/data/superconus/hydrolocations/vpuid_${item.id}.parquet
         /ngen-workflow/data/superconus/v2.2/network/vpuid_${item.id}.parquet
-        /ngen-workflow/data/superconus/pois.parquet
         /ngen-workflow/output/v2.2/prepared/${item.id}
       deps:
         - ../../ngen-workflow/bash/prepare_reference_gpkg.sh
@@ -17,7 +16,6 @@ stages:
         - ../../ngen-workflow/data/superconus/v2.2/flowpaths/vpuid_${item.id}.parquet
         - ../../ngen-workflow/data/superconus/hydrolocations/vpuid_${item.id}.parquet
         - ../../ngen-workflow/data/superconus/v2.2/network/vpuid_${item.id}.parquet
-        - ../../ngen-workflow/data/superconus/pois.parquet
       outs:
         - ../../ngen-workflow/output/v2.2/prepared/${item.id}/reference_hydrofabric.gpkg
   reference_corrections:
