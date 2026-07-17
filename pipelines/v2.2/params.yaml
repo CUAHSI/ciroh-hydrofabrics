@@ -1,5 +1,4 @@
 # only supporting vpuid 16 for demonstration and development
-superconus_version: v2.3
 vpuids:
 - id: "16"
   prefix: "16"
