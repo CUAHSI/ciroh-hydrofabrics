@@ -2,7 +2,7 @@
 set -e
 
 if [ $# -lt 6 ]; then
-  echo "Usage: $0 <vpuid> <divides_file> <flowpaths_file> <hydrolocations_file> <network_file> <pois_file> <output_dir>" >&2
+  echo "Usage: $0 <vpuid> <divides_file> <flowpaths_file> <hydrolocations_file> <network_file> <output_dir>" >&2
   exit 1
 fi
 
@@ -11,8 +11,7 @@ divides_file="$2"
 flowpaths_file="$3"
 hydrolocations_file="$4"
 network_file="$5"
-pois_file="$6"
-output_dir="$7"
+output_dir="$6"
 
 mkdir -p "$output_dir"
 
@@ -21,7 +20,7 @@ ogr2ogr -f "GPKG" "$output_dir/reference_hydrofabric.gpkg" "/$divides_file" -nln
 ogr2ogr -f "GPKG" -append "$output_dir/reference_hydrofabric.gpkg" "/$flowpaths_file" -nln flowpaths
 ogr2ogr -f "GPKG" -append "$output_dir/reference_hydrofabric.gpkg" "/$hydrolocations_file" -nln hydrolocations
 ogr2ogr -f "GPKG" -append "$output_dir/reference_hydrofabric.gpkg" "/$network_file" -nln network
-ogr2ogr -f "GPKG" -append "$output_dir/reference_hydrofabric.gpkg" "/$pois_file" -nln pois
+
 
 # add VPU column to the divides table
 ogrinfo "$output_dir/reference_hydrofabric.gpkg" \
@@ -34,9 +33,3 @@ ogrinfo "$output_dir/reference_hydrofabric.gpkg" \
   -sql "ALTER TABLE flowpaths ADD COLUMN vpuid TEXT"
 ogrinfo "$output_dir/reference_hydrofabric.gpkg" \
   -sql "UPDATE flowpaths SET vpuid = '$vpuid'"
-
-# add VPU column to the pois table
-ogrinfo "$output_dir/reference_hydrofabric.gpkg" \
-  -sql "ALTER TABLE pois ADD COLUMN vpuid TEXT"
-ogrinfo "$output_dir/reference_hydrofabric.gpkg" \
-  -sql "UPDATE pois SET vpuid = '$vpuid'"

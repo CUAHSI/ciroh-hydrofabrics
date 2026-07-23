@@ -8,6 +8,8 @@ services:
     volumes:
       - ./ngen-workflow:/ngen-workflow
     working_dir: /ngen-workflow
+    mem_limit: 16g
+    cpus: "8"
     ulimits:
       stack: 67108864
   tippecanoe:
