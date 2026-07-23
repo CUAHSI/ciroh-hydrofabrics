@@ -1,12 +1,13 @@
 FROM rocker/geospatial:4
 
-
 RUN apt-get update \
  && apt-get install -y \
     wget \
     libglpk40 \
     libglpk-dev \
     libnode-dev \
+    nodejs \
+    npm \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
@@ -44,13 +45,16 @@ RUN Rscript -e "$R_FAIL remotes::install_github('NOAA-OWP/hydrofabric')"
 RUN Rscript -e "$R_FAIL install.packages('aws.s3'); library(aws.s3)"
 RUN Rscript -e "$R_FAIL install.packages('arrow'); library(arrow)"
 RUN Rscript -e "$R_FAIL install.packages('glue'); library(glue)"
-
+RUN Rscript -e "$R_FAIL install.packages('optparse', repos='https://cloud.r-project.org')"
 
 # Add python libraries
 RUN conda install -c conda-forge -y \
     geopandas \
     typer \
     && conda clean -a -y
+
+# install mapshaper, required by hfrefactor
+RUN npm install -g mapshaper
 
 RUN ulimit -s unlimited
 

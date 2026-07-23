@@ -3,7 +3,7 @@ deps:
 - etag: 7657df8591e9a9cb79e284aa9509ff17
   size: 368409
   hash: md5
-  path: remote://superconus/hydrolocations/vpuid_16.parquet
+  path: remote://v2.3/hydrolocations/vpuid_16.parquet
 outs:
 - hash: md5
   path: vpuid_16.parquet

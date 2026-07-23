@@ -3,9 +3,7 @@ deps:
 - etag: 71000fa92adb953e3e9de8e163c99002-1
   size: 1628088
   hash: md5
-  path: remote://superconus/gridded/psisat_soil_layers_stag=2.tif
+  path: remote://v2.3/gridded/psisat_soil_layers_stag=2.tif
 outs:
 - hash: md5
   path: psisat_soil_layers_stag=2.tif
-  md5: 2e2df7c4a405b088a80de9c13d2aa033
-  size: 1628088

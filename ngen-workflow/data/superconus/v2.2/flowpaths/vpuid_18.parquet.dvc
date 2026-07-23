@@ -1,0 +1,10 @@
+md5: b58ecee632bf0b69b0041737551c2c48
+deps:
+- etag: 9918655ca051afeeaf35c5d9600db8da-4
+  size: 60645474
+  hash: md5
+  path: remote://v2.2/flowpaths/vpuid_18.parquet
+outs:
+- md5: 8919e7799bd5e3a4900aa84a448be51e
+  hash: md5
+  path: vpuid_18.parquet

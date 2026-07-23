@@ -1,0 +1,9 @@
+md5: 41f050c0caf404fd718e72c0cad73de0
+deps:
+- etag: c1154c17b75c45b2be84f8b4c258439e-1
+  size: 890721
+  hash: md5
+  path: remote://v2.3/gridded/cwpvt.tif
+outs:
+- hash: md5
+  path: cwpvt.tif

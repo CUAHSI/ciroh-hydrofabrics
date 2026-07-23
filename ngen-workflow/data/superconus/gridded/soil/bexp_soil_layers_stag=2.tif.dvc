@@ -3,7 +3,7 @@ deps:
 - etag: 4275b118d16c2fadc7d638eab516ab8c-1
   size: 2576608
   hash: md5
-  path: remote://superconus/gridded/bexp_soil_layers_stag=2.tif
+  path: remote://v2.3/gridded/bexp_soil_layers_stag=2.tif
 outs:
 - md5: ec700b8014296bcfa991ca0d446af1a9
   hash: md5

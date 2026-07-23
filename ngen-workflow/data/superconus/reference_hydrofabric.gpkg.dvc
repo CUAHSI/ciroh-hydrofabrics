@@ -3,7 +3,7 @@ deps:
 - etag: 45813235bf751a373613bd87d1db3ef0-2
   size: 120037376
   hash: md5
-  path: remote://superconus/reference_hydrofabric.gpkg
+  path: remote://v2.3/reference_hydrofabric.gpkg
 outs:
 - hash: md5
   path: reference_hydrofabric.gpkg

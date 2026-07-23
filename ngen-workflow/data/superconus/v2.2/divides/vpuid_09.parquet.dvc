@@ -1,0 +1,10 @@
+md5: 63e9ba0bd5d95057a9f0228e4d8f1344
+deps:
+- etag: 45a5e61edf42193f2ef666ff7c33c8be-2
+  size: 27270502
+  hash: md5
+  path: remote://v2.2/divides/vpuid_09.parquet
+outs:
+- md5: 5dcc5bf0079cf502a3f9751689b3ea8d
+  hash: md5
+  path: vpuid_09.parquet
