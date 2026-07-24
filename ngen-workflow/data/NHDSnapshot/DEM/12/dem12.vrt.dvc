@@ -3,7 +3,7 @@ deps:
 - etag: c47794d40a8b9b8d097aca0524e92960-1
   size: 2747
   hash: md5
-  path: remote://v2.3/NHDSnapshot/DEM/12/dem12.vrt
+  path: remote://supporting/NHDSnapshot/DEM/12/dem12.vrt
 outs:
 - hash: md5
   path: dem12.vrt

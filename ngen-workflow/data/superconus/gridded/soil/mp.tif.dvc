@@ -3,7 +3,7 @@ deps:
 - etag: c6ab21fd5fbcc4cc04f35e1a5517025a-1
   size: 1900985
   hash: md5
-  path: remote://v2.3/gridded/mp.tif
+  path: remote://supporting/gridded/mp.tif
 outs:
 - hash: md5
   path: mp.tif

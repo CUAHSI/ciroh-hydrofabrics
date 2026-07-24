@@ -3,7 +3,7 @@ deps:
 - etag: 89f5edc5a4cdd14ab7dac1c8a697c789-6
   size: 556451459
   hash: md5
-  path: remote://v2.3/NHDSnapshot/DEM/10/Ned10b.tif
+  path: remote://supporting/NHDSnapshot/DEM/10/Ned10b.tif
 outs:
 - hash: md5
   path: Ned10b.tif

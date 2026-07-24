@@ -3,7 +3,7 @@ deps:
 - etag: a9890871519ecc007ad1b8bd387280c1-5
   size: 68773879
   hash: md5
-  path: remote://v2.3/NHDSnapshot/FDR/10/10h_fdr.tif
+  path: remote://supporting/NHDSnapshot/FDR/10/10h_fdr.tif
 outs:
 - hash: md5
   path: 10h_fdr.tif

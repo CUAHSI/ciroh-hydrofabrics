@@ -7,6 +7,9 @@
 ['remote "v2.2"']
     url = s3://ciroh-data/1316cc4c92aa4167bcf47358cdfd5a67/data/contents/
     profile = hydroshare
+['remote "supporting"']
+    url = s3://ciroh-data/ad6fc06ca62d4330afdeeb4386e14681/data/contents/
+    profile = hydroshare
 ['remote "subsetter"']
     url = s3://ciroh-data/4219997533bf46a1893e9ba0232403eb/data/contents/
     profile = hydroshare
