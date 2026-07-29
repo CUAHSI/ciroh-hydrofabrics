@@ -30,7 +30,7 @@
     <select id="select-right" onchange="handlers.changeMapRight(this.value)">
       <option value="community" selected>Community HF</option>
       <option value="researcher">Researcher Data</option>
-      <option value="custom">Custom…</option>
+      <option value="__custom__">Custom…</option>
     </select>
     <input id="right-resource-custom" class="map-label-custom" type="text" placeholder="Enter resource ID…"
            autocomplete="off" spellcheck="false" style="display:none"
@@ -64,9 +64,10 @@
       <div id="resource-panel">
         <label for="resource-id-select">Resource ID</label>
         <div class="resource-row">
-          <select id="resource-id-select" aria-label="Resource ID selector"></select>
+          <select id="resource-id-select" aria-label="Resource ID selector" onchange="handlers.onResourceSelectChange(this.value)"></select>
           <button id="resource-id-apply" type="button" onclick="handlers.applyResourceId()">Load</button>
         </div>
+        <input id="resource-id-custom" type="text" placeholder="Enter resource ID…" autocomplete="off" spellcheck="false" style="display:none" />
       </div>
 
       <div id="meta-panel">
@@ -157,6 +158,7 @@
       { label: 'Placeholder Resource A', value: 'replace-with-resource-id-a' },
       { label: 'Placeholder Resource B', value: 'replace-with-resource-id-b' },
     ];
+    resourceOptions.push({ label: 'Custom…', value: '__custom__' });
 
     for (const optionConfig of resourceOptions) {
       const option = document.createElement('option');
@@ -169,7 +171,7 @@
     if (isKnown) {
       select.value = RESOURCE_ID;
     } else {
-      select.value = 'custom';
+      select.value = '__custom__';
       const customInput = document.getElementById('resource-id-custom');
       customInput.value = RESOURCE_ID;
       customInput.style.display = 'block';
@@ -236,7 +238,7 @@
     },
     changeMapLeft(value) {
       const customInput = document.getElementById('left-resource-custom');
-      if (value === 'custom') {
+      if (value === '__custom__') {
         customInput.style.display = 'inline-block';
         customInput.focus();
         return;
@@ -246,7 +248,7 @@
     },
     changeMapRight(value) {
       const customInput = document.getElementById('right-resource-custom');
-      if (value === 'custom') {
+      if (value === '__custom__') {
         customInput.style.display = 'inline-block';
         customInput.focus();
         return;
@@ -260,13 +262,19 @@
       if (!resourceId) return;
       handlers.applyResourceId(resourceId);
     },
-    applyResourceId(resourceIdOverride) {
+    onResourceSelectChange(value) {
+      const customInput = document.getElementById('resource-id-custom');
+      customInput.style.display = value === '__custom__' ? 'block' : 'none';
+      if (value === '__custom__') customInput.focus();
+    },
+    applyResourceId() {
       const select = document.getElementById('resource-id-select');
-      const resourceId = (typeof resourceIdOverride === 'string'
-        ? resourceIdOverride
+      const customInput = document.getElementById('resource-id-custom');
+      const resourceId = (select?.value === '__custom__'
+        ? customInput?.value
         : select?.value
       || '').trim();
-      if (!resourceId) return;
+      if (!resourceId || resourceId === '__custom__') return;
 
       // keep the sidebar selector in sync with the resource that's actually loaded
       if (select) {
