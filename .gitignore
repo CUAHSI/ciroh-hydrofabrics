@@ -208,3 +208,5 @@ __marimo__/
 .Rproj.user
 .DS_Store
 
+#Webstorm
+.idea/

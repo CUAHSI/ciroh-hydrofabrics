@@ -109,24 +109,139 @@ function teardownViewer() {
 function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   const { map } = state;
 
-  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON });
+  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-divides-fill', type: 'fill', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.15 },
+    paint: {
+      'fill-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.35, 0.15],
+    },
   });
   map.addLayer({
     id: 'res-divides-line', type: 'line', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#a78bfa', 'line-width': 0.8, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0.8],
+      'line-opacity': 0.9,
+    },
   });
 
-  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON });
+  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-flowpaths-line', type: 'line', source: 'res-flowpaths-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#7dd3fc', '#38bdf8'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 1.2],
+      'line-opacity': 0.9,
+    },
   });
+
+   // ── Click handlers for tooltip ────────────────────────
+  map.on('click', 'res-divides-fill', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildDivideTooltip(f.properties), map);
+  });
+  map.on('click', 'res-flowpaths-line', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildFlowpathTooltip(f.properties), map);
+  });
+
+  // ── Divide hover feedback ──────────────────────────────
+  let hoveredDivideId = null;
+  map.on('mousemove', 'res-divides-fill', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredDivideId) return;
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = id;
+    map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-divides-fill', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = null;
+  });
+
+  // ── Flowpath hover feedback ────────────────────────────
+  let hoveredFlowpathId = null;
+  map.on('mousemove', 'res-flowpaths-line', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredFlowpathId) return;
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = id;
+    map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-flowpaths-line', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = null;
+  });
+}
+
+//Tooltip content builders
+function buildDivideTooltip(props) {
+  return {
+    title: props.divide_id || 'Unknown Catchment',
+    rows: [
+      ['Area', `${Number(props.areasqkm).toFixed(4)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Type', props.type],
+      ['Has Flowline', props.has_flowline === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
+    ],
+  };
+}
+
+function buildFlowpathTooltip(props) {
+  return {
+    title: props.id || 'Unknown Flowpath',
+    rows: [
+      ['Divide ID', props.divide_id],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Area', `${Number(props.areasqkm).toFixed(3)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Hydro Sequence', props.hydroseq],
+      ['Mainstem', props.mainstem],
+      ['Has Divide', props.has_divide === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
+    ],
+  };
+}
+
+//Tooltip Popup
+let _activePopup = null;
+function showTooltip(lngLat, { title, rows }, map) {
+  if (_activePopup) _activePopup.remove();
+
+  const html = `
+    <div class="hf-tooltip">
+      <div class="hf-tooltip-title">${title}</div>
+      ${rows.map(([k, v]) => `
+        <div class="hf-tooltip-row">
+          <span class="hf-tooltip-key">${k}</span>
+          <span class="hf-tooltip-val">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  _activePopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '260px' })
+    .setLngLat(lngLat)
+    .setHTML(html)
+    .addTo(map);
 }
 
 // Nexus loaded lazily on demand

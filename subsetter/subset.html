@@ -16,8 +16,26 @@
 <div id="map-container">
   <div id="map"></div>
   <div id="map-right"></div>
-  <div id="label-left"  class="map-label">Researcher Data</div>
-  <div id="label-right" class="map-label">Reference</div>
+  <div id="label-left" class="map-label">
+    <select id="select-left" onchange="handlers.changeMapLeft(this.value)">
+      <option value="researcher" selected>Researcher Data</option>
+      <option value="community">Community HF</option>
+      <option value="custom">Custom…</option>
+    </select>
+    <input id="left-resource-custom" class="map-label-custom" type="text" placeholder="Enter resource ID…"
+           autocomplete="off" spellcheck="false" style="display:none"
+           onkeydown="handlers.onMapLabelResourceKeydown(event, 'left')" />
+  </div>
+  <div id="label-right" class="map-label">
+    <select id="select-right" onchange="handlers.changeMapRight(this.value)">
+      <option value="community" selected>Community HF</option>
+      <option value="researcher">Researcher Data</option>
+      <option value="__custom__">Custom…</option>
+    </select>
+    <input id="right-resource-custom" class="map-label-custom" type="text" placeholder="Enter resource ID…"
+           autocomplete="off" spellcheck="false" style="display:none"
+           onkeydown="handlers.onMapLabelResourceKeydown(event, 'right')" />
+  </div>
 </div>
 
 <div id="sidebar">
@@ -123,7 +141,7 @@
   import { ensurePmtilesProtocol } from "./src/auth.js";
   import { handleOidcCallback, beginLogin, logout, isAuthenticated } from "./src/oidc.js";
 
-  const { initMap, toggleSplitView, fitToBbox, refreshStyleSources } = useMap();
+  const { initMap, toggleSplitView, fitToBbox, refreshStyleSources, setMapDataset } = useMap();
   const { bootViewer, setLayerVisibility } = useViewer();
 
   function updateAuthUi() {
@@ -140,7 +158,6 @@
       { label: 'Placeholder Resource A', value: 'replace-with-resource-id-a' },
       { label: 'Placeholder Resource B', value: 'replace-with-resource-id-b' },
     ];
-
     resourceOptions.push({ label: 'Custom…', value: '__custom__' });
 
     for (const optionConfig of resourceOptions) {
@@ -219,6 +236,32 @@
     toggleSplit(checked) {
       toggleSplitView(checked);
     },
+    changeMapLeft(value) {
+      const customInput = document.getElementById('left-resource-custom');
+      if (value === '__custom__') {
+        customInput.style.display = 'inline-block';
+        customInput.focus();
+        return;
+      }
+      customInput.style.display = 'none';
+      setMapDataset(state.map, 'res', value);
+    },
+    changeMapRight(value) {
+      const customInput = document.getElementById('right-resource-custom');
+      if (value === '__custom__') {
+        customInput.style.display = 'inline-block';
+        customInput.focus();
+        return;
+      }
+      customInput.style.display = 'none';
+      setMapDataset(state.mapRight, 'ref', value);
+    },
+    onMapLabelResourceKeydown(event, side) {
+      if (event.key !== 'Enter') return;
+      const resourceId = event.target.value.trim();
+      if (!resourceId) return;
+      handlers.applyResourceId(resourceId);
+    },
     onResourceSelectChange(value) {
       const customInput = document.getElementById('resource-id-custom');
       customInput.style.display = value === '__custom__' ? 'block' : 'none';
@@ -232,6 +275,12 @@
         : select?.value
       || '').trim();
       if (!resourceId || resourceId === '__custom__') return;
+
+      // keep the sidebar selector in sync with the resource that's actually loaded
+      if (select) {
+        const isKnownOption = Array.from(select.options).some(opt => opt.value === resourceId);
+        if (isKnownOption) select.value = resourceId;
+      }
 
       const url = new URL(window.location.href);
       url.searchParams.set('resource_id', resourceId);
