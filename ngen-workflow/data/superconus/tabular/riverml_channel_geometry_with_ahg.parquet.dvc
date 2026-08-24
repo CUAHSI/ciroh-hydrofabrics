@@ -3,7 +3,7 @@ deps:
 - etag: cc5cd22a7a388f7559183c3f04ef207e-2
   size: 188372842
   hash: md5
-  path: remote://v2.3/tabular/riverml_channel_geometry_with_ahg.parquet
+  path: remote://supporting/tabular/riverml_channel_geometry_with_ahg.parquet
 outs:
 - hash: md5
   path: riverml_channel_geometry_with_ahg.parquet

@@ -3,7 +3,7 @@ deps:
 - etag: d80d5edf4f30fd3dd88737e0e99afa96-1
   size: 2547819
   hash: md5
-  path: remote://v2.3/gridded/smcmax_soil_layers_stag=2.tif
+  path: remote://supporting/gridded/smcmax_soil_layers_stag=2.tif
 outs:
 - hash: md5
   path: smcmax_soil_layers_stag=2.tif

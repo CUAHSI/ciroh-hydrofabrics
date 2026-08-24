@@ -3,7 +3,7 @@ deps:
 - etag: 2c077ac5014c081bd12e8ea837f253ef
   size: 1959041
   hash: md5
-  path: remote://v2.3/NHDSnapshot/FAC/20/20h_fac.tif
+  path: remote://supporting/NHDSnapshot/FAC/20/20h_fac.tif
 outs:
 - hash: md5
   path: 20h_fac.tif
