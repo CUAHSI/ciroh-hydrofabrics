@@ -186,11 +186,16 @@ export function useGpkg() {
 
       const geomTables = new Set(Object.keys(GEOM_TYPE));
 
-      
 
       for (const [tableName, entry] of Object.entries(tableData)) {
         // entry is { rows, url } from doTable
-        const rows = Array.isArray(entry) ? entry : (entry?.rows ?? []);
+        const raw_rows = Array.isArray(entry) ? entry : (entry?.rows ?? []);
+
+        // drop the geom_bbox column before it makes it into the GeoPackage
+        const rows = raw_rows.map(r => {
+          const { geom_bbox, ...rest } = r;
+          return rest;
+        });
 
         const hasGeom = geomTables.has(tableName);
 
@@ -235,7 +240,9 @@ export function useGpkg() {
               }
               return v;
             });
-            try { stmt.run(vals); } catch(e) {}
+            try { stmt.run(vals); } catch (e) {
+              console.error(e);
+            }
           }
           stmt.free();
         }
