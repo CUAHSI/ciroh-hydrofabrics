@@ -1,4 +1,4 @@
-import { log, state, PARQUET_URLS } from "../config.js";
+import { log, state, PARQUET_URLS, setProgress } from "../config.js";
 import { useParquet } from "../composables/useParquet.js";
 import { useGpkg } from "./useGpkg.js";
 import { useNetwork } from "../composables/useNetwork.js";
@@ -29,7 +29,7 @@ export function useSubset() {
       if (!state.outletCatId || state.upstreamNumericIds.size === 0) return;
       const btn = document.getElementById('btn-subset');
       btn.disabled = true;
-      logEl.innerHTML = '';
+      document.getElementById('log').innerHTML = '';
       setProgress(0);
 
       try {

@@ -128,6 +128,10 @@
         </div>
       </div>
 
+      <div class="btn-row">
+        <button id="btn-subset" type="button" disabled onclick="handlers.subsetAndDownload()">Subset &amp; Download</button>
+      </div>
+
       <div id="progress-bar"><div id="progress-fill"></div></div>
       <div id="log-container"><div id="log"></div></div>
     </div>
@@ -137,12 +141,16 @@
 <script type="module">
   import { useMap } from "./src/composables/useMap.js";
   import { useViewer, ensureNexusLayer } from "./src/useViewer.js";
+  import { useSubset } from "./src/updateMapFilters/useSubset.js";
+  import { useNetwork } from "./src/composables/useNetwork.js";
   import { state, log, setProgress, RESOURCE_ID, DEFAULT_RESOURCE_ID, initBucketName, setResourceId } from "./src/config.js";
   import { ensurePmtilesProtocol } from "./src/auth.js";
   import { handleOidcCallback, beginLogin, logout, isAuthenticated } from "./src/oidc.js";
 
   const { initMap, toggleSplitView, fitToBbox, refreshStyleSources, setMapDataset } = useMap();
   const { bootViewer, setLayerVisibility } = useViewer();
+  const { subsetAndDownload } = useSubset();
+  const { loadNetworkGraph } = useNetwork();
 
   function updateAuthUi() {
     const authed = isAuthenticated();
@@ -236,6 +244,7 @@
     toggleSplit(checked) {
       toggleSplitView(checked);
     },
+    subsetAndDownload,
     changeMapLeft(value) {
       const customInput = document.getElementById('left-resource-custom');
       if (value === '__custom__') {
@@ -306,6 +315,11 @@
       setResourceId(resourceId);
       setStatus('Loading data...', 'loading');
       document.getElementById('meta-panel').classList.remove('visible');
+      state.outletCatId = null;
+      state.upstreamNumericIds = new Set();
+      state.adjacency = null;
+      state.downstream = null;
+      document.getElementById('btn-subset').disabled = true;
       try {
         if (resourceId !== DEFAULT_RESOURCE_ID && !isAuthenticated()) {
           throw new Error('Sign in required to load a custom resource.');
@@ -315,6 +329,7 @@
         refreshStyleSources();
         const meta = await bootViewer();
         showMeta(meta);
+        loadNetworkGraph().catch(err => log(`Network graph unavailable: ${err.message}`, 'error'));
         setProgress(100);
         if (meta.bbox) fitToBbox(meta.bbox);
         setStatus('Ready', 'ready');
