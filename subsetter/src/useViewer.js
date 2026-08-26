@@ -3,9 +3,11 @@ import {
   PARQUET_URLS,
 } from './config.js';
 import { useParquet } from './composables/useParquet.js';
+import { useNetwork } from './composables/useNetwork.js';
 import { clearPresignedUrlCache } from './auth.js';
 
 const { initHyparquet, readParquetAll } = useParquet();
+const { getUpstreamIds } = useNetwork();
 
 // ── NAD83 Conus Albers (EPSG:5070) -> WGS84 ───────────────
 const _ALB = (() => {
@@ -143,6 +145,7 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   map.on('click', 'res-divides-fill', (e) => {
     const f = e.features[0];
     showTooltip(e.lngLat, buildDivideTooltip(f.properties), map);
+    selectDivide(f.properties.divide_id);
   });
   map.on('click', 'res-flowpaths-line', (e) => {
     const f = e.features[0];
@@ -188,6 +191,22 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
     }
     hoveredFlowpathId = null;
   });
+}
+
+// ── Divide selection (drives the Subset & Download button) ────
+function selectDivide(divideId) {
+  const btn = document.getElementById('btn-subset');
+  const numeric = parseInt(String(divideId).split('-')[1], 10);
+  if (!divideId || Number.isNaN(numeric)) return;
+
+  if (!state.adjacency || !state.downstream) {
+    log('Network graph still loading, try again in a moment.', 'error');
+    return;
+  }
+
+  state.outletCatId = divideId;
+  state.upstreamNumericIds = getUpstreamIds(numeric, true);
+  if (btn) btn.disabled = false;
 }
 
 //Tooltip content builders

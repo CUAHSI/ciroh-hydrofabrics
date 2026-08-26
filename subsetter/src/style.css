@@ -202,7 +202,7 @@ body.split-view .map-label{
 .btn-row{
     display:flex;
     gap:8px;
-    margin-top:16px
+    padding:10px 12px;
 }
 button{
     flex:1;
