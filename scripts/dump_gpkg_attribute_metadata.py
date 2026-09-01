@@ -20,7 +20,7 @@ def table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
 
 def get_contents(conn: sqlite3.Connection):
     if table_exists(conn, "gpkg_contents"):
-        return conn.execute(
+        registered = conn.execute(
             """
             SELECT
                 table_name,
@@ -31,6 +31,25 @@ def get_contents(conn: sqlite3.Connection):
             ORDER BY table_name
             """
         ).fetchall()
+
+        registered_names = {row["table_name"] for row in registered}
+
+        # Include tables present in the file but missing from gpkg_contents
+        # (e.g. attribute tables that were not formally registered).
+        unregistered = conn.execute(
+            """
+            SELECT name AS table_name, NULL AS data_type, NULL AS identifier, NULL AS description
+            FROM sqlite_master
+            WHERE type='table'
+              AND name NOT LIKE 'sqlite_%'
+              AND name NOT LIKE 'gpkg_%'
+              AND name NOT LIKE 'rtree_%'
+            ORDER BY name
+            """
+        ).fetchall()
+
+        extras = [row for row in unregistered if row["table_name"] not in registered_names]
+        return list(registered) + extras
 
     return conn.execute(
         """

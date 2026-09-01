@@ -5,11 +5,13 @@ params:
   ngen_gpkg: "..."
   vpu_id: "..."
   out_nextgen: "..."
+  reference_gpkg: "..."
 ---
 
 ```{r}
 library(sf)
 library(dplyr)
+library(tidyr)
 ```
 
 ## Prepare the Output NextGen Geopackage
@@ -54,11 +56,33 @@ divides$vpuid <- params$vpu_id
 #  - rename fp-43378 to id = wb-43378 (swaps prefix fp to wb)
 #  - add toid from the flowpaths layer using the flowpath_id
 #  - drop columns that we no longer need.
+#  - join stream order from the reference hydrofabric via member_comid, taking
+#    the maximum streamorde across all member COMIDs for each aggregated flowpath
+
+# build stream order lookup from reference hydrofabric: id -> streamorde
+ref_streamorde <- st_read(params$reference_gpkg, layer = "flowpaths", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(id, streamorde) |>
+  mutate(id = as.character(as.integer(id)))
+
+# for each flowpath, split member_comid (comma-separated), join to ref stream order,
+# and take the max across all member COMIDs
+order_lookup <- st_read(params$ngen_gpkg, layer = "flowpaths", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(flowpath_id, member_comid) |>
+  separate_rows(member_comid, sep = ",") |>
+  mutate(member_comid = trimws(member_comid)) |>
+  left_join(ref_streamorde, by = c("member_comid" = "id")) |>
+  group_by(flowpath_id) |>
+  summarize(order = max(streamorde, na.rm = TRUE), .groups = "drop") |>
+  mutate(order = if_else(is.infinite(order), NA_real_, order))
+
 flowpaths <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
   mutate(
          id = gsub("^fp-", "wb-", flowpath_id),
          toid = flowpath_toid,
          ) |>
+  left_join(order_lookup, by = "flowpath_id") |>
   select(-flowpath_id, -flowpath_toid, -flowline_id, -member_comid)
 
 
