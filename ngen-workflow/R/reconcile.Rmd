@@ -127,10 +127,65 @@ nexus$vpuid <- params$vpu_id
 
 ```{r}
 
+# build lookups from the reference hydrofabric network layer for:
+#   mainstem/hf_mainstem (mainstemlp), topo
+# the reference network has one row per flowline; aggregate to one per ngen flowpath
+# via reference_id, taking max(mainstemlp) and mode(topo)
+ref_net <- st_read(params$reference_gpkg, layer = "network", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(id, mainstemlp, topo) |>
+  mutate(id = as.character(as.integer(id)))
+
+ref_net_lookup <- st_read(params$ngen_gpkg, layer = "network", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(flowpath_id, reference_id) |>
+  mutate(reference_id = as.character(as.integer(reference_id))) |>
+  left_join(ref_net, by = c("reference_id" = "id")) |>
+  group_by(flowpath_id) |>
+  summarize(
+    mainstem = max(mainstemlp, na.rm = TRUE),
+    topo     = names(sort(table(topo), decreasing = TRUE))[1],
+    .groups  = "drop"
+  ) |>
+  mutate(mainstem = if_else(is.infinite(mainstem), NA_real_, mainstem))
+
+# build lookup for ds_id and type from the ngen divides layer
+divide_lookup <- st_read(params$ngen_gpkg, layer = "divides", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(flowpath_id, ds_id, type)
+
+# Fix the network layer:
+#  - rename columns to match the hydrofabric data model
+#  - swap fp- prefix to wb- on flowpath_id and flowpath_toid
+#  - join ds_id, type, mainstem, hf_mainstem, topo
+#  - add vpuid
+#  - drop columns that are not needed
+network <- st_read(params$ngen_gpkg, layer = "network") |>
+  mutate(
+    id   = gsub("^fp-", "wb-", flowpath_id),
+    toid = gsub("^fp-", "wb-", flowpath_toid)
+  ) |>
+  rename(
+    lengthkm     = flowpath_lengthkm,
+    hf_id        = flowline_id,
+    hf_lengthkm  = flowline_lengthkm,
+    hf_hydroseq  = flowline_hydroseq,
+    hf_source    = hl_source
+  ) |>
+  left_join(ref_net_lookup, by = "flowpath_id") |>
+  left_join(divide_lookup,  by = "flowpath_id") |>
+  mutate(
+    hf_mainstem = mainstem,
+    vpuid       = params$vpu_id
+  ) |>
+  select(-flowpath_id, -flowpath_toid, -incremental_area_id, -incremental_areasqkm,
+         -hl_reference, -hl_class, -flowline_toid)
+
 # replace existing layers in the output NextGen Geopackage with the updated versions
-st_write(divides, params$out_nextgen, layer = "divides", delete_layer = TRUE)
+st_write(divides,   params$out_nextgen, layer = "divides",   delete_layer = TRUE)
 st_write(flowpaths, params$out_nextgen, layer = "flowpaths", delete_layer = TRUE)
-st_write(nexus, params$out_nextgen, layer = "nexus", delete_layer = TRUE)
+st_write(nexus,     params$out_nextgen, layer = "nexus",     delete_layer = TRUE)
+st_write(network,   params$out_nextgen, layer = "network",   delete_layer = TRUE)
 
 ```
 
