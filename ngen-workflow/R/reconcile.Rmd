@@ -187,35 +187,63 @@ network <- st_read(params$ngen_gpkg, layer = "network") |>
 
 ```{r}
 
+# build a lookup from poi_id to id (wb-), nex_id (nex-), and hf_id (flowline_id)
+# using the raw (pre-prefix-swap) network layer
+poi_id_lookup <- st_read(params$ngen_gpkg, layer = "network", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(flowpath_id, poi_id, hf_id = flowline_id) |>
+  filter(!is.na(poi_id)) |>
+  distinct(flowpath_id, poi_id, .keep_all = TRUE) |>
+  mutate(
+    id     = gsub("^fp-", "wb-",  flowpath_id),
+    nex_id = gsub("^fp-", "nex-", flowpath_id)
+  ) |>
+  select(poi_id, id, nex_id, hf_id)
+
 # build the pois layer from the (raw, pre-prefix-swap) network layer:
 #  - poi_id: the POI identifier
 #  - id: the flowpath id, wb- prefixed
 #  - nex_id: the nexus id, nex- prefixed
 #  - vpuid: the vpu id
-pois <- st_read(params$ngen_gpkg, layer = "network", quiet = TRUE) |>
-  st_drop_geometry() |>
-  select(flowpath_id, poi_id) |>
-  distinct() |>
-  filter(!is.na(poi_id)) |>
-  mutate(
-    id     = gsub("^fp-", "wb-",  flowpath_id),
-    nex_id = gsub("^fp-", "nex-", flowpath_id),
-    vpuid  = params$vpu_id
-  ) |>
+pois <- poi_id_lookup |>
+  mutate(vpuid = params$vpu_id) |>
   select(poi_id, id, nex_id, vpuid)
 
 ```
 
-## Write the updated divides, flowpaths, nexus, network, and pois to the output NextGen Geopackage
+## Fix the Hydrolocations Layer
+
+```{r}
+
+# read the hydrolocations layer and do the following transformations:
+#  - join id, nex_id, hf_id from the poi_id_lookup built above
+#  - derive hl_link by stripping the {hl_type}- prefix from hl_reference
+#  - derive hl_x, hl_y from the point geometry
+#  - add vpuid
+#  - drop hl_class, which is not present in the target schema
+hydrolocations <- st_read(params$ngen_gpkg, layer = "hydrolocations") |>
+  left_join(poi_id_lookup, by = "poi_id") |>
+  mutate(
+    hl_link = sub("^[^-]+-", "", hl_reference),
+    hl_x    = st_coordinates(geom)[, 1],
+    hl_y    = st_coordinates(geom)[, 2],
+    vpuid   = params$vpu_id
+  ) |>
+  select(-hl_class)
+
+```
+
+## Write the updated divides, flowpaths, nexus, network, pois, and hydrolocations to the output NextGen Geopackage
 
 ```{r}
 
 # replace existing layers in the output NextGen Geopackage with the updated versions
-st_write(divides,   params$out_nextgen, layer = "divides",   delete_layer = TRUE)
-st_write(flowpaths, params$out_nextgen, layer = "flowpaths", delete_layer = TRUE)
-st_write(nexus,     params$out_nextgen, layer = "nexus",     delete_layer = TRUE)
-st_write(network,   params$out_nextgen, layer = "network",   delete_layer = TRUE)
-st_write(pois,      params$out_nextgen, layer = "pois",      delete_layer = TRUE)
+st_write(divides,        params$out_nextgen, layer = "divides",        delete_layer = TRUE)
+st_write(flowpaths,      params$out_nextgen, layer = "flowpaths",      delete_layer = TRUE)
+st_write(nexus,          params$out_nextgen, layer = "nexus",          delete_layer = TRUE)
+st_write(network,        params$out_nextgen, layer = "network",        delete_layer = TRUE)
+st_write(pois,           params$out_nextgen, layer = "pois",           delete_layer = TRUE)
+st_write(hydrolocations, params$out_nextgen, layer = "hydrolocations", delete_layer = TRUE)
 
 ```
 
