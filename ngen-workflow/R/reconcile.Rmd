@@ -180,7 +180,7 @@ network <- st_read(params$ngen_gpkg, layer = "network") |>
     vpuid       = params$vpu_id
   ) |>
   select(-flowpath_id, -flowpath_toid, -incremental_area_id, -incremental_areasqkm,
-         -hl_reference, -hl_class, -flowline_toid)
+         -hl_reference, -hl_class, -flowline_toid, -reference_id)
 
 ```
 
@@ -271,5 +271,13 @@ st_write(pois,           params$out_nextgen, layer = "pois",           delete_la
 st_write(hydrolocations, params$out_nextgen, layer = "hydrolocations", delete_layer = TRUE)
 st_write(lakes,          params$out_nextgen, layer = "lakes",          delete_layer = TRUE)
 
+# drop intermediate layers that are byproducts of build_nextgen and are not
+# part of the target NextGen data model
+out_layers <- st_layers(params$out_nextgen)$name
+for (lyr in intersect(c("flowlines", "incremental_areas"), out_layers)) {
+  st_delete(params$out_nextgen, layer = lyr)
+}
+
 ```
+
 
