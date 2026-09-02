@@ -280,4 +280,130 @@ for (lyr in intersect(c("flowlines", "incremental_areas"), out_layers)) {
 
 ```
 
+## Enforce Physical Column Order to Match ngiab_data_cli's Expected Schema
+
+```{r}
+
+# ngiab_data_cli's subset_table()/insert_data() copy rows between geopackages
+# with `SELECT * FROM source` and a *positional* `INSERT INTO dest VALUES (...)`,
+# with `dest` pre-created from a bundled template.sql that fixes each table's
+# physical column order. sf::st_write() does not guarantee our column order
+# matches that template (and always forces "geom" to sit right after "fid"),
+# so any mismatch silently shifts values into the wrong columns downstream.
+# Rebuild each feature table here with columns in the exact order
+# ngiab_data_cli's template.sql expects, using name-based SELECT/INSERT so
+# values always land in the correct destination column regardless of the
+# table's current physical order.
+
+library(DBI)
+library(RSQLite)
+
+# fid is always first; "geom" position is included explicitly below since it
+# is not consistently placed by ngiab_data_cli's template (e.g. it's last in
+# hydrolocations instead of second).
+target_column_order <- list(
+  "flowpaths" = c("fid", "geom", "id", "toid", "mainstem", "order", "hydroseq",
+                   "lengthkm", "areasqkm", "tot_drainage_areasqkm", "has_divide",
+                   "divide_id", "poi_id", "vpuid"),
+  "divides" = c("fid", "geom", "divide_id", "toid", "type", "ds_id", "areasqkm",
+                "vpuid", "id", "lengthkm", "tot_drainage_areasqkm", "has_flowline"),
+  "lakes" = c("fid", "geom", "lake_id", "LkArea", "LkMxE", "WeirC", "WeirL",
+              "OrificeC", "OrificeA", "OrificeE", "WeirE", "ifd", "Dam_Length",
+              "domain", "poi_id", "hf_id", "reservoir_index_AnA",
+              "reservoir_index_Extended_AnA", "reservoir_index_GDL_AK",
+              "reservoir_index_Medium_Range", "reservoir_index_Short_Range",
+              "res_id", "vpuid", "lake_x", "lake_y"),
+  "pois" = c("fid", "poi_id", "id", "nex_id", "vpuid"),
+  "hydrolocations" = c("fid", "poi_id", "id", "nex_id", "hf_id", "hl_link",
+                        "hl_reference", "hl_uri", "hl_source", "hl_x", "hl_y",
+                        "vpuid", "geom"),
+  "flowpath-attributes" = c("fid", "link", "to", "Length_m", "Y", "n", "nCC",
+                             "BtmWdth", "TopWdth", "TopWdthCC", "ChSlp", "alt",
+                             "So", "MusX", "MusK", "gage", "gage_nex_id",
+                             "WaterbodyID", "waterbody_nex_id", "id", "toid",
+                             "vpuid"),
+  "flowpath-attributes-ml" = c("fid", "link", "to", "Length_m", "alt", "So",
+                                "MusX", "MusK", "gage", "gage_nex_id",
+                                "WaterbodyID", "waterbody_nex_id", "id", "toid",
+                                "vpuid", "n", "BtmWdth", "TopWdth", "ChSlp",
+                                "nCC", "TopWdthCC", "Y", "YCC", "dingman_r"),
+  "network" = c("fid", "id", "toid", "divide_id", "ds_id", "mainstem",
+                "hydroseq", "hf_source", "hf_id", "lengthkm", "areasqkm",
+                "tot_drainage_areasqkm", "type", "vpuid", "hf_hydroseq",
+                "hf_lengthkm", "hf_mainstem", "topo", "poi_id", "hl_uri"),
+  "nexus" = c("fid", "geom", "id", "toid", "type", "vpuid", "poi_id"),
+  "divide-attributes" = c(
+    "fid", "divide_id", "mode.bexp_soil_layers_stag=1", "mode.bexp_soil_layers_stag=2",
+    "mode.bexp_soil_layers_stag=3", "mode.bexp_soil_layers_stag=4", "mode.ISLTYP",
+    "mode.IVGTYP", "geom_mean.dksat_soil_layers_stag=1", "geom_mean.dksat_soil_layers_stag=2",
+    "geom_mean.dksat_soil_layers_stag=3", "geom_mean.dksat_soil_layers_stag=4",
+    "geom_mean.psisat_soil_layers_stag=1", "geom_mean.psisat_soil_layers_stag=2",
+    "geom_mean.psisat_soil_layers_stag=3", "geom_mean.psisat_soil_layers_stag=4",
+    "mean.cwpvt", "mean.mfsno", "mean.mp", "mean.refkdt", "mean.slope_1km",
+    "mean.smcmax_soil_layers_stag=1", "mean.smcmax_soil_layers_stag=2",
+    "mean.smcmax_soil_layers_stag=3", "mean.smcmax_soil_layers_stag=4",
+    "mean.smcwlt_soil_layers_stag=1", "mean.smcwlt_soil_layers_stag=2",
+    "mean.smcwlt_soil_layers_stag=3", "mean.smcwlt_soil_layers_stag=4",
+    "mean.vcmx25", "mean.Coeff", "mean.Zmax", "mode.Expon", "centroid_x",
+    "centroid_y", "mean.impervious", "mean.elevation", "mean.slope",
+    "circ_mean.aspect", "dist_4.twi", "vpuid"
+  )
+)
+
+con <- dbConnect(RSQLite::SQLite(), params$out_nextgen)
+
+for (tbl in names(target_column_order)) {
+  if (!(tbl %in% dbListTables(con))) next
+
+  target_cols <- target_column_order[[tbl]]
+  current_cols <- dbListFields(con, tbl)
+
+  # only reorder if the column sets match exactly (same names, different order);
+  # if they don't match, leave the table untouched so an unexpected schema
+  # drift doesn't silently drop data.
+  if (!setequal(target_cols, current_cols)) {
+    warning(paste0(
+      "Skipping column reorder for '", tbl, "': column sets differ.\n",
+      "  expected: ", paste(sort(target_cols), collapse = ", "), "\n",
+      "  actual:   ", paste(sort(current_cols), collapse = ", ")
+    ))
+    next
+  }
+
+  if (identical(target_cols, current_cols)) next
+
+  # get the current column types so the rebuilt table preserves them
+  info <- dbGetQuery(con, sprintf('PRAGMA table_info("%s")', tbl))
+  col_types <- setNames(info$type, info$name)
+
+  quote_id <- function(x) paste0('"', x, '"')
+  col_defs <- vapply(target_cols, function(col) {
+    if (col == "fid") {
+      paste0(quote_id(col), " INTEGER NOT NULL")
+    } else {
+      paste0(quote_id(col), " ", col_types[[col]])
+    }
+  }, character(1))
+
+  tmp_tbl <- paste0(tbl, "__reorder_tmp")
+  dbExecute(con, sprintf('DROP TABLE IF EXISTS %s', quote_id(tmp_tbl)))
+  dbExecute(con, sprintf(
+    'CREATE TABLE %s (%s, PRIMARY KEY("fid" AUTOINCREMENT))',
+    quote_id(tmp_tbl), paste(col_defs, collapse = ", ")
+  ))
+
+  col_list <- paste(vapply(target_cols, quote_id, character(1)), collapse = ", ")
+  dbExecute(con, sprintf(
+    'INSERT INTO %s (%s) SELECT %s FROM %s',
+    quote_id(tmp_tbl), col_list, col_list, quote_id(tbl)
+  ))
+
+  dbExecute(con, sprintf('DROP TABLE %s', quote_id(tbl)))
+  dbExecute(con, sprintf('ALTER TABLE %s RENAME TO %s', quote_id(tmp_tbl), quote_id(tbl)))
+}
+
+dbDisconnect(con)
+
+```
+
 
