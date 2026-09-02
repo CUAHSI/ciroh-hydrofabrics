@@ -181,11 +181,41 @@ network <- st_read(params$ngen_gpkg, layer = "network") |>
   select(-flowpath_id, -flowpath_toid, -incremental_area_id, -incremental_areasqkm,
          -hl_reference, -hl_class, -flowline_toid)
 
+```
+
+## Build the POIs Layer
+
+```{r}
+
+# build the pois layer from the (raw, pre-prefix-swap) network layer:
+#  - poi_id: the POI identifier
+#  - id: the flowpath id, wb- prefixed
+#  - nex_id: the nexus id, nex- prefixed
+#  - vpuid: the vpu id
+pois <- st_read(params$ngen_gpkg, layer = "network", quiet = TRUE) |>
+  st_drop_geometry() |>
+  select(flowpath_id, poi_id) |>
+  distinct() |>
+  filter(!is.na(poi_id)) |>
+  mutate(
+    id     = gsub("^fp-", "wb-",  flowpath_id),
+    nex_id = gsub("^fp-", "nex-", flowpath_id),
+    vpuid  = params$vpu_id
+  ) |>
+  select(poi_id, id, nex_id, vpuid)
+
+```
+
+## Write the updated divides, flowpaths, nexus, network, and pois to the output NextGen Geopackage
+
+```{r}
+
 # replace existing layers in the output NextGen Geopackage with the updated versions
 st_write(divides,   params$out_nextgen, layer = "divides",   delete_layer = TRUE)
 st_write(flowpaths, params$out_nextgen, layer = "flowpaths", delete_layer = TRUE)
 st_write(nexus,     params$out_nextgen, layer = "nexus",     delete_layer = TRUE)
 st_write(network,   params$out_nextgen, layer = "network",   delete_layer = TRUE)
+st_write(pois,      params$out_nextgen, layer = "pois",      delete_layer = TRUE)
 
 ```
 
