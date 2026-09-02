@@ -1,0 +1,10 @@
+md5: 409f4245bccc9ea174d637a26bd1aab8
+frozen: true
+deps:
+- etag: 3ccda0436860dd0fc13f0112aa64454f-1
+  size: 1732608
+  hash: md5
+  path: remote://v2.3/vector/nwm_lakes.gpkg
+outs:
+- hash: md5
+  path: nwm_lakes.gpkg
