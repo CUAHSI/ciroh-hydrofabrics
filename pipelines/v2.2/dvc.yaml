@@ -175,10 +175,12 @@ stages:
         ${item.id}
         /ngen-workflow/output/v2.2/ngen/${item.id}/ngen_hydrofabric_final.gpkg
         /ngen-workflow/output/v2.2/prepared/${item.id}/reference_hydrofabric.gpkg
+        /ngen-workflow/data/superconus/vector/nwm_lakes.gpkg
       deps:
         - ../../ngen-workflow/R/reconcile.Rmd
         - ../../ngen-workflow/output/v2.2/ngen/${item.id}/ngen_hydrofabric_vaa.gpkg
         - ../../ngen-workflow/output/v2.2/prepared/${item.id}/reference_hydrofabric.gpkg
+        - ../../ngen-workflow/data/superconus/vector/nwm_lakes.gpkg
       outs:
         - ../../ngen-workflow/output/v2.2/ngen/${item.id}/ngen_hydrofabric_final.gpkg
 

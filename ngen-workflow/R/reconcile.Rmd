@@ -6,6 +6,7 @@ params:
   vpu_id: "..."
   out_nextgen: "..."
   reference_gpkg: "..."
+  nwm_lakes_gpkg: "..."
 ---
 
 ```{r}
@@ -233,7 +234,31 @@ hydrolocations <- st_read(params$ngen_gpkg, layer = "hydrolocations") |>
 
 ```
 
-## Write the updated divides, flowpaths, nexus, network, pois, and hydrolocations to the output NextGen Geopackage
+## Build the Lakes Layer
+
+```{r}
+
+# read the NWM lakes geopackage, reproject to match the ngen geopackage CRS,
+# and derive hf_id (from comid) and lake_x/lake_y from the transformed geometry.
+# filter to the POIs present in this VPU using an inner join on poi_id.
+lake_params <- st_read(params$nwm_lakes_gpkg, layer = "lakes", quiet = TRUE) |>
+  st_transform(st_crs(hydrolocations)) |>
+  rename(hf_id = comid) |>
+  mutate(
+    lake_x = st_coordinates(geom)[, 1],
+    lake_y = st_coordinates(geom)[, 2]
+  ) |>
+  select(-lat, -lon, -time, -ascendingIndex, -crs, -x, -y)
+
+# filter to POIs present in this VPU's pois layer, add vpuid
+lakes <- lake_params |>
+  mutate(poi_id = as.character(poi_id)) |>
+  inner_join(select(st_drop_geometry(pois), poi_id), by = "poi_id") |>
+  mutate(vpuid = params$vpu_id)
+
+```
+
+## Write the updated divides, flowpaths, nexus, network, pois, hydrolocations, and lakes to the output NextGen Geopackage
 
 ```{r}
 
@@ -244,6 +269,7 @@ st_write(nexus,          params$out_nextgen, layer = "nexus",          delete_la
 st_write(network,        params$out_nextgen, layer = "network",        delete_layer = TRUE)
 st_write(pois,           params$out_nextgen, layer = "pois",           delete_layer = TRUE)
 st_write(hydrolocations, params$out_nextgen, layer = "hydrolocations", delete_layer = TRUE)
+st_write(lakes,          params$out_nextgen, layer = "lakes",          delete_layer = TRUE)
 
 ```
 
