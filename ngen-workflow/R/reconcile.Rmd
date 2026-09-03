@@ -39,7 +39,13 @@ fp_toid <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
 #   - adds toid from the flowpaths layer using the flowpath_id
 divides <- st_read(params$ngen_gpkg, layer = "divides") |>
   left_join(fp_toid, by = "flowpath_id") |>
-  mutate(id = gsub("^fp-", "wb-", flowpath_id)) |>
+  mutate(
+    id    = gsub("^fp-", "wb-", flowpath_id),
+    # ds_id is all-NA for most VPUs, which makes sf infer a logical/BOOLEAN
+    # column instead of the expected REAL; force it explicitly so the
+    # written type always matches the target schema regardless of content
+    ds_id = as.double(ds_id)
+  ) |>
   select(-flowpath_id)
 #  select(id, divide_id, toid, ds_id, areasqkm, vpuid, type, has_flowline)
 
@@ -82,6 +88,13 @@ flowpaths <- st_read(params$ngen_gpkg, layer = "flowpaths") |>
   mutate(
          id = gsub("^fp-", "wb-", flowpath_id),
          toid = flowpath_toid,
+         # mainstem and poi_id come straight from the upstream build and are
+         # sometimes entirely NA for a given VPU, which makes sf infer
+         # BOOLEAN/logical columns instead of the expected REAL/TEXT types;
+         # force them explicitly so the written type always matches the
+         # target schema regardless of content
+         mainstem = as.double(mainstem),
+         poi_id   = as.character(poi_id),
          ) |>
   left_join(order_lookup, by = "flowpath_id") |>
   select(-flowpath_id, -flowpath_toid, -flowline_id, -member_comid)
@@ -100,12 +113,20 @@ flowpaths$vpuid <- params$vpu_id
 #  - set id to be the same as the nexus_id column
 #  - rename nexus_toid to toid, and swap the prefix from fp- to wb- (e.g. fp-43378 becomes wb-43378)
 #  - drop columns that we no longer need
+#  - drop duplicate id rows: the upstream build occasionally emits more than
+#    one row for the same nexus_id (both truly identical duplicates, and in
+#    some cases the same id reused at slightly different coordinates, e.g.
+#    a shared "nex-0" terminal/no-downstream sentinel reused across many
+#    unrelated outlets). Downstream routing tools (e.g. t-route) index their
+#    network by this id and crash ("cannot reindex on an axis with duplicate
+#    labels") if it isn't unique, so keep only the first occurrence of each id.
 nexus <- st_read(params$ngen_gpkg, layer = "nexus") |> 
   mutate(
          id   = nexus_id,
          toid = gsub("^fp-", "wb-", nexus_toid)
   ) |>
-  select(-nexus_id, -nexus_toid)
+  select(-nexus_id, -nexus_toid) |>
+  distinct(id, .keep_all = TRUE)
 
 # Add missing POI attributes which are defined in the network layer.
 # rename the nexus_id column to match the flowpath_id column in the network layer,
@@ -114,7 +135,13 @@ poi_lookup <- st_read(params$ngen_gpkg, layer = "network") |>
      dplyr::select(flowpath_id, poi_id) |>
      dplyr::distinct() |>
      dplyr::filter(!is.na(poi_id)) |>
-     dplyr::mutate(nexus_id = gsub("^fp-", "nex-", flowpath_id)) |>
+     dplyr::mutate(
+       nexus_id = gsub("^fp-", "nex-", flowpath_id),
+       # poi_id comes through as TEXT from the upstream build; the target
+       # schema expects an integer (MEDIUMINT) id, matching the NWM
+       # lake/gage identifiers it's ultimately joined against
+       poi_id   = as.integer(poi_id)
+     ) |>
      dplyr::select(nexus_id, poi_id)
 nexus <- left_join(nexus, poi_lookup, by = c("id" = "nexus_id"))
 
@@ -177,7 +204,10 @@ network <- st_read(params$ngen_gpkg, layer = "network") |>
   left_join(divide_lookup,  by = "flowpath_id") |>
   mutate(
     hf_mainstem = mainstem,
-    vpuid       = params$vpu_id
+    vpuid       = params$vpu_id,
+    # poi_id comes through as TEXT from the upstream build; the target
+    # schema expects an integer (MEDIUMINT) id
+    poi_id      = as.integer(poi_id)
   ) |>
   select(-flowpath_id, -flowpath_toid, -incremental_area_id, -incremental_areasqkm,
          -hl_reference, -hl_class, -flowline_toid, -reference_id)
@@ -213,6 +243,18 @@ nexus_network_rows <- nexus |>
 
 network <- bind_rows(network, nexus_network_rows)
 
+# combining the flowpath rows (read from source, e.g. integer hydroseq) with
+# the placeholder nexus rows above (bare `NA`, which is logical) can shift a
+# column's inferred type during bind_rows (e.g. integer -> double). Enforce
+# the target schema's types explicitly on the final combined table so this
+# is correct regardless of how bind_rows() resolves each column.
+network <- network |>
+  mutate(
+    ds_id       = as.double(ds_id),
+    hydroseq    = as.integer(hydroseq),
+    poi_id      = as.integer(poi_id)
+  )
+
 ```
 
 ## Build the POIs Layer
@@ -228,7 +270,11 @@ poi_id_lookup <- st_read(params$ngen_gpkg, layer = "network", quiet = TRUE) |>
   distinct(flowpath_id, poi_id, .keep_all = TRUE) |>
   mutate(
     id     = gsub("^fp-", "wb-",  flowpath_id),
-    nex_id = gsub("^fp-", "nex-", flowpath_id)
+    nex_id = gsub("^fp-", "nex-", flowpath_id),
+    # poi_id comes through as TEXT from the upstream build; the target
+    # schema expects an integer (MEDIUMINT) id, matching the NWM
+    # lake/gage identifiers it's ultimately joined against
+    poi_id = as.integer(poi_id)
   ) |>
   select(poi_id, id, nex_id, hf_id)
 
@@ -254,6 +300,11 @@ pois <- poi_id_lookup |>
 #  - add vpuid
 #  - drop hl_class, which is not present in the target schema
 hydrolocations <- st_read(params$ngen_gpkg, layer = "hydrolocations") |>
+  mutate(
+    # poi_id comes through as TEXT from the upstream build; cast to integer
+    # before joining so it matches poi_id_lookup's (also-integer) poi_id key
+    poi_id = as.integer(poi_id)
+  ) |>
   left_join(poi_id_lookup, by = "poi_id") |>
   mutate(
     hl_link = sub("^[^-]+-", "", hl_reference),
@@ -283,13 +334,87 @@ lake_params <- st_read(params$nwm_lakes_gpkg, layer = "lakes", quiet = TRUE) |>
 
 # filter to POIs present in this VPU's pois layer, add vpuid
 lakes <- lake_params |>
-  mutate(poi_id = as.character(poi_id)) |>
+  # poi_id is already an integer (MEDIUMINT) in the NWM lakes source, matching
+  # the target schema; cast explicitly so the join is robust even if pois$poi_id
+  # or lake_params$poi_id's exact numeric subtype ever drifts
+  mutate(poi_id = as.integer(poi_id)) |>
   inner_join(select(st_drop_geometry(pois), poi_id), by = "poi_id") |>
   mutate(vpuid = params$vpu_id)
 
 ```
 
-## Write the updated divides, flowpaths, nexus, network, pois, hydrolocations, and lakes to the output NextGen Geopackage
+## Aggregate the Flowpath (Channel) Attribute Tables to One Row per Flowpath
+
+```{r}
+
+# The upstream build's flowpath-attributes / flowpath-attributes-ml tables are
+# still at raw NHDPlus-flowline granularity: many rows can share the same
+# ngen flowpath `id` (fragments of the original NHD reach network that were
+# merged into a single ngen catchment), with `link`/`to` holding the raw
+# per-flowline COMID chain instead of the ngen id/toid. Every consumer of
+# these tables (t-route, ngen's channel-routing config) expects exactly one
+# row per flowpath id -- duplicate ids crash t-route's DataFrame.reindex()
+# with "cannot reindex on an axis with duplicate labels". The reference
+# hydrofabric has already reconciled this (link == id, to == toid, one row
+# per flowpath), so do the same here: sum the additive length and
+# length-weight-average the per-unit-length hydraulic parameters across the
+# constituent flowlines making up each flowpath.
+
+first_non_na <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) == 0) NA else x[1]
+}
+
+# collapse a raw, flowline-level flowpath-attributes(-ml) table down to one
+# row per `id`, aggregating `hydraulic_cols` as a Length_m-weighted mean and
+# `Length_m` itself as a sum.
+aggregate_flowpath_attributes <- function(df, hydraulic_cols) {
+  df |>
+    st_drop_geometry() |>
+    group_by(id) |>
+    summarise(
+      toid             = first_non_na(toid),
+      total_length_m   = sum(Length_m, na.rm = TRUE),
+      across(all_of(hydraulic_cols), ~ weighted.mean(.x, w = Length_m, na.rm = TRUE)),
+      alt              = first_non_na(alt),
+      gage             = first_non_na(gage),
+      gage_nex_id      = first_non_na(gage_nex_id),
+      WaterbodyID      = first_non_na(WaterbodyID),
+      waterbody_nex_id = first_non_na(waterbody_nex_id),
+      vpuid            = first_non_na(vpuid),
+      .groups = "drop"
+    ) |>
+    rename(Length_m = total_length_m) |>
+    mutate(
+      link = id,
+      to   = toid,
+      # these columns are all-NA for VPUs with no gaged/lake-associated
+      # flowpaths, which makes first_non_na() return a logical NA; without an
+      # explicit cast that gets written as BOOLEAN instead of the target
+      # schema's REAL/TEXT type.
+      alt              = as.double(alt),
+      gage             = as.character(gage),
+      gage_nex_id      = as.character(gage_nex_id),
+      WaterbodyID      = as.character(WaterbodyID),
+      waterbody_nex_id = as.character(waterbody_nex_id)
+    )
+}
+
+flowpath_attributes <- st_read(params$ngen_gpkg, layer = "flowpath-attributes") |>
+  aggregate_flowpath_attributes(
+    hydraulic_cols = c("Y", "n", "nCC", "BtmWdth", "TopWdth", "TopWdthCC",
+                        "ChSlp", "So", "MusX", "MusK")
+  )
+
+flowpath_attributes_ml <- st_read(params$ngen_gpkg, layer = "flowpath-attributes-ml") |>
+  aggregate_flowpath_attributes(
+    hydraulic_cols = c("n", "BtmWdth", "TopWdth", "ChSlp", "nCC", "TopWdthCC",
+                        "Y", "YCC", "dingman_r", "So", "MusX", "MusK")
+  )
+
+```
+
+## Write the updated divides, flowpaths, nexus, network, pois, hydrolocations, lakes, and flowpath attributes to the output NextGen Geopackage
 
 ```{r}
 
@@ -301,6 +426,8 @@ st_write(network,        params$out_nextgen, layer = "network",        delete_la
 st_write(pois,           params$out_nextgen, layer = "pois",           delete_layer = TRUE)
 st_write(hydrolocations, params$out_nextgen, layer = "hydrolocations", delete_layer = TRUE)
 st_write(lakes,          params$out_nextgen, layer = "lakes",          delete_layer = TRUE)
+st_write(flowpath_attributes,    params$out_nextgen, layer = "flowpath-attributes",    delete_layer = TRUE)
+st_write(flowpath_attributes_ml, params$out_nextgen, layer = "flowpath-attributes-ml", delete_layer = TRUE)
 
 # drop intermediate layers that are byproducts of build_nextgen and are not
 # part of the target NextGen data model
@@ -381,6 +508,16 @@ target_column_order <- list(
   )
 )
 
+# Some columns come through from the upstream build with the wrong SQL type
+# (e.g. all-NA/ID-like columns that GDAL infers as REAL instead of the
+# TEXT they should be) and are never otherwise rewritten by this script, so
+# they can't be fixed via mutate()/st_write(). Force their declared type here
+# regardless of what PRAGMA table_info() currently reports.
+column_type_overrides <- list(
+  "flowpath-attributes"    = c(link = "TEXT", to = "TEXT"),
+  "flowpath-attributes-ml" = c(link = "TEXT", to = "TEXT")
+)
+
 con <- dbConnect(RSQLite::SQLite(), params$out_nextgen)
 
 for (tbl in names(target_column_order)) {
@@ -401,11 +538,20 @@ for (tbl in names(target_column_order)) {
     next
   }
 
-  if (identical(target_cols, current_cols)) next
-
   # get the current column types so the rebuilt table preserves them
   info <- dbGetQuery(con, sprintf('PRAGMA table_info("%s")', tbl))
   col_types <- setNames(info$type, info$name)
+
+  overrides <- column_type_overrides[[tbl]]
+  if (!is.null(overrides)) {
+    col_types[names(overrides)] <- overrides
+  }
+
+  # skip the rebuild entirely only if both the column order already matches
+  # the target AND no declared type needs to change
+  types_changed <- !is.null(overrides) &&
+    !identical(unname(col_types[names(overrides)]), unname(setNames(info$type, info$name)[names(overrides)]))
+  if (identical(target_cols, current_cols) && !types_changed) next
 
   quote_id <- function(x) paste0('"', x, '"')
   col_defs <- vapply(target_cols, function(col) {
@@ -431,6 +577,44 @@ for (tbl in names(target_column_order)) {
 
   dbExecute(con, sprintf('DROP TABLE %s', quote_id(tbl)))
   dbExecute(con, sprintf('ALTER TABLE %s RENAME TO %s', quote_id(tmp_tbl), quote_id(tbl)))
+}
+
+dbDisconnect(con)
+
+```
+
+## Register Non-Spatial Attribute Tables in gpkg_contents
+
+```{r}
+
+# sf::st_write() (and the upstream build step that originally produced
+# divide-attributes/flowpath-attributes/flowpath-attributes-ml) do not
+# register non-spatial ("aspatial") tables in gpkg_contents. GDAL/ogrinfo
+# still lists them as layers via a fallback heuristic, but any tool that
+# enumerates layers strictly via gpkg_contents (e.g. ngiab_data_cli's
+# get_feature_tables()/get_available_tables()) will not see them at all.
+# Register any of our attribute-only tables that are missing, matching the
+# convention used by the official reference hydrofabric geopackages
+# (data_type = "attributes", srs_id = 0, no bounding box).
+attribute_only_tables <- c(
+  "network", "pois", "divide-attributes", "flowpath-attributes",
+  "flowpath-attributes-ml"
+)
+
+con <- dbConnect(RSQLite::SQLite(), params$out_nextgen)
+
+registered <- dbGetQuery(con, "SELECT table_name FROM gpkg_contents")$table_name
+now_iso <- strftime(as.POSIXct(Sys.time(), tz = "UTC"), "%Y-%m-%dT%H:%M:%OS3Z")
+
+for (tbl in attribute_only_tables) {
+  if (!(tbl %in% dbListTables(con))) next
+  if (tbl %in% registered) next
+
+  dbExecute(con, "
+    INSERT INTO gpkg_contents
+      (table_name, data_type, identifier, description, last_change, srs_id)
+    VALUES (?, 'attributes', ?, '', ?, 0)
+  ", params = list(tbl, tbl, now_iso))
 }
 
 dbDisconnect(con)

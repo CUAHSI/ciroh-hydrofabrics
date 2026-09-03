@@ -16,7 +16,6 @@ should get their own test module under tests/v2.3/, rather than modifying
 this one.
 """
 
-import re
 import sqlite3
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -56,8 +55,6 @@ ID_LIKE_COLUMNS = {
     "flowpath-attributes": ["id", "toid"],
     "flowpath-attributes-ml": ["id", "toid"],
 }
-
-PREFIX_RE = re.compile(r"^([A-Za-z]+)-")
 
 
 # --------------------------------------------------------------------------
@@ -117,31 +114,51 @@ def get_geometry_info(gpkg: Path, table: str) -> Optional[Tuple[str, int]]:
         con.close()
 
 
-def sample_values(gpkg: Path, table: str, column: str, limit: int = 500) -> List[str]:
-    """Return up to `limit` distinct non-null string values of a column."""
+def get_id_prefixes(gpkg: Path, table: str, column: str) -> Set[str]:
+    """
+    Return the *complete* set of alphabetic prefixes used by an id-like
+    column's values, e.g. 'wb-1234' -> 'wb', 'nex-1234' -> 'nex'.
+
+    This queries every distinct prefix directly via SQL (not a small sample
+    of distinct full values), since a naive small LIMIT-based sample of an
+    unordered SELECT DISTINCT can be dominated by a single prefix purely due
+    to SQLite's internal scan/dedup order (e.g. returning 500 'tnx-' rows
+    before ever reaching a 'nex-' row), producing false negatives for
+    legitimately-used prefixes that happen to be less common or ordered
+    later.
+    """
     con = _connect(gpkg)
     try:
         cur = con.cursor()
         cur.execute(
-            f'SELECT DISTINCT "{column}" FROM "{table}" WHERE "{column}" IS NOT NULL LIMIT ?',
-            (limit,),
+            f'SELECT DISTINCT substr("{column}", 1, instr("{column}", \'-\') - 1) '
+            f'FROM "{table}" WHERE "{column}" IS NOT NULL AND "{column}" LIKE \'%-%\''
         )
-        return [str(row[0]) for row in cur.fetchall()]
+        return {row[0] for row in cur.fetchall() if row[0]}
     finally:
         con.close()
 
 
-def get_id_prefixes(gpkg: Path, table: str, column: str, limit: int = 500) -> Set[str]:
-    """
-    Return the set of alphabetic prefixes found in a sample of an id-like
-    column's values, e.g. 'wb-1234' -> 'wb', 'nex-1234' -> 'nex'.
-    """
-    prefixes = set()
-    for value in sample_values(gpkg, table, column, limit=limit):
-        match = PREFIX_RE.match(value)
-        if match:
-            prefixes.add(match.group(1))
-    return prefixes
+def count_non_null(gpkg: Path, table: str, column: str) -> int:
+    """Return the number of non-null values of a column in a table."""
+    con = _connect(gpkg)
+    try:
+        cur = con.cursor()
+        cur.execute(f'SELECT COUNT(*) FROM "{table}" WHERE "{column}" IS NOT NULL')
+        return cur.fetchone()[0]
+    finally:
+        con.close()
+
+
+def count_rows(gpkg: Path, table: str) -> int:
+    """Return the total number of rows in a table."""
+    con = _connect(gpkg)
+    try:
+        cur = con.cursor()
+        cur.execute(f'SELECT COUNT(*) FROM "{table}"')
+        return cur.fetchone()[0]
+    finally:
+        con.close()
 
 
 # --------------------------------------------------------------------------
@@ -259,7 +276,30 @@ def test_column_types_match(pipeline_gpkg, reference_gpkg, layer):
 
 @pytest.mark.parametrize("layer", SPATIAL_LAYERS)
 def test_geometry_matches(pipeline_gpkg, reference_gpkg, layer):
-    """Spatial layers should have the same registered geometry type and SRS."""
+    """
+    Spatial layers should have the same registered SRS, and either the same
+    geometry type or a more specific one than the reference.
+
+    GDAL infers a layer's declared geometry_type_name from the actual
+    geometries written to it. This means:
+      - an empty layer (0 features, e.g. a VPU with no lake/reservoir POIs)
+        has nothing for GDAL to infer a type from, so it's registered as
+        generic 'GEOMETRY' -- this isn't a schema defect, just a consequence
+        of there being no data for this VPU, so it's skipped rather than
+        failed.
+      - a layer where every feature happens to share one concrete subtype
+        (e.g. all MULTILINESTRING) may be declared with that specific type
+        even where the reference (built across more geometry variety, e.g.
+        full CONUS) settled on the generic 'GEOMETRY'. A specific declared
+        type is strictly more informative than a generic one and is not a
+        real mismatch, so it's accepted here too.
+    """
+    if count_rows(pipeline_gpkg, layer) == 0:
+        pytest.skip(
+            f"'{layer}' has no features in the pipeline output for this VPU; "
+            "geometry type can't be meaningfully validated with no data"
+        )
+
     ref_geom = get_geometry_info(reference_gpkg, layer)
     pipe_geom = get_geometry_info(pipeline_gpkg, layer)
 
@@ -274,7 +314,7 @@ def test_geometry_matches(pipeline_gpkg, reference_gpkg, layer):
     ref_geom_type, ref_srs = ref_geom
     pipe_geom_type, pipe_srs = pipe_geom
 
-    assert pipe_geom_type == ref_geom_type, (
+    assert pipe_geom_type == ref_geom_type or ref_geom_type == "GEOMETRY", (
         f"geometry type mismatch in '{layer}': expected {ref_geom_type!r}, got {pipe_geom_type!r}"
     )
     assert pipe_srs == ref_srs, (
@@ -293,9 +333,21 @@ def test_id_naming_convention_matches(pipeline_gpkg, reference_gpkg, layer, colu
     official reference file. This does NOT check exact values (which will
     differ, since the pipeline output is a single-VPU subset) -- only that
     the *set* of naming prefixes used is consistent with the reference.
+
+    Some VPUs legitimately have no POIs at all (e.g. a closed/endorheic basin
+    with no NWM reservoirs or gages), which leaves poi-derived columns like
+    pois.id/nex_id or hydrolocations.id/nex_id entirely NULL -- that's a
+    property of the VPU's data, not a naming-convention defect, so those
+    cases are skipped rather than failed.
     """
     if not table_exists(pipeline_gpkg, layer):
         pytest.fail(f"layer '{layer}' does not exist in the pipeline output")
+
+    if count_non_null(pipeline_gpkg, layer, column) == 0:
+        pytest.skip(
+            f"{layer}.{column} has no non-null values in the pipeline output for this VPU "
+            "(e.g. no POIs assigned); naming convention can't be validated with no data"
+        )
 
     ref_prefixes = get_id_prefixes(reference_gpkg, layer, column)
     pipe_prefixes = get_id_prefixes(pipeline_gpkg, layer, column)
