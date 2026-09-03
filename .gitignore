@@ -208,3 +208,7 @@ __marimo__/
 .Rproj.user
 .DS_Store
 
+
+# Test data assets (large geopackages downloaded on-the-fly by the test
+# suite; see tests/v2.2/conftest.py)
+tests/**/assets/

@@ -21,6 +21,7 @@ matplotlib = ">=3.10.8,<4"
 pynhd = ">=0.20.0,<0.21"
 pygeohydro = ">=0.14.0,<0.15"
 fiona = ">=1.10.1,<2"
+pytest = ">=8.0,<9"
 
 [pypi-dependencies]
 dvc-s3 = ">=3.3.0, <4"
