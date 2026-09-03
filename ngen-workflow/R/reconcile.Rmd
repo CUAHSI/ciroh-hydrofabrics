@@ -182,6 +182,37 @@ network <- st_read(params$ngen_gpkg, layer = "network") |>
   select(-flowpath_id, -flowpath_toid, -incremental_area_id, -incremental_areasqkm,
          -hl_reference, -hl_class, -flowline_toid, -reference_id)
 
+# the network layer should have one row per node in the flow network, not just
+# one row per flowpath. Append a row per nexus (id = nexus id, toid = the
+# downstream flowpath it flows into) so that tools which build the network
+# topology graph directly from this layer (e.g. ngiab_data_cli) see the
+# nexus -> flowpath edges, not just the flowpath -> nexus edges.
+nexus_network_rows <- nexus |>
+  st_drop_geometry() |>
+  transmute(
+    id                    = id,
+    toid                  = toid,
+    divide_id             = NA,
+    ds_id                 = NA,
+    mainstem              = NA,
+    hydroseq              = NA,
+    hf_source             = "NOAA Reference Fabric",
+    hf_id                 = NA,
+    lengthkm              = NA,
+    areasqkm              = NA,
+    tot_drainage_areasqkm = NA,
+    type                  = "nexus",
+    vpuid                 = vpuid,
+    hf_hydroseq           = NA,
+    hf_lengthkm           = NA,
+    hf_mainstem           = NA,
+    topo                  = "fl-nex",
+    poi_id                = poi_id,
+    hl_uri                = NA
+  )
+
+network <- bind_rows(network, nexus_network_rows)
+
 ```
 
 ## Build the POIs Layer
