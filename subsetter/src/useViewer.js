@@ -272,7 +272,7 @@ function showTooltip(lngLat, { title, rows }, map) {
     .addTo(map);
 }
 
-// Nexus points drive subset selection, so this loads eagerly from bootViewer.
+// Nexus points drive subset selection
 export async function ensureNexusLayer() {
   const { map } = state;
   if (map.getSource('res-nexus-src')) return;
