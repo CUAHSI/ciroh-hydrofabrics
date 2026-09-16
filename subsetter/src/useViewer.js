@@ -245,7 +245,6 @@ function buildNexusTooltip(props) {
     rows: [
       ['Type', props.type],
       ['To', props.toid],
-      ['VPU', props.vpuid],
     ],
   };
 }
