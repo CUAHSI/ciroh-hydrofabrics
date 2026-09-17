@@ -2,9 +2,11 @@ import {
   state, log, setProgress,
   PARQUET_URLS,
 } from './config.js';
+import { useNetwork } from './composables/useNetwork.js';
 import { useParquet } from './composables/useParquet.js';
 import { clearPresignedUrlCache } from './auth.js';
 
+const { getUpstreamIdsFromNexus } = useNetwork();
 const { initHyparquet, readParquetAll } = useParquet();
 
 // ── NAD83 Conus Albers (EPSG:5070) -> WGS84 ───────────────
@@ -190,6 +192,22 @@ function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   });
 }
 
+// ── Nexus selection (drives the Subset & Download button) ─────
+function selectNexus(nexusId) {
+  const btn = document.getElementById('btn-subset');
+  const numeric = parseInt(String(nexusId).split('-')[1], 10);
+  if (!nexusId || Number.isNaN(numeric)) return;
+
+  if (!state.adjacency || !state.downstream) {
+    log('Network graph still loading, try again in a moment.', 'error');
+    return;
+  }
+
+  state.outletCatId = nexusId;
+  state.upstreamNumericIds = getUpstreamIdsFromNexus(numeric);
+  if (btn) btn.disabled = false;
+}
+
 //Tooltip content builders
 function buildDivideTooltip(props) {
   return {
@@ -221,6 +239,16 @@ function buildFlowpathTooltip(props) {
   };
 }
 
+function buildNexusTooltip(props) {
+  return {
+    title: props.id || 'Unknown Nexus',
+    rows: [
+      ['Type', props.type],
+      ['To', props.toid],
+    ],
+  };
+}
+
 //Tooltip Popup
 let _activePopup = null;
 function showTooltip(lngLat, { title, rows }, map) {
@@ -244,7 +272,7 @@ function showTooltip(lngLat, { title, rows }, map) {
     .addTo(map);
 }
 
-// Nexus loaded lazily on demand
+// Nexus points drive subset selection
 export async function ensureNexusLayer() {
   const { map } = state;
   if (map.getSource('res-nexus-src')) return;
@@ -255,12 +283,38 @@ export async function ensureNexusLayer() {
     const col = geomCol(rows);
     if (col && rows.length > 0) {
       const gj = rowsToGeojson(rows, col);
-      map.addSource('res-nexus-src', { type: 'geojson', data: gj });
+      map.addSource('res-nexus-src', { type: 'geojson', data: gj, generateId: true });
       map.addLayer({
         id: 'res-nexus-circle', type: 'circle', source: 'res-nexus-src',
-        layout: { visibility: 'none' },
-        paint: { 'circle-color': '#f59e0b', 'circle-radius': 3, 'circle-opacity': 0.85 },
+        layout: { visibility: 'visible' },
+        paint: {
+          'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#fbbf24', '#f59e0b'],
+          'circle-radius': ['case', ['boolean', ['feature-state', 'hover'], false], 5, 3],
+          'circle-opacity': 0.85,
+        },
       });
+
+      map.on('click', 'res-nexus-circle', (e) => {
+        const f = e.features[0];
+        showTooltip(e.lngLat, buildNexusTooltip(f.properties), map);
+        selectNexus(f.properties.id);
+      });
+
+      let hoveredNexusId = null;
+      map.on('mousemove', 'res-nexus-circle', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+        const id = e.features[0]?.id;
+        if (id === undefined || id === hoveredNexusId) return;
+        if (hoveredNexusId !== null) map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: false });
+        hoveredNexusId = id;
+        map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: true });
+      });
+      map.on('mouseleave', 'res-nexus-circle', () => {
+        map.getCanvas().style.cursor = '';
+        if (hoveredNexusId !== null) map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: false });
+        hoveredNexusId = null;
+      });
+
       log(`  nexus: ${rows.length} points`, 'success');
     }
   } catch (e) { log(`nexus error: ${e.message}`, 'error'); }
@@ -292,6 +346,8 @@ export function useViewer() {
     log('Rendering layers...', 'info');
     setProgress(80);
     addGeojsonLayers(divGeoJSON, fpGeoJSON);
+    await ensureNexusLayer();
+    setProgress(90);
 
     if (divGeoJSON.bbox) {
       state.researcherBbox = divGeoJSON.bbox;
