@@ -3,7 +3,7 @@ deps:
 - etag: fa0ba2c8ceb0da109a9a0bccaffd15a0-8
   size: 122556759
   hash: md5
-  path: remote://v2.3/NHDSnapshot/FAC/12/12d_fac.tif
+  path: remote://supporting/NHDSnapshot/FAC/12/12d_fac.tif
 outs:
 - hash: md5
   path: 12d_fac.tif

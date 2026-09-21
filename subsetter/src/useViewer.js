@@ -2,9 +2,11 @@ import {
   state, log, setProgress,
   PARQUET_URLS,
 } from './config.js';
+import { useNetwork } from './composables/useNetwork.js';
 import { useParquet } from './composables/useParquet.js';
 import { clearPresignedUrlCache } from './auth.js';
 
+const { getUpstreamIdsFromNexus } = useNetwork();
 const { initHyparquet, readParquetAll } = useParquet();
 
 // ── NAD83 Conus Albers (EPSG:5070) -> WGS84 ───────────────
@@ -109,27 +111,168 @@ function teardownViewer() {
 function addGeojsonLayers(divGeoJSON, fpGeoJSON) {
   const { map } = state;
 
-  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON });
+  map.addSource('res-divides-src', { type: 'geojson', data: divGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-divides-fill', type: 'fill', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.15 },
+    paint: {
+      'fill-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.35, 0.15],
+    },
   });
   map.addLayer({
     id: 'res-divides-line', type: 'line', source: 'res-divides-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#a78bfa', 'line-width': 0.8, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#c4b5fd', '#a78bfa'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0.8],
+      'line-opacity': 0.9,
+    },
   });
 
-  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON });
+  map.addSource('res-flowpaths-src', { type: 'geojson', data: fpGeoJSON, generateId: true });
   map.addLayer({
     id: 'res-flowpaths-line', type: 'line', source: 'res-flowpaths-src',
     layout: { visibility: 'visible' },
-    paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
+    paint: {
+      'line-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#7dd3fc', '#38bdf8'],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 1.2],
+      'line-opacity': 0.9,
+    },
+  });
+
+   // ── Click handlers for tooltip ────────────────────────
+  map.on('click', 'res-divides-fill', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildDivideTooltip(f.properties), map);
+  });
+  map.on('click', 'res-flowpaths-line', (e) => {
+    const f = e.features[0];
+    showTooltip(e.lngLat, buildFlowpathTooltip(f.properties), map);
+  });
+
+  // ── Divide hover feedback ──────────────────────────────
+  let hoveredDivideId = null;
+  map.on('mousemove', 'res-divides-fill', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredDivideId) return;
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = id;
+    map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-divides-fill', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredDivideId !== null) {
+      map.setFeatureState({ source: 'res-divides-src', id: hoveredDivideId }, { hover: false });
+    }
+    hoveredDivideId = null;
+  });
+
+  // ── Flowpath hover feedback ────────────────────────────
+  let hoveredFlowpathId = null;
+  map.on('mousemove', 'res-flowpaths-line', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    const id = e.features[0]?.id;
+    if (id === undefined || id === hoveredFlowpathId) return;
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = id;
+    map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: true });
+  });
+  map.on('mouseleave', 'res-flowpaths-line', () => {
+    map.getCanvas().style.cursor = '';
+    if (hoveredFlowpathId !== null) {
+      map.setFeatureState({ source: 'res-flowpaths-src', id: hoveredFlowpathId }, { hover: false });
+    }
+    hoveredFlowpathId = null;
   });
 }
 
-// Nexus loaded lazily on demand
+// ── Nexus selection (drives the Subset & Download button) ─────
+function selectNexus(nexusId) {
+  const btn = document.getElementById('btn-subset');
+  const numeric = parseInt(String(nexusId).split('-')[1], 10);
+  if (!nexusId || Number.isNaN(numeric)) return;
+
+  if (!state.adjacency || !state.downstream) {
+    log('Network graph still loading, try again in a moment.', 'error');
+    return;
+  }
+
+  state.outletCatId = nexusId;
+  state.upstreamNumericIds = getUpstreamIdsFromNexus(numeric);
+  if (btn) btn.disabled = false;
+}
+
+//Tooltip content builders
+function buildDivideTooltip(props) {
+  return {
+    title: props.divide_id || 'Unknown Catchment',
+    rows: [
+      ['Area', `${Number(props.areasqkm).toFixed(4)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Type', props.type],
+      ['Has Flowline', props.has_flowline === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
+    ],
+  };
+}
+
+function buildFlowpathTooltip(props) {
+  return {
+    title: props.id || 'Unknown Flowpath',
+    rows: [
+      ['Divide ID', props.divide_id],
+      ['Length', `${Number(props.lengthkm).toFixed(3)} km`],
+      ['Area', `${Number(props.areasqkm).toFixed(3)} km²`],
+      ['Total Drainage Area', `${Number(props.tot_drainage_areasqkm).toFixed(4)} km²`],
+      ['Hydro Sequence', props.hydroseq],
+      ['Mainstem', props.mainstem],
+      ['Has Divide', props.has_divide === true ? 'Yes' : 'No'],
+      ['VPU', props.vpuid],
+    ],
+  };
+}
+
+function buildNexusTooltip(props) {
+  return {
+    title: props.id || 'Unknown Nexus',
+    rows: [
+      ['Type', props.type],
+      ['To', props.toid],
+    ],
+  };
+}
+
+//Tooltip Popup
+let _activePopup = null;
+function showTooltip(lngLat, { title, rows }, map) {
+  if (_activePopup) _activePopup.remove();
+
+  const html = `
+    <div class="hf-tooltip">
+      <div class="hf-tooltip-title">${title}</div>
+      ${rows.map(([k, v]) => `
+        <div class="hf-tooltip-row">
+          <span class="hf-tooltip-key">${k}</span>
+          <span class="hf-tooltip-val">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  _activePopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '260px' })
+    .setLngLat(lngLat)
+    .setHTML(html)
+    .addTo(map);
+}
+
+// Nexus points drive subset selection
 export async function ensureNexusLayer() {
   const { map } = state;
   if (map.getSource('res-nexus-src')) return;
@@ -140,12 +283,38 @@ export async function ensureNexusLayer() {
     const col = geomCol(rows);
     if (col && rows.length > 0) {
       const gj = rowsToGeojson(rows, col);
-      map.addSource('res-nexus-src', { type: 'geojson', data: gj });
+      map.addSource('res-nexus-src', { type: 'geojson', data: gj, generateId: true });
       map.addLayer({
         id: 'res-nexus-circle', type: 'circle', source: 'res-nexus-src',
-        layout: { visibility: 'none' },
-        paint: { 'circle-color': '#f59e0b', 'circle-radius': 3, 'circle-opacity': 0.85 },
+        layout: { visibility: 'visible' },
+        paint: {
+          'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], '#fbbf24', '#f59e0b'],
+          'circle-radius': ['case', ['boolean', ['feature-state', 'hover'], false], 5, 3],
+          'circle-opacity': 0.85,
+        },
       });
+
+      map.on('click', 'res-nexus-circle', (e) => {
+        const f = e.features[0];
+        showTooltip(e.lngLat, buildNexusTooltip(f.properties), map);
+        selectNexus(f.properties.id);
+      });
+
+      let hoveredNexusId = null;
+      map.on('mousemove', 'res-nexus-circle', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+        const id = e.features[0]?.id;
+        if (id === undefined || id === hoveredNexusId) return;
+        if (hoveredNexusId !== null) map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: false });
+        hoveredNexusId = id;
+        map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: true });
+      });
+      map.on('mouseleave', 'res-nexus-circle', () => {
+        map.getCanvas().style.cursor = '';
+        if (hoveredNexusId !== null) map.setFeatureState({ source: 'res-nexus-src', id: hoveredNexusId }, { hover: false });
+        hoveredNexusId = null;
+      });
+
       log(`  nexus: ${rows.length} points`, 'success');
     }
   } catch (e) { log(`nexus error: ${e.message}`, 'error'); }
@@ -177,6 +346,8 @@ export function useViewer() {
     log('Rendering layers...', 'info');
     setProgress(80);
     addGeojsonLayers(divGeoJSON, fpGeoJSON);
+    await ensureNexusLayer();
+    setProgress(90);
 
     if (divGeoJSON.bbox) {
       state.researcherBbox = divGeoJSON.bbox;

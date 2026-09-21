@@ -1,5 +1,5 @@
-import { 
-  S3_MAP, REF_DIVIDES_PMTILES_URL, RES_FLOWPATHS_PMTILES_URL,
+import {
+  S3_MAP, REF_DIVIDES_PMTILES_URL, RES_DIVIDES_PMTILES_URL, RES_FLOWPATHS_PMTILES_URL,
   COMMUNITY_HF_DIVIDES, COMMUNITY_HF_FLOWPATHS,
   MERGED_PMTILES_URL, VPU_PMTILES_URL,
   log, state,
@@ -7,6 +7,67 @@ import {
 import { ensurePmtilesProtocol } from '../auth.js';
 import { useDarkStyle } from '../updateMapFilters/dark-style.js';
 import { useLightStyle } from '../updateMapFilters/light-style.js';
+
+
+function getMapDataset(key) {
+  if (key === 'researcher') {
+    return {
+      label: 'Researcher Data',
+      divides:   { url: RES_DIVIDES_PMTILES_URL,  sourceLayer: 'divides' },
+      flowpaths: { url: RES_FLOWPATHS_PMTILES_URL, sourceLayer: 'flowpaths' },
+    };
+  }
+  if (key === 'community') {
+    return {
+      label: 'Community HF',
+      divides:   { url: COMMUNITY_HF_DIVIDES,   sourceLayer: 'conus_divides' },
+      flowpaths: { url: COMMUNITY_HF_FLOWPATHS, sourceLayer: 'conus_flowpaths' },
+    };
+  }
+  return null;
+}
+
+function swapMapDataset(map, prefix, dataset) {
+  const ids = {
+    divFill: `${prefix}-divides-fill`,
+    divLine: `${prefix}-divides-line`,
+    fpLine:  `${prefix}-flowpaths-line`,
+    divSrc:  `${prefix}-divides-src`,
+    fpSrc:   `${prefix}-flowpaths-src`,
+  };
+  const divVisible = map.getLayer(ids.divFill)
+          ? map.getLayoutProperty(ids.divFill, 'visibility') !== 'none' : true;
+  const fpVisible = map.getLayer(ids.fpLine)
+          ? map.getLayoutProperty(ids.fpLine, 'visibility') !== 'none' : true;
+
+  for (const id of [ids.divFill, ids.divLine, ids.fpLine]) {
+    if (map.getLayer(id)) map.removeLayer(id);
+  }
+  if (map.getSource(ids.divSrc)) map.removeSource(ids.divSrc);
+  if (map.getSource(ids.fpSrc))  map.removeSource(ids.fpSrc);
+
+  map.addSource(ids.divSrc, { type: 'vector', url: `pmtiles://${dataset.divides.url}` });
+  map.addSource(ids.fpSrc,  { type: 'vector', url: `pmtiles://${dataset.flowpaths.url}` });
+
+  map.addLayer({
+    id: ids.divFill, type: 'fill',
+    source: ids.divSrc, 'source-layer': dataset.divides.sourceLayer,
+    layout: { visibility: divVisible ? 'visible' : 'none' },
+    paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.15 },
+  });
+  map.addLayer({
+    id: ids.divLine, type: 'line',
+    source: ids.divSrc, 'source-layer': dataset.divides.sourceLayer,
+    layout: { visibility: divVisible ? 'visible' : 'none' },
+    paint: { 'line-color': '#a78bfa', 'line-width': 0.8, 'line-opacity': 0.9 },
+  });
+  map.addLayer({
+    id: ids.fpLine, type: 'line',
+    source: ids.fpSrc, 'source-layer': dataset.flowpaths.sourceLayer,
+    layout: { visibility: fpVisible ? 'visible' : 'none' },
+    paint: { 'line-color': '#38bdf8', 'line-width': 1.2, 'line-opacity': 0.9 },
+  });
+}
 
 export function useMap() {
     function initMap() {
@@ -123,5 +184,12 @@ export function useMap() {
     }
   }
 
-  return { initMap, toggleSplitView, fitToBbox, refreshStyleSources };
+  function setMapDataset(map, prefix, key) {
+    const dataset = getMapDataset(key);
+    if (!dataset || !map) return false;
+    swapMapDataset(map, prefix, dataset);
+    return true;
+  }
+
+  return { initMap, toggleSplitView, fitToBbox, refreshStyleSources, setMapDataset };
 }

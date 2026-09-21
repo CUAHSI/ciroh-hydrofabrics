@@ -3,7 +3,7 @@ deps:
 - etag: aa59ebf528409b1e1d63f99433cec8a2-1
   size: 520347
   hash: md5
-  path: remote://v2.3/gridded/mfsno.tif
+  path: remote://supporting/gridded/mfsno.tif
 outs:
 - hash: md5
   path: mfsno.tif

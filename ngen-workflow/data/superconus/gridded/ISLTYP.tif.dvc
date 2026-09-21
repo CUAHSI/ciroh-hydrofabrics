@@ -3,7 +3,7 @@ deps:
 - etag: 79ae7a0493010dc4482974f02fe1bdf8-1
   size: 1620874
   hash: md5
-  path: remote://v2.3/gridded/ISLTYP.tif
+  path: remote://supporting/gridded/ISLTYP.tif
 outs:
 - hash: md5
   path: ISLTYP.tif

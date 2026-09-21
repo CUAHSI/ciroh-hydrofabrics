@@ -44,5 +44,12 @@ export function useNetwork() {
       }
       return visited;
     }
-    return { loadNetworkGraph, getUpstreamIds };
+
+    function getUpstreamIdsFromNexus(nexusNumeric) {
+      const upstream = getUpstreamIds(nexusNumeric, true);
+      upstream.delete(nexusNumeric);
+      return upstream;
+    }
+
+    return { loadNetworkGraph, getUpstreamIds, getUpstreamIdsFromNexus };
 }

@@ -3,7 +3,7 @@ deps:
 - etag: afda0e0848c59aa8ba9db75358b911e9-1
   size: 1628088
   hash: md5
-  path: remote://v2.3/gridded/psisat_soil_layers_stag=3.tif
+  path: remote://supporting/gridded/psisat_soil_layers_stag=3.tif
 outs:
 - hash: md5
   path: psisat_soil_layers_stag=3.tif

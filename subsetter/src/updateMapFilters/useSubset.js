@@ -1,11 +1,9 @@
-import { log, state, PARQUET_URLS } from "../config.js";
+import { log, state, PARQUET_URLS, setProgress } from "../config.js";
 import { useParquet } from "../composables/useParquet.js";
 import { useGpkg } from "./useGpkg.js";
-import { useNetwork } from "../composables/useNetwork.js";
 
 const { initHyparquet, readParquetFiltered } = useParquet();
 const { buildGeoPackage } = useGpkg();
-const { getUpstreamIds } = useNetwork();
 
 export function useSubset() {
     // ============================================================
@@ -29,7 +27,7 @@ export function useSubset() {
       if (!state.outletCatId || state.upstreamNumericIds.size === 0) return;
       const btn = document.getElementById('btn-subset');
       btn.disabled = true;
-      logEl.innerHTML = '';
+      document.getElementById('log').innerHTML = '';
       setProgress(0);
 
       try {
@@ -79,10 +77,8 @@ export function useSubset() {
             }
           }
         }
-        // Add the outlet's downstream nexus (not in the upstream selection itself)
-        const outletNumeric = parseInt(state.outletCatId.split('-')[1]);
-        const outletDownstream = state.downstream.get(outletNumeric);
-        if (outletDownstream != null) computedNexIds.push(`nex-${outletDownstream}`);
+        // The outlet is the clicked nexus itself, not part of upstreamNumericIds
+        computedNexIds.push(state.outletCatId);
         const allNexIds = [...new Set(computedNexIds)];
 
         // --- Wave 1: all tables whose IDs are derived from the network graph ---
@@ -90,12 +86,13 @@ export function useSubset() {
           doTable('divides',              PARQUET_URLS['divides'],              'divide_id', catIds),
           doTable('divide-attributes',    PARQUET_URLS['divide-attributes'],    'divide_id', catIds),
           doTable('flowpaths',            PARQUET_URLS['flowpaths'],            'id', wbIds),
-          doTable('flowpath-attributes',  PARQUET_URLS['flowpath-attributes'],  'id', wbIds),
-          doTable('flowpath-attributes-ml', PARQUET_URLS['flowpath-attributes-ml'], 'id', wbIds),
-          doTable('hydrolocations',       PARQUET_URLS['hydrolocations'],       'id', wbIds),
+          doTable('flowpath-attributes',  PARQUET_URLS['flowpath-attributes'],  'flowline_id', nums),
+          // doTable('flowpath-attributes-ml', PARQUET_URLS['flowpath-attributes-ml'], 'id', wbIds) # missing
+          doTable('hydrolocations',       PARQUET_URLS['hydrolocations'],       'poi_id', wbIds),
           doTable('nexus',                PARQUET_URLS['nexus'],                'id', allNexIds),
           doTable('pois',                 PARQUET_URLS['pois'],                 'id', wbIds),
-          doTable('network',              PARQUET_URLS['network'],              'id', [...wbIds, ...allNexIds]),
+          // doTable('network',              PARQUET_URLS['network'],              'flowpath_id', [...wbIds, ...allNexIds])
+          // # too many id columns we can worry about this later
         ]);
 
         // --- Wave 2: lakes depends on pois results ---
