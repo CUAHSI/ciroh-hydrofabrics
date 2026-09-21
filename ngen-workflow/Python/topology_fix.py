@@ -10,6 +10,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import shapely
 import sqlite3
 import typer
 
@@ -35,24 +36,45 @@ def apply_flowpath_topology_fixes(
     # This is expected to be the identifier used to match rows in the gdf
     lookup_col = corrections.columns[0]
 
+    # the corrections CSV uses "flowpath_"-prefixed names for the join key and
+    # the corrected downstream id, but the gdf itself just uses "id"/"toid"
+    # for those same concepts. Map between the two so corrections are applied
+    # to the columns that actually exist on the gdf.
+    csv_to_gdf_column = {"flowpath_id": "id", "flowpath_toid": "toid"}
+
     for idx, row in corrections.iterrows():
-        fpid = row["flowpath_id"]
+        fpid = row[lookup_col]
 
         # get the row in the gdf corresponding to this flowpath_id
-        match = gdf[gdf["flowpath_id"] == row[lookup_col]]
+        match = gdf[gdf[csv_to_gdf_column.get(lookup_col, lookup_col)] == fpid]
 
         # loop over the columns in the corrections dataset,
         # skipping the first one (the identifier). Apply
         # changes to the gdf where the value in the corrections
         # dataset is not NaN.
         for col in corrections.columns[1:]:
+            gdf_col = csv_to_gdf_column.get(col, col)
 
             # some error handling for missing columns and matches
-            if (col not in gdf.columns) or (len(match) == 0) or (len(match) > 1):
-                pass
+            if (gdf_col not in gdf.columns) or (len(match) == 0) or (len(match) > 1):
+                continue
             # apply correction if the value in the corrections dataset is not NaN
             if pd.notna(row[col]):
-                gdf.loc[match.index, col] = row[col]
+                gdf.loc[match.index, gdf_col] = row[col]
+
+        # if requested, reverse the direction of the flowpath's geometry
+        # (i.e. flip the order of its vertices) in place. Otherwise, leave
+        # the geometry untouched.
+        if (
+            "reverse_flow_direction" in corrections.columns
+            and pd.notna(row["reverse_flow_direction"])
+            and bool(row["reverse_flow_direction"])
+            and "geometry" in gdf.columns
+            and len(match) == 1
+        ):
+            gdf.loc[match.index, "geometry"] = gdf.loc[match.index, "geometry"].apply(
+                shapely.reverse
+            )
 
     return gdf
 
