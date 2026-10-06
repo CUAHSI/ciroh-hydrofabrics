@@ -1,0 +1,8 @@
+# Dependencies for compare_hydrofabric.py, used by the GitHub Actions
+# workflows. Versions match the ranges in the repo's pixi.toml. Locally,
+# `pixi run` already provides these.
+pandas>=3.0.2,<4
+geopandas>=1.1.3,<2
+shapely>=2.1.2,<3
+pyogrio>=0.11.1,<0.12
+pyyaml>=6.0,<7

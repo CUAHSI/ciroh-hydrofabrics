@@ -8,8 +8,8 @@
 #
 # This is a comparison aid for PR review, not a gate: if the download or the
 # comparison fails, a report.md describing the problem is written instead and
-# the script still exits 0. Run it through `pixi run` so `python` has the
-# geospatial dependencies.
+# the script still exits 0. `python` must have the geospatial dependencies:
+# run it through `pixi run` locally; CI installs requirements.txt with pip.
 
 set -uo pipefail
 

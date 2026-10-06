@@ -36,7 +36,9 @@ Add a new version entry there before comparing against it.
 
 Requires `geopandas`, `pyogrio`, `shapely`, and `pyyaml` (already declared in
 the repo's `pixi.toml`, or run inside the `hydrofabric` Docker Compose
-service).
+service). GitHub Actions installs them from
+[`requirements.txt`](./requirements.txt) with pip, because `pixi.toml` only
+declares `osx-arm64`; keep that file's version ranges in sync with `pixi.toml`.
 
 ## Usage
 
