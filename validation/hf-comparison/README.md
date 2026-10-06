@@ -77,14 +77,42 @@ Useful flags:
 - `--force-download` — re-download the reference file instead of using the
   cache.
 
-## GitHub Action
+## GitHub Actions
+
+### PR comparison (`hf_comparison.yaml`)
+
+[`.github/workflows/hf_comparison.yaml`](../../.github/workflows/hf_comparison.yaml)
+posts the comparison as a comment on pull requests, to assist reviewers.
+
+1. When opening a PR, fill in the **Hydrofabric comparison** section of the
+   [PR template](../../.github/PULL_REQUEST_TEMPLATE.md): the version, the VPU,
+   and a public HydroShare URL (`.gpkg` or `.zip`) for a **reference**
+   hydrofabric and/or an **ngen** hydrofabric. At most one of each; leave a
+   field blank to skip that comparison. (GeoPackages are too large to attach
+   to a PR directly.)
+2. The workflow parses the description, downloads each file, and runs
+   `compare_hydrofabric.py` against the official file for that version/VPU.
+3. It posts one comment on the PR (updated on later runs, not duplicated). If
+   the report is too long for a GitHub comment it is truncated, with a link to
+   the full `report.md`/`report.csv`/`report.json` in the workflow's
+   `hydrofabric-comparison-reports` artifact.
+
+Editing the PR description re-runs the comparison. The check is informational:
+differences never fail it, and if a file cannot be downloaded or compared, the
+comment says so instead. PRs that leave the section blank get no comment.
+
+The pieces are single-purpose scripts in this directory:
+
+| Script | Role |
+|---|---|
+| `parse_pr_body.py` | Reads and validates the fields in the PR description (HydroShare `https` URLs only). |
+| `fetch_and_compare.sh` | Downloads one file, unzips if needed, runs `compare_hydrofabric.py`. |
+| `build_pr_comment.py` | Assembles and truncates the PR comment from the reports. |
+
+### Manual run (`validate_hydrofabric.yaml`)
 
 [`.github/workflows/validate_hydrofabric.yaml`](../../.github/workflows/validate_hydrofabric.yaml)
-runs both comparisons (reference hydrofabric, then ngen hydrofabric). It
-supports:
-
-- `workflow_dispatch` — pick a version/VPU to check both outputs on demand.
-- `pull_request` — for PRs that touch pipeline code/params, reproduces the
-  `pipelines/v2.2` pipeline and runs both comparisons automatically. This
-  needs DVC remote credentials to pull input data; it is skipped gracefully
-  if those secrets are not configured on the repository.
+is `workflow_dispatch` only. Enter a version, a VPU, and a public HydroShare
+URL for a reference and/or ngen hydrofabric; it runs the same comparison as the
+PR workflow and publishes the result in the job summary and as an artifact. No
+credentials are needed, since files are downloaded over https.

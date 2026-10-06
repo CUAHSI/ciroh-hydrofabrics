@@ -1,0 +1,122 @@
+name: Hydrofabric Comparison
+
+# Posts a comparison of user-supplied hydrofabric GeoPackages against the
+# official HydroShare versions as a comment on the pull request.
+#
+# The PR description (see .github/PULL_REQUEST_TEMPLATE.md) can name one
+# reference hydrofabric URL and one ngen hydrofabric URL (HydroShare links,
+# since GeoPackages are too large to attach to a PR). This is a review aid,
+# not a gate: differences never fail the job. Editing the PR description
+# re-runs the comparison.
+#
+# Scripts live in validation/hf-comparison/.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+# A newer run for the same PR replaces an in-progress one.
+concurrency:
+  group: hf-comparison-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    env:
+      HF_DIR: validation/hf-comparison
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The PR description is untrusted input. It is passed in through an
+      # environment variable (never interpolated into the script) and every
+      # value is validated by parse_pr_body.py.
+      - name: Parse PR description
+        id: parse
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$PR_BODY" | python3 "$HF_DIR/parse_pr_body.py" > "$RUNNER_TEMP/parsed.json"
+          {
+            echo "reference_url=$(jq -r .reference_url "$RUNNER_TEMP/parsed.json")"
+            echo "ngen_url=$(jq -r .ngen_url "$RUNNER_TEMP/parsed.json")"
+            echo "version=$(jq -r .version "$RUNNER_TEMP/parsed.json")"
+            echo "vpu=$(jq -r .vpu "$RUNNER_TEMP/parsed.json")"
+            echo "has_inputs=$(jq -r .has_inputs "$RUNNER_TEMP/parsed.json")"
+            echo "has_errors=$(jq -r '.errors | length > 0' "$RUNNER_TEMP/parsed.json")"
+          } >> "$GITHUB_OUTPUT"
+
+      # Only install the (large) geospatial environment if there is
+      # something to compare.
+      - name: Set up Pixi
+        if: steps.parse.outputs.reference_url != '' || steps.parse.outputs.ngen_url != ''
+        uses: prefix-dev/setup-pixi@v0.9.1
+
+      - name: Compare reference hydrofabric
+        if: steps.parse.outputs.reference_url != ''
+        env:
+          URL: ${{ steps.parse.outputs.reference_url }}
+          VERSION: ${{ steps.parse.outputs.version }}
+          VPU: ${{ steps.parse.outputs.vpu }}
+        run: pixi run bash "$HF_DIR/fetch_and_compare.sh" reference_hydrofabric "$URL" "$VERSION" "$VPU"
+
+      - name: Compare ngen hydrofabric
+        if: steps.parse.outputs.ngen_url != ''
+        env:
+          URL: ${{ steps.parse.outputs.ngen_url }}
+          VERSION: ${{ steps.parse.outputs.version }}
+          VPU: ${{ steps.parse.outputs.vpu }}
+        run: pixi run bash "$HF_DIR/fetch_and_compare.sh" ngen_hydrofabric "$URL" "$VERSION" "$VPU"
+
+      - name: Build PR comment
+        run: >
+          python3 "$HF_DIR/build_pr_comment.py"
+          --parsed "$RUNNER_TEMP/parsed.json"
+          --reports-dir "$HF_DIR/reports"
+          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --output "$RUNNER_TEMP/comment.md"
+
+      - name: Add comment to job summary
+        run: cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload comparison reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrofabric-comparison-reports
+          path: validation/hf-comparison/reports/
+          if-no-files-found: ignore
+
+      # One sticky comment per PR: update it if it exists. Only create a new
+      # one when there is something to say, so PRs that don't use this
+      # feature are not commented on.
+      - name: Post or update PR comment
+        uses: actions/github-script@v7
+        env:
+          COMMENT_FILE: ${{ runner.temp }}/comment.md
+          HAS_CONTENT: ${{ steps.parse.outputs.has_inputs == 'true' || steps.parse.outputs.has_errors == 'true' }}
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- hf-comparison-report -->';
+            const body = fs.readFileSync(process.env.COMMENT_FILE, 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number,
+            });
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else if (process.env.HAS_CONTENT === 'true') {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

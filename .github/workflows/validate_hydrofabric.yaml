@@ -1,0 +1,97 @@
+name: Validate Hydrofabric Output
+
+# Manual run of the same comparison that hf_comparison.yaml performs on pull
+# requests: compare a user-supplied hydrofabric GeoPackage (a public
+# HydroShare link, downloaded over https) against the official HydroShare
+# version. Results are uploaded as an artifact and shown in the job summary.
+#
+# Informational only: differences never fail the job. Scripts live in
+# validation/hf-comparison/. No credentials are needed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Hydrofabric version key (matches validation/hf-comparison/reference_sources.yaml)"
+        required: true
+        default: "v2.2"
+      vpu:
+        description: "VPU id, e.g. 16 or 03N"
+        required: true
+        default: "16"
+      reference_url:
+        description: "Public HydroShare URL (.gpkg or .zip) of a reference hydrofabric (optional)"
+        required: false
+        default: ""
+      ngen_url:
+        description: "Public HydroShare URL (.gpkg or .zip) of an ngen hydrofabric (optional)"
+        required: false
+        default: ""
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    env:
+      HF_DIR: validation/hf-comparison
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Workflow inputs are user-controlled, so they go through the same
+      # validation as a PR description rather than being used directly.
+      - name: Validate inputs
+        id: parse
+        env:
+          VERSION: ${{ inputs.version }}
+          VPU: ${{ inputs.vpu }}
+          REFERENCE_URL: ${{ inputs.reference_url }}
+          NGEN_URL: ${{ inputs.ngen_url }}
+        run: |
+          printf -- '- Version: %s\n- VPU: %s\n- Reference hydrofabric URL: %s\n- Ngen hydrofabric URL: %s\n' \
+            "$VERSION" "$VPU" "$REFERENCE_URL" "$NGEN_URL" \
+            | python3 "$HF_DIR/parse_pr_body.py" > "$RUNNER_TEMP/parsed.json"
+          {
+            echo "reference_url=$(jq -r .reference_url "$RUNNER_TEMP/parsed.json")"
+            echo "ngen_url=$(jq -r .ngen_url "$RUNNER_TEMP/parsed.json")"
+            echo "version=$(jq -r .version "$RUNNER_TEMP/parsed.json")"
+            echo "vpu=$(jq -r .vpu "$RUNNER_TEMP/parsed.json")"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Pixi
+        if: steps.parse.outputs.reference_url != '' || steps.parse.outputs.ngen_url != ''
+        uses: prefix-dev/setup-pixi@v0.9.1
+
+      - name: Compare reference hydrofabric
+        if: steps.parse.outputs.reference_url != ''
+        env:
+          URL: ${{ steps.parse.outputs.reference_url }}
+          VERSION: ${{ steps.parse.outputs.version }}
+          VPU: ${{ steps.parse.outputs.vpu }}
+        run: pixi run bash "$HF_DIR/fetch_and_compare.sh" reference_hydrofabric "$URL" "$VERSION" "$VPU"
+
+      - name: Compare ngen hydrofabric
+        if: steps.parse.outputs.ngen_url != ''
+        env:
+          URL: ${{ steps.parse.outputs.ngen_url }}
+          VERSION: ${{ steps.parse.outputs.version }}
+          VPU: ${{ steps.parse.outputs.vpu }}
+        run: pixi run bash "$HF_DIR/fetch_and_compare.sh" ngen_hydrofabric "$URL" "$VERSION" "$VPU"
+
+      - name: Build report summary
+        run: >
+          python3 "$HF_DIR/build_pr_comment.py"
+          --parsed "$RUNNER_TEMP/parsed.json"
+          --reports-dir "$HF_DIR/reports"
+          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --output "$RUNNER_TEMP/summary.md"
+
+      - name: Add summary to job summary
+        run: cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload comparison reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrofabric-comparison-reports
+          path: validation/hf-comparison/reports/
+          if-no-files-found: ignore
