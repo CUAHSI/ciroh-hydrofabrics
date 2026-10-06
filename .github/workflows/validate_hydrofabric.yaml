@@ -87,21 +87,24 @@ jobs:
           VPU: ${{ steps.parse.outputs.vpu }}
         run: bash "$HF_DIR/fetch_and_compare.sh" ngen_hydrofabric "$URL" "$VERSION" "$VPU"
 
-      - name: Build report summary
-        run: >
-          python3 "$HF_DIR/build_pr_comment.py"
-          --parsed "$RUNNER_TEMP/parsed.json"
-          --reports-dir "$HF_DIR/reports"
-          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          --output "$RUNNER_TEMP/summary.md"
-
-      - name: Add summary to job summary
-        run: cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
-
+      # Uploaded before the summary is built so the summary can link to it.
       - name: Upload comparison reports
+        id: upload
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: hydrofabric-comparison-reports
           path: validation/hf-comparison/reports/
           if-no-files-found: ignore
+
+      - name: Build report summary
+        run: >
+          python3 "$HF_DIR/build_pr_comment.py"
+          --parsed "$RUNNER_TEMP/parsed.json"
+          --reports-dir "$HF_DIR/reports"
+          --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --artifact-url "${{ steps.upload.outputs.artifact-url }}"
+          --output "$RUNNER_TEMP/summary.md"
+
+      - name: Add summary to job summary
+        run: cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"

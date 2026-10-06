@@ -3,48 +3,68 @@
 Assemble the pull request comment from the comparison reports.
 
 Inputs:
-    --parsed       JSON produced by parse_pr_body.py
-    --reports-dir  directory holding <type>/<version>/<vpu>/report.md files
-    --run-url      link to the workflow run, where the full reports are attached
-    --output       file to write the comment markdown to
+    --parsed        JSON produced by parse_pr_body.py
+    --reports-dir   directory holding <type>/<version>/<vpu>/report.md files
+    --run-url       link to the workflow run (used if there is no artifact link)
+    --artifact-url  link that downloads the report artifact (optional)
+    --output        file to write the comment markdown to
 
-GitHub rejects comments over 65,536 characters, and the difference tables in
-a report have one row per difference, so each report is cut at a line
-boundary to fit and a pointer to the full report artifact is added.
+The comment is a short summary: the report's header details plus its Schema
+and Layers tables. Everything else in report.md (the attribute and geometry
+difference tables, which have one row per difference) is left to the
+artifact, so the comment stays small and quick to scan.
 """
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Hidden marker used by the workflow to find and update its own comment.
 MARKER = "<!-- hf-comparison-report -->"
-
-# GitHub's limit is 65,536; leave headroom for headings and notes.
-MAX_COMMENT_CHARS = 60000
 
 REPORT_TITLES = {
     "reference_hydrofabric": "Reference hydrofabric",
     "ngen_hydrofabric": "Ngen hydrofabric",
 }
 
+# Report sections shown in the comment; all other "## " sections are dropped.
+KEPT_SECTIONS = ("Schema", "Layers")
 
-def demote_headings(markdown: str) -> str:
-    """Drop the report's own title and push its other headings down one level,
-    so they nest under the comment's heading for that hydrofabric type."""
+# The overall MATCH / DIFFERENCES FOUND line is not shown in the comment.
+# Other results (e.g. COMPARISON NOT PERFORMED) are kept because they explain
+# why there are no tables.
+HIDDEN_RESULT_LINES = ("**Result:** DIFFERENCES FOUND", "**Result:** MATCH")
+
+
+def summarize_report(markdown: str) -> str:
+    """Reduce a report.md to its header details and the Schema and Layers sections.
+
+    The report's own title is dropped, and kept section headings are nested
+    under the comment's heading for that hydrofabric type.
+    """
     lines = markdown.splitlines()
     if lines and lines[0].startswith("# "):
         lines = lines[1:]
-    return "\n".join((("#" + line) if line.startswith("#") else line) for line in lines).strip()
 
+    kept = []
+    keep = True  # the text before the first "## " heading holds the header details
+    for line in lines:
+        if line.startswith("## "):
+            keep = line[3:].strip() in KEPT_SECTIONS
+            if keep:
+                kept.append("##" + line)
+            continue
+        if keep and line.strip() not in HIDDEN_RESULT_LINES:
+            kept.append(line)
 
-def truncate_at_line(text: str, limit: int, note: str) -> str:
-    """Cut text to at most `limit` characters on a line boundary, adding `note` if cut."""
-    if len(text) <= limit:
-        return text
-    kept = text[: max(limit - len(note) - 2, 0)]
-    kept = kept.rsplit("\n", 1)[0]
-    return f"{kept}\n\n{note}"
+    # Dropping lines can leave runs of blank lines; collapse them.
+    cleaned = []
+    for line in kept:
+        if line == "" and cleaned and cleaned[-1] == "":
+            continue
+        cleaned.append(line)
+    return "\n".join(cleaned).strip()
 
 
 def find_report(reports_dir: Path, remote_type: str) -> Path | None:
@@ -53,8 +73,9 @@ def find_report(reports_dir: Path, remote_type: str) -> Path | None:
     return matches[0] if matches else None
 
 
-def build_comment(parsed: dict, reports_dir: Path, run_url: str) -> str:
-    parts = [MARKER, "## Hydrofabric comparison", ""]
+def build_comment(parsed: dict, reports_dir: Path, run_url: str, artifact_url: str) -> str:
+    created = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    parts = [MARKER, "## Hydrofabric comparison", "", f"_Created: {created}_", ""]
 
     if parsed["errors"]:
         parts.append("The PR description has problems, so some comparisons were skipped:")
@@ -68,28 +89,23 @@ def build_comment(parsed: dict, reports_dir: Path, run_url: str) -> str:
         )
         return "\n".join(parts)
 
-    reports = []
+    found = 0
     for remote_type, title in REPORT_TITLES.items():
         report = find_report(reports_dir, remote_type)
         if report:
-            reports.append((title, report))
+            found += 1
+            parts.extend([f"### {title}", "", summarize_report(report.read_text()), ""])
 
-    full_report_note = f"_Showing the first part of this report. The full report is in the [workflow artifacts]({run_url})._"
-    footer = f"\n---\nFull `report.md`, `report.csv` and `report.json` files are attached to the [workflow run]({run_url}) as the `hydrofabric-comparison-reports` artifact."
-
-    # Share the remaining character budget evenly between the reports.
-    used = len("\n".join(parts)) + len(footer)
-    per_report = (MAX_COMMENT_CHARS - used) // max(len(reports), 1)
-
-    for title, report in reports:
-        body = demote_headings(report.read_text())
-        body = truncate_at_line(body, per_report, full_report_note)
-        parts.extend([f"### {title}", "", body, ""])
-
-    if not reports:
+    if not found:
         parts.append("The comparison did not produce a report. See the workflow log for details.")
+        return "\n".join(parts)
 
-    parts.append(footer)
+    link = artifact_url or run_url
+    parts.extend([
+        "---",
+        "The full report includes additional information, such as attribute and geometry "
+        f"differences, and can be downloaded [here]({link}).",
+    ])
     return "\n".join(parts)
 
 
@@ -98,11 +114,12 @@ def main() -> None:
     parser.add_argument("--parsed", type=Path, required=True)
     parser.add_argument("--reports-dir", type=Path, required=True)
     parser.add_argument("--run-url", required=True)
+    parser.add_argument("--artifact-url", default="")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
     parsed = json.loads(args.parsed.read_text())
-    args.output.write_text(build_comment(parsed, args.reports_dir, args.run_url))
+    args.output.write_text(build_comment(parsed, args.reports_dir, args.run_url, args.artifact_url))
 
 
 if __name__ == "__main__":

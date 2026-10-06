@@ -94,10 +94,13 @@ posts the comparison as a comment on pull requests, to assist reviewers.
    to a PR directly.)
 2. The workflow parses the description, downloads each file, and runs
    `compare_hydrofabric.py` against the official file for that version/VPU.
-3. It posts one comment on the PR (updated on later runs, not duplicated). If
-   the report is too long for a GitHub comment it is truncated, with a link to
-   the full `report.md`/`report.csv`/`report.json` in the workflow's
-   `hydrofabric-comparison-reports` artifact.
+3. It posts one comment on the PR (updated on later runs, not duplicated),
+   with the time it was created and, for each hydrofabric, the report's
+   header details (including the git commit of the PR head being tested) and
+   its Schema and Layers tables. The attribute and geometry difference tables
+   are not included in the comment. The full `report.md`/`report.csv`/`report.json`
+   are in the workflow's `hydrofabric-comparison-reports` artifact, which the
+   comment links to.
 
 Editing the PR description re-runs the comparison. The check is informational:
 differences never fail it, and if a file cannot be downloaded or compared, the
@@ -109,7 +112,7 @@ The pieces are single-purpose scripts in this directory:
 |---|---|
 | `parse_pr_body.py` | Reads and validates the fields in the PR description (HydroShare `https` URLs only). |
 | `fetch_and_compare.sh` | Downloads one file, unzips if needed, runs `compare_hydrofabric.py`. |
-| `build_pr_comment.py` | Assembles and truncates the PR comment from the reports. |
+| `build_pr_comment.py` | Builds the PR comment (timestamp, header details, Schema and Layers tables, artifact link) from the reports. |
 
 ### Manual run (`validate_hydrofabric.yaml`)
 
