@@ -104,7 +104,7 @@ def build_comment(parsed: dict, reports_dir: Path, run_url: str, artifact_url: s
     parts.extend([
         "---",
         "The full report includes additional information, such as attribute and geometry "
-        f"differences, and can be downloaded [here]({link}).",
+        f"differences and maps of the changed features, and can be downloaded [here]({link}).",
     ])
     return "\n".join(parts)
 

@@ -16,6 +16,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import subprocess
 import sys
 import urllib.request
@@ -26,6 +27,8 @@ import pandas as pd
 import pyogrio
 import shapely
 import yaml
+
+from render_changes import changed_feature_keys, render_changed_features
 
 
 def get_git_commit_sha() -> str:
@@ -289,6 +292,41 @@ def compare_layer(local_gdf, reference_gdf, key_column, layer: str, tolerance: f
     return result
 
 
+def render_layer_image(layer, local_gdf, reference_gdf, layer_result: dict, key_column, output_dir: Path) -> dict:
+    """Render a layer's changed-features map and describe the outcome for the report.
+
+    Never raises: a map is a visual aid, so a failed render is noted in the
+    report instead of stopping the comparison.
+    """
+    if layer_result.get("error"):
+        return {"changed": 0, "image": None, "error": layer_result["error"]}
+
+    keys = changed_feature_keys(layer_result)
+    if not keys:
+        return {"changed": 0, "image": None, "error": None}
+
+    key_columns = [key_column] if isinstance(key_column, str) else list(key_column)
+    image_name = re.sub(r"[^\w.-]", "_", layer) + ".png"
+    images_dir = output_dir / "images"
+    images_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        drawn = render_changed_features(
+            local_gdf,
+            reference_gdf,
+            key_columns,
+            keys,
+            layer,
+            images_dir / image_name,
+            lambda key: format_key_label(key_column, key),
+        )
+    except Exception as exc:  # noqa: BLE001 - any rendering failure should only skip the image
+        print(f"Warning: could not render changed features for layer {layer!r}: {exc}", file=sys.stderr)
+        return {"changed": len(keys), "image": None, "error": str(exc)}
+
+    return {"changed": drawn, "image": f"images/{image_name}" if drawn else None, "error": None}
+
+
 def build_report(schema_diffs: list, layer_results: list, metadata: dict) -> dict:
     """Combine schema and per-layer results, plus a short pass/fail summary."""
     has_differences = any(row["status"] != "match" for row in schema_diffs) or any(
@@ -413,8 +451,15 @@ def write_csv_report(attribute_rows: list, geometry_rows: list, path: Path) -> N
         writer.writerows(geometry_rows)
 
 
-def write_markdown_report(report: dict, attribute_rows: list, geometry_rows: list, path: Path) -> None:
-    """Write a short human-readable summary, suitable for a PR comment or job summary."""
+def write_markdown_report(
+    report: dict, attribute_rows: list, geometry_rows: list, path: Path, layer_images: dict | None = None
+) -> None:
+    """Write a short human-readable summary, suitable for a PR comment or job summary.
+
+    `layer_images` maps each rendered layer to {"changed": count, "image": path
+    relative to the report or None, "error": message or None}. Image paths are
+    relative so the report and its images work together once downloaded.
+    """
     metadata = report["metadata"]
     lines = ["# Hydrofabric Comparison Report", ""]
     lines.append(f"- **Hydrofabric type:** {metadata['remote_hydrofabric_type']}")
@@ -450,6 +495,30 @@ def write_markdown_report(report: dict, attribute_rows: list, geometry_rows: lis
             f"{len(layer['missing_in_local'])} | {len(layer['missing_in_reference'])} |"
         )
     lines.append("")
+
+    if layer_images:
+        lines.append("## Changed Features")
+        lines.append("")
+        lines.append(
+            "Reference features are drawn in grey. Features that differ from the "
+            "reference (modified, added, or removed) are drawn in blue, using the "
+            "new geometry where there is one. When only a few features changed, "
+            "zoomed panels show each one up close; when many changed, a density "
+            "map (and panels for any concentrated hotspots) show where they are."
+        )
+        lines.append("")
+        for layer, info in layer_images.items():
+            lines.append(f"### {layer}")
+            lines.append("")
+            if info.get("error"):
+                lines.append(f"Could not render this layer: {info['error']}")
+            elif not info["changed"]:
+                lines.append("No changed features.")
+            else:
+                lines.append(f"{info['changed']} changed feature(s).")
+                lines.append("")
+                lines.append(f"![{layer} changed features]({info['image']})")
+            lines.append("")
 
     lines.append("## Attribute & Schema Differences")
     lines.append("")
@@ -552,6 +621,11 @@ def parse_args() -> argparse.Namespace:
         help="Coordinate tolerance used for geometry equality checks",
     )
     parser.add_argument(
+        "--skip-images",
+        action="store_true",
+        help="Do not render maps of the changed features (faster; images are on by default)",
+    )
+    parser.add_argument(
         "--fail-on-diff",
         action="store_true",
         help="Exit with a non-zero status if any differences are found",
@@ -579,13 +653,25 @@ def main() -> None:
     reference_layers = list_layers(reference_gpkg)
     schema_diffs = compare_schema(local_layers, reference_layers)
 
+    output_dir = args.output_dir / args.remote_hydrofabric_type / args.version / args.vpu
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     layer_results = []
+    layer_images = {}
     shared_layers = sorted(set(local_layers) & set(reference_layers))
     for layer in shared_layers:
         local_gdf = gpd.read_file(args.local_gpkg, layer=layer)
         reference_gdf = gpd.read_file(reference_gpkg, layer=layer)
         key_column = key_column_for_layer(layer, reference["key_columns"], reference["default_key_column"])
-        layer_results.append(compare_layer(local_gdf, reference_gdf, key_column, layer, args.tolerance))
+        layer_result = compare_layer(local_gdf, reference_gdf, key_column, layer, args.tolerance)
+        layer_results.append(layer_result)
+
+        # Render while this layer is loaded; only layers with geometry get a map.
+        is_spatial = hasattr(local_gdf, "crs") and hasattr(reference_gdf, "crs")
+        if is_spatial and not args.skip_images:
+            layer_images[layer] = render_layer_image(
+                layer, local_gdf, reference_gdf, layer_result, key_column, output_dir
+            )
 
     metadata = {
         "remote_hydrofabric_type": args.remote_hydrofabric_type,
@@ -597,11 +683,9 @@ def main() -> None:
     attribute_rows = build_attribute_diff_rows(report)
     geometry_rows = build_geometry_diff_rows(report)
 
-    output_dir = args.output_dir / args.remote_hydrofabric_type / args.version / args.vpu
-    output_dir.mkdir(parents=True, exist_ok=True)
     write_json_report(report, output_dir / "report.json")
     write_csv_report(attribute_rows, geometry_rows, output_dir / "report.csv")
-    write_markdown_report(report, attribute_rows, geometry_rows, output_dir / "report.md")
+    write_markdown_report(report, attribute_rows, geometry_rows, output_dir / "report.md", layer_images)
 
     print(f"Reports written to {output_dir}")
 

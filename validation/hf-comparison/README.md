@@ -22,6 +22,9 @@ Action check.
 - **Geometry equality**: coordinate-level comparison (within a tolerance).
 - **CRS**: coordinate reference system of each layer.
 
+For each layer with geometry, it also renders a map of the changed features
+(see [Changed-feature maps](#changed-feature-maps)).
+
 ## Setup
 
 Reference download URLs are configured per version/VPU in
@@ -74,10 +77,41 @@ Useful flags:
 - `--remote-hydrofabric-type reference_hydrofabric` — compare against the reference
   hydrofabric datasets (pre-refactor/aggregation) instead of the ngen
   hydrofabric datasets.
+- `--skip-images` — do not render the changed-feature maps (faster).
 - `--fail-on-diff` — exit non-zero if any differences are found (used by CI;
   left off by default for local, informational runs).
 - `--force-download` — re-download the reference file instead of using the
   cache.
+
+## Changed-feature maps
+
+For every layer that has geometry (`divides`, `flowpaths`, `hydrolocations`,
+...), one PNG is written to
+`validation/hf-comparison/reports/<group>/<version>/<vpu>/images/<layer>.png`
+and embedded in a **Changed Features** section of `report.md`. Image links in
+`report.md` are relative, so keep the `images/` folder next to it.
+
+- **Grey**: every feature of the reference layer.
+- **Blue**: features that differ (modified, added, or removed), drawn with the
+  new geometry where there is one.
+- **Few changes** (50 features or fewer): changes are usually a handful of
+  features in a layer of tens of thousands, so when they fall into at most four
+  separate areas, a zoomed panel next to the overview shows each area up close
+  (changes near each other share a panel). Dashed boxes on the overview mark
+  where each panel is. With changes in more areas, only the overview is drawn.
+- **Many changes** (more than 50): zoomed panels would be meaningless, so a
+  density map (hexagons shaded by the number of changed features) is drawn
+  next to the overview. If the changes are concentrated, with a few hotspots
+  holding at least half of them (at most four, numbered on the overview),
+  each hotspot also gets a zoomed panel. If they are spread out, the density
+  map alone describes them.
+- Polygon layers (`divides`) use lighter, thinner grey outlines so the blue
+  changed polygons stay visible among tens of thousands of neighbours.
+
+Layers without changes get a "No changed features" note instead of an image.
+A rendering failure is noted in the report and never stops the comparison.
+The maps are in the downloadable report artifact; the PR comment itself only
+includes the Schema and Layers tables.
 
 ## GitHub Actions
 
@@ -113,6 +147,7 @@ The pieces are single-purpose scripts in this directory:
 | `parse_pr_body.py` | Reads and validates the fields in the PR description (HydroShare `https` URLs only). |
 | `fetch_and_compare.sh` | Downloads one file, unzips if needed, runs `compare_hydrofabric.py`. |
 | `build_pr_comment.py` | Builds the PR comment (timestamp, header details, Schema and Layers tables, artifact link) from the reports. |
+| `render_changes.py` | Draws the changed-feature map for one layer (used by `compare_hydrofabric.py`). |
 
 ### Manual run (`validate_hydrofabric.yaml`)
 
