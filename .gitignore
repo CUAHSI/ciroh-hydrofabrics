@@ -215,3 +215,4 @@ __marimo__/
 # comparison reports are local/CI artifacts, not source.
 validation/hf-comparison/.cache/
 validation/hf-comparison/reports/
+validation/hf-comparison/examples/*.png

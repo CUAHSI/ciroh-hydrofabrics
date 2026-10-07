@@ -113,6 +113,32 @@ A rendering failure is noted in the report and never stops the comparison.
 The maps are in the downloadable report artifact; the PR comment itself only
 includes the Schema and Layers tables.
 
+### Example maps
+
+`examples/run_render_examples.py` previews how the maps look for different
+amounts and patterns of change. It simulates changes on the cached VPU 16
+reference hydrofabric (no second hydrofabric needed) for the `flowpaths` and
+`divides` layers and writes one PNG per scenario next to the script:
+
+| Scenario | Maps drawn |
+|---|---|
+| 4 changes, far apart | Overview plus one zoom panel each |
+| 12 changes in one spot | Overview plus one shared zoom panel |
+| 10 changes in more than 4 areas | Overview only |
+| 300 changes, scattered | Overview plus density map |
+| 300 changes, 3 hotspots plus scatter | Overview, density map, and hotspot panels |
+| 2,000 changes | Overview plus density map |
+
+Run it from this directory after a comparison has cached the reference file
+(`.cache/reference-hydrofabric-vpu-16.gpkg`); it takes a few minutes:
+
+```bash
+python examples/run_render_examples.py
+```
+
+Re-run it after changing `render_changes.py` to see the effect on each case.
+The generated PNGs are about 8 MB in total and are git-ignored.
+
 ## GitHub Actions
 
 ### PR comparison (`hf_comparison.yaml`)
