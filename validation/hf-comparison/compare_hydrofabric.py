@@ -604,7 +604,6 @@ def main() -> None:
     write_markdown_report(report, attribute_rows, geometry_rows, output_dir / "report.md")
 
     print(f"Reports written to {output_dir}")
-    print("DIFFERENCES FOUND" if report["has_differences"] else "MATCH")
 
     if args.fail_on_diff and report["has_differences"]:
         sys.exit(1)
