@@ -1,0 +1,46 @@
+# Maps a hydrofabric version + VPU id to a downloadable "official" reference
+# GeoPackage that pipeline output should be checked against.
+#
+# Each version entry has:
+#   url_template     - {vpu} is substituted with the VPU id passed on the CLI
+#                       (e.g. "01", "03N", "16").
+#   default_key_column - column used to match features between the local and
+#                       reference GeoPackage when a layer has no explicit
+#                       entry in key_columns below.
+#   key_columns      - per-layer overrides of the id column used for matching
+#                       features (divides/flowpaths/nexus use different id
+#                       columns in the hydrofabric schema).
+ngen_hydrofabric:
+  v2.2:
+    description: >
+      CIROH ngen hydrofabric v2.2, published on HydroShare
+      (resource bbbabc296b65401ca1f4f3985e4b2b00).
+    url_template: "https://www.hydroshare.org/resource/bbbabc296b65401ca1f4f3985e4b2b00/data/contents/ngen-hydrofabric-vpu-{vpu}.gpkg"
+    default_key_column: id
+    key_columns:
+      divides: divide_id
+      divide-attributes: divide_id
+      flowpaths: id
+      flowpath-attributes: id
+      nexus: id
+      hydrolocations: id
+      network: id
+
+# Placeholder for official reference (non-ngen) hydrofabric datasets.
+# Fill in a version entry here (same shape as above) once official download
+# URLs for those datasets are available.
+reference_hydrofabric:
+  v2.2:
+    description: >
+      CIROH reference hydrofabric v2.2, published on HydroShare
+      (resource 563b75efa7614b358a65a7147124e0d7).
+    url_template: "https://www.hydroshare.org/resource/563b75efa7614b358a65a7147124e0d7/data/contents/reference-hydrofabric-vpu-{vpu}.gpkg"
+    default_key_column: id
+    key_columns:
+      divides: divide_id
+      flowpaths: id
+      hydrolocations: hl_id
+      # "id" alone is not unique in the network table (one row per
+      # divide/flowpath pairing); id + hl_link together are.
+      network: [id, hl_link]
+
