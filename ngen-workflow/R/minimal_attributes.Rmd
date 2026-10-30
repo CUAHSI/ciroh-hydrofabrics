@@ -7,7 +7,8 @@ params:
   vegetation_grid: "..."
   impervious_grid: "..."
   groundwater_basins_table: "..."
-  channel_geometry_table: "..." 
+  channel_geometry_table: "..."
+  vpu_id: "..."
   output_nextgen_geopackage: "..."
 ---
 
@@ -36,9 +37,9 @@ gw_basins <- arrow::open_dataset(params$groundwater_basins_table)
 
 # compute the divide attributes
 div_atts <- minimal_div_atts(params$nextgen_geopackage,
-                             ISLTYP = params$soil,
-                             IVGTYP = params$veg,
-                             IMP    = params$imperv,
+                             ISLTYP = params$soil_grid,
+                             IVGTYP = params$vegetation_grid,
+                             IMP    = params$impervious_grid,
                              GW     = gw_basins)
 
 
@@ -66,6 +67,90 @@ flow_atts <- calculate_flow_atts(net,
 ```
 
 
+## Enrich Flowpath Attributes
+
+```{r}
+
+# --- Y (bankfull depth) ---
+# calculate_flow_atts() computes owp_y_bf internally but drops it from its
+# output. Re-derive it here as a length-weighted mean from the hydraulics table.
+#
+# --- alt (channel bed elevation) ---
+# alt is sourced from the hydraulics table only if present; otherwise set to NA.
+hydraulics_cols <- names(hydraulic_atts)
+alt_cols <- intersect("alt", hydraulics_cols)
+
+y_alt <- hydraulic_atts |>
+  dplyr::select(reference_id = feature_id, owp_y_bf, dplyr::any_of("alt"), lengthkm) |>
+  dplyr::filter(reference_id %in% unique(net$reference_id)) |>
+  dplyr::collect() |>
+  dplyr::left_join(dplyr::select(net, reference_id, flowline_id) |> dplyr::distinct(),
+                   by = "reference_id") |>
+  dplyr::group_by(flowline_id) |>
+  dplyr::summarise(
+    Y   = weighted.mean(owp_y_bf, w = lengthkm, na.rm = TRUE),
+    alt = if ("alt" %in% alt_cols) weighted.mean(alt, w = lengthkm, na.rm = TRUE) else NA_real_,
+    .groups = "drop"
+  )
+
+# --- Topology: to, id, toid, vpuid ---
+# flowline_id  -> link  (already the key column in flow_atts)
+# flowline_toid -> to   (downstream NHD flowline)
+# flowpath_id  -> id    (NextGen catchment ID, e.g. wb-XXXXX)
+# flowpath_toid -> toid (downstream NextGen catchment)
+topology <- net |>
+  dplyr::select(flowline_id, to = flowline_toid, id = flowpath_id, toid = flowpath_toid) |>
+  dplyr::distinct() |>
+  dplyr::mutate(
+    id   = gsub("^fp-", "wb-", id),
+    toid = gsub("^fp-", "wb-", toid),
+    vpuid = params$vpu_id
+  )
+
+# --- gage_nex_id ---
+# For each flowline that has a gage hydrolocation, look up the nexus ID whose
+# poi_id matches that gage's POI.
+nexus_pois <- net |>
+  dplyr::select(flowpath_id, poi_id) |>
+  dplyr::filter(!is.na(poi_id)) |>
+  dplyr::distinct() |>
+  dplyr::mutate(nexus_id = gsub("^fp-", "nex-", flowpath_id)) |>
+  dplyr::select(nexus_id, poi_id)
+
+gage_nex <- net |>
+  dplyr::filter(hl_class == "gage") |>
+  dplyr::select(flowline_id, poi_id) |>
+  dplyr::distinct() |>
+  dplyr::left_join(nexus_pois, by = "poi_id") |>
+  dplyr::select(flowline_id, gage_nex_id = nexus_id)
+
+# --- WaterbodyID and waterbody_nex_id ---
+# hl_reference holds the waterbody identifier when hl_class is WBIn or WBOut.
+wb_nex <- net |>
+  dplyr::filter(hl_class %in% c("WBIn", "WBOut")) |>
+  dplyr::select(flowline_id, poi_id, WaterbodyID = hl_reference) |>
+  dplyr::distinct() |>
+  dplyr::left_join(nexus_pois, by = "poi_id") |>
+  dplyr::select(flowline_id, WaterbodyID, waterbody_nex_id = nexus_id)
+
+# --- Assemble final flowpath attributes table ---
+flow_atts <- flow_atts |>
+  dplyr::rename(
+    link     = flowline_id,
+    Length_m = lengthm,
+    gage     = hl_reference
+  ) |>
+  dplyr::left_join(y_alt,    by = c("link" = "flowline_id")) |>
+  dplyr::left_join(topology, by = c("link" = "flowline_id")) |>
+  dplyr::left_join(gage_nex, by = c("link" = "flowline_id")) |>
+  dplyr::left_join(wb_nex,   by = c("link" = "flowline_id")) |>
+  dplyr::select(
+    n, nCC, BtmWdth, TopWdth, TopWdthCC, ChSlp, So, MusX, MusK,
+    link, to, Length_m, Y, alt, gage, gage_nex_id,
+    WaterbodyID, waterbody_nex_id, id, toid, vpuid
+  )
+```
+
 ## Save the Computed Attributes to the NGEN Geopackage
 
 ```{r}
@@ -74,6 +159,11 @@ flow_atts <- calculate_flow_atts(net,
 file.copy(params$nextgen_geopackage, params$output_nextgen_geopackage)
 
 # Add divide attributes to the ngen geopackage
+div_atts$vpuid <- params$vpu_id
+# TODO: Placeholder for dist_4.twi — a 4-bin equal-frequency TWI quantile distribution
+# stored as a JSON array (e.g. [{"v":4.0,"frequency":0.25}, ...]). Implementation will
+# be completed when TWI data is made available on HydroShare.
+div_atts$dist_4.twi <- "[{}]"
 st_write(div_atts,
          params$output_nextgen_geopackage,
          layer = "divide-attributes",

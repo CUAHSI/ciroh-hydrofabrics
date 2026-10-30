@@ -5,14 +5,18 @@
 # attributes that will be applied/modified in the reference hydrofabric.
 # If a value is empty, it will not be applied to the flowpath.
 #
-#666132,664374
-#664374,664306
-#664306,664274
-#664274,4563416
-#664372,664374
-#666082,664306
-#664280,664274
-#664230,4563416
+# Each entry should be accompanied by a additional actions that indicate
+# operation(s) that will be applied to the topology. These are optional
+#
 # Column structure:
-flowpath_id,flowpath_toid,lengthkm,areasqkm,totdasqkm,pathlength,streamorder
+flowpath_id,reverse_flow_direction,flowpath_toid,lengthkm,areasqkm,totdasqkm,pathlength,streamorder,geometry
+666132,true,664374,,,,,,
+664374,true,664306,,,,,,
+664306,true,664274,,,,,,
+664274,true,4563416,,,,,,
+664372,false,664374,,,,,,
+666082,false,664306,,,,,,
+664280,false,664274,,,,,,
+664230,false,4563416,,,,,,
+
 

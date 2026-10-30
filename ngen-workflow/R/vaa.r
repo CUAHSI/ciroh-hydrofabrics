@@ -21,7 +21,8 @@ option_list <- list(
   make_option("--nextgen_geopackage", type = "character", help = "Path to nextgen geopackage"),
   make_option("--soil_data",          type = "character", help = "Path to soil data"),
   make_option("--gw_params",          type = "character", help = "Path to GW params"),
-  make_option("--dem",                type = "character", help = "Path to DEM")
+  make_option("--dem",                type = "character", help = "Path to DEM"),
+  make_option("--nwm_slope",          type = "character", help = "Path to NWM 1km slope raster")
 )
 
 params <- parse_args(OptionParser(option_list = option_list))
@@ -134,7 +135,7 @@ d2 <- open_dataset(params$gw_params) |>
     summarize(
       mean.Coeff = round(weighted.mean(Coeff, w = Area_sqkm, na.rm = TRUE), 9),
       mean.Zmax  = round(weighted.mean(Zmax,  w = Area_sqkm, na.rm = TRUE), 9),
-      mean.Expon = mode(floor(Expon))
+      mode.Expon = mode(floor(Expon))
     )
 message(paste(names(d2), collapse = ", "))
 
@@ -175,6 +176,8 @@ writeRaster(slope_raster, "/tmp/aspect.tif", overwrite = TRUE)
 #slope_raster <- setValues(rast(dem_raster), values(slope_raster))
 #aspect_raster <- setValues(rast(dem_raster), values(aspect_raster))
 
+message(paste("computing zonal statistics for", nrow(divides), "divides"))
+
 # compute zonal statistics for elevation, slope, and aspect.
 message("computing mean elevation and mean slope for each divide_id")
 d4 <- execute_zonal(c(dem_raster, rast('/tmp/slope.tif')),
@@ -182,6 +185,13 @@ d4 <- execute_zonal(c(dem_raster, rast('/tmp/slope.tif')),
                     fun = "mean",
                     join = FALSE) |>
     setNames(c("divide_id", "mean.elevation", "mean.slope"))
+
+message("computing mean NWM 1km slope for each divide_id")
+d4_1km <- execute_zonal(rast(params$nwm_slope),
+                        divides, ID = "divide_id",
+                        fun = "mean",
+                        join = FALSE) |>
+    setNames(c("divide_id", "mean.slope_1km"))
 
 message(paste(names(d4), collapse = ", "))
 
@@ -200,7 +210,7 @@ message(paste(names(d5), collapse = ", "))
 
 # Save the attributes to a sidecar parquet file.
 message("combining all derived attributes into a single table")
-model_attributes <- power_full_join(list(d1, d2, d3, d4, d5), by = "divide_id")
+model_attributes <- power_full_join(list(d1, d2, d3, d4, d4_1km, d5), by = "divide_id")
 
 # save the computed model_attributes to a parquet file.
 message('saving the derived attributes to a parquet file')
@@ -221,4 +231,13 @@ gdf <- gdf |> select(-any_of("mean.Zmax"))
 # geopackage, then save the updated geopackage to disk.
 gdf_joined <- left_join(gdf, model_attributes, by = "divide_id")
 st_write(gdf_joined, output_nextgen_geopackage, layer = "divide-attributes", delete_layer = TRUE)
+
+# TODO: flowpath-attributes-ml is currently a copy of flowpath-attributes with two
+# additional ML-specific channel geometry attributes (YCC, dingman_r) set to NULL.
+# In the future, these should be computed from ML model outputs rather than copied
+# from flowpath-attributes, as the channel attributes may differ.
+flow_atts_ml <- st_read(output_nextgen_geopackage, layer = "flowpath-attributes")
+flow_atts_ml$YCC       <- NA_real_  # TODO: compute from ML model output
+flow_atts_ml$dingman_r <- NA_real_  # TODO: compute from ML model output
+st_write(flow_atts_ml, output_nextgen_geopackage, layer = "flowpath-attributes-ml", append = TRUE)
 
