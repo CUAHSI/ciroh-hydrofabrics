@@ -15,6 +15,7 @@ export function getCredentials() {
 // Read resource id from query params, e.g. ?resource_id=<id>
 const _queryResourceId = (new URLSearchParams(window.location.search).get('resource_id') || '').trim();
 export const DEFAULT_RESOURCE_ID = 'e280863b7c31415f880432764c5b8eb1';
+export const COMMUNITY_RESOURCE_ID = 'b65e8cd8b1dd4c179cbade8c6c24adde';
 
 export const VIEWER_MODE = true;
 export let RESOURCE_ID = _queryResourceId || DEFAULT_RESOURCE_ID;
@@ -26,6 +27,7 @@ export function setResourceId(id) {
 }
 
 let _bucketName = '';
+let _communityBucketName = '';
 
 /**
  * Fetch the S3 bucket name for the given resource id and recompute all
@@ -35,7 +37,7 @@ let _bucketName = '';
  * When strict=false, logs and keeps the previous bucket value.
  * Call this before booting the viewer.
  */
-export async function initBucketName(resourceId) {
+async function lookupBucketName(resourceId) {
   const token = getActiveBearerToken();
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await fetch(`https://hydroshare.org/hsapi/resource/s3/${resourceId}/`, { headers });
@@ -46,7 +48,14 @@ export async function initBucketName(resourceId) {
   if (!data?.bucket) {
     throw new Error('S3 bucket lookup returned no bucket name');
   }
-  _bucketName = data.bucket;
+  return data.bucket;
+}
+
+export async function initBucketName(resourceId) {
+  _bucketName = await lookupBucketName(resourceId);
+  if (!_communityBucketName) {
+    _communityBucketName = await lookupBucketName(COMMUNITY_RESOURCE_ID);
+  }
   _recomputeUrls();
 }
 
@@ -60,9 +69,8 @@ function _recomputeUrls() {
   RES_FLOWPATHS_PMTILES_URL = `${S3_MAP}/only_geometry/reference/flowpaths.pmtiles`;
   MERGED_PMTILES_URL   = `${S3_MAP}/merged.pmtiles`;
   VPU_PMTILES_URL      = `${S3_MAP}/only_geometry/reference/vpu.pmtiles`;
-  const communityOrigin = `${S3_ORIGIN}/${_bucketName}/${RESOURCE_ID}/data/contents/community`;
-  COMMUNITY_HF_ORIGIN  = communityOrigin;
-  COMMUNITY_HF_MAP     = `${communityOrigin}/map`;
+  COMMUNITY_HF_ORIGIN  = `${S3_ORIGIN}/${_communityBucketName}/${COMMUNITY_RESOURCE_ID}/data/contents`;
+  COMMUNITY_HF_MAP     = COMMUNITY_HF_ORIGIN;
   COMMUNITY_HF_DIVIDES   = `${COMMUNITY_HF_MAP}/only_geometry/reference/divides.pmtiles`;
   COMMUNITY_HF_FLOWPATHS = `${COMMUNITY_HF_MAP}/only_geometry/reference/flowpaths.pmtiles`;
   PARQUET_URLS['divides']                = `${S3_PARQUET}/divides.parquet`;
@@ -92,8 +100,8 @@ export let MERGED_PMTILES_URL   = `${S3_MAP}/merged.pmtiles`;
 export let VPU_PMTILES_URL      = `${S3_MAP}/only_geometry/reference/vpu.pmtiles`;
 
 //community hydrofabric reference
-export let COMMUNITY_HF_ORIGIN    = `${S3_ORIGIN}/${_bucketName}/${RESOURCE_ID}/data/contents/community`;
-export let COMMUNITY_HF_MAP       = `${COMMUNITY_HF_ORIGIN}/map`;
+export let COMMUNITY_HF_ORIGIN    = `${S3_ORIGIN}/${_communityBucketName}/${COMMUNITY_RESOURCE_ID}/data/contents`;
+export let COMMUNITY_HF_MAP       = COMMUNITY_HF_ORIGIN;
 export let COMMUNITY_HF_DIVIDES   = `${COMMUNITY_HF_MAP}/only_geometry/reference/divides.pmtiles`;
 export let COMMUNITY_HF_FLOWPATHS = `${COMMUNITY_HF_MAP}/only_geometry/reference/flowpaths.pmtiles`;
 
