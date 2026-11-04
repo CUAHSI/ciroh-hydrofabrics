@@ -39,7 +39,7 @@ description of the project structure and purpose.
 
 ### Issue tracker
 
-Work items live in Jira project `CAM` under Objectives CAM-969 and CAM-974 (label `HydroFabric`), managed with `acli`; GitHub is for code and PRs only. See `docs/agents/issue-tracker.md`.
+Work items live in Jira project `CAM` under Objectives CAM-969, CAM-974, and CAM-1551 (label `HydroFabric`), managed with `acli`; GitHub is for code and PRs only. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
