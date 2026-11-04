@@ -19,7 +19,7 @@ CAM-1020  Research Project   Community HydroFabrics
 ├── CAM-969   Objective      Establish Cloud System for Collaboration (RO1)
 ├── CAM-1551  Objective      Enhance the Hydrofabric through Community Research Contributions (RO2)
 └── CAM-974   Objective      Facilitate Community Adoption around Data (RO3)
-    └── Epic                 bundles related Stories; 1 week to 3 months of work
+    └── Epic                 bundles related Stories; ideally 2-4 weeks of work (1 week to 3 months allowed)
         └── Story            smallest unit agents create
             └── Sub-task     (created by humans; agents don't create these)
 ```
@@ -29,7 +29,7 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 `acli` search does not support `childIssuesOf()`, and `parent` is not allowed in `--fields`. To list Stories, take the Epic keys from the query above and run a second search with `parent in (<EPIC-KEY>, <EPIC-KEY>, ...)`.
 
 - **Story** is the smallest unit to create. Every Story has an Epic as its parent.
-- Create an **Epic** only when bundling several related Stories that together take 1 week to 3 months. Parent it under the Objective whose scope fits (see above): `CAM-969` for infrastructure, pipeline, CI, UI, and technical-docs work; `CAM-1551` for science use cases; `CAM-974` for user docs, training, and presentations. If it's unclear which Objective fits, ask the user.
+- Create an **Epic** only when bundling several related Stories that together take 1 week to 3 months, ideally 2-4 weeks. Split larger bodies of work into several Epics when shaping them, rather than later, so sequencing and dates are set against the final Epics. Parent it under the Objective whose scope fits (see above): `CAM-969` for infrastructure, pipeline, CI, UI, and technical-docs work; `CAM-1551` for science use cases; `CAM-974` for user docs, training, and presentations. If it's unclear which Objective fits, ask the user.
 - Never create Research Projects, Objectives, or Sub-tasks.
 - Every work item gets the label `HydroFabric` (triage and wayfinder labels are added on top of it, never instead of it).
 - Order backlogs by Rank: `ORDER BY cf[10116] ASC` (`customfield_10116`).
