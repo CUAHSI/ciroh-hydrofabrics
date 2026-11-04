@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - main
+    # Path filters match file paths by glob, so a bare directory
+    # ('subsetter/') matches nothing; '**' is needed to match its files.
     paths:
-      - 'subsetter/'
+      - 'subsetter/**'
+      - '.github/workflows/deploy_pages.yaml'
   workflow_dispatch:
 
 permissions:
