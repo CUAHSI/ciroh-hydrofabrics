@@ -2,12 +2,13 @@
 
 Tickets and specs live in Jira, project `CAM`, on `cuahsi.atlassian.net`. Use the Atlassian CLI (`acli`) for all operations. GitHub (`CUAHSI/ciroh-hydrofabrics`) is used **only for source code and pull requests**; never create GitHub issues.
 
-`CAM` is shared by every Compute and Modeling team project. This repo's work lives under two Objectives of Research Project `CAM-1020` (Community HydroFabrics):
+`CAM` is shared by every Compute and Modeling team project. This repo's work lives under three Objectives of Research Project `CAM-1020` (Community HydroFabrics), one per research objective (RO) in the project proposal (attached to `CAM-1020`):
 
-- **`CAM-969`** (primary): HydroFabric - Establish Cloud System for Collaboration. Pipelines (DVC, NGEN versions), CI, consistency checks/validation, the subsetter UI, and technical documentation.
-- **`CAM-974`** (secondary): HydroFabric - Facilitate Community Adoption around Data. User documentation, training materials, presentations/manuscripts, and community contribution patterns.
+- **`CAM-969`** (RO1, plus the RO3 map interface): HydroFabric - Establish Cloud System for Collaboration. Pipelines (DVC, NGEN versions), CI, automated consistency checks/validation, community contribution workflows and the research-to-operations pipeline, the subsetter UI, and technical documentation.
+- **`CAM-1551`** (RO2): HydroFabric - Enhance the Hydrofabric through Community Research Contributions. Science use cases that add value-added content to the hydrofabric (dominant hydrologic processes, model parameters/states, geographic attributes) and their notebooks.
+- **`CAM-974`** (RO3): HydroFabric - Facilitate Community Adoption around Data. User documentation, training materials, and presentations/manuscripts.
 
-Only touch work items under these two Objectives, plus new items you create under the rules below.
+Only touch work items under these three Objectives, plus new items you create under the rules below.
 
 Prefix every `acli` command with `PAGER=cat` (or `export PAGER=cat`), otherwise output opens in an interactive pager and hangs. In a chain like `a; b`, the prefix applies only to `a`: use `export PAGER=cat;` first. `acli jira workitem view` ignores `PAGER` and still opens a pager; pipe it through `| cat` instead (e.g. `acli jira workitem view <KEY> --json | cat`).
 
@@ -15,19 +16,20 @@ Prefix every `acli` command with `PAGER=cat` (or `export PAGER=cat`), otherwise 
 
 ```text
 CAM-1020  Research Project   Community HydroFabrics
-├── CAM-969  Objective       Establish Cloud System for Collaboration (primary)
-└── CAM-974  Objective       Facilitate Community Adoption around Data (secondary)
+├── CAM-969   Objective      Establish Cloud System for Collaboration (RO1)
+├── CAM-1551  Objective      Enhance the Hydrofabric through Community Research Contributions (RO2)
+└── CAM-974   Objective      Facilitate Community Adoption around Data (RO3)
     └── Epic                 bundles related Stories; 1 week to 3 months of work
         └── Story            smallest unit agents create
             └── Sub-task     (created by humans; agents don't create these)
 ```
 
-List the current Epics with `acli jira workitem search --jql "parent in (CAM-969, CAM-974) AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`.
+List the current Epics with `acli jira workitem search --jql "parent in (CAM-969, CAM-1551, CAM-974) AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`.
 
 `acli` search does not support `childIssuesOf()`, and `parent` is not allowed in `--fields`. To list Stories, take the Epic keys from the query above and run a second search with `parent in (<EPIC-KEY>, <EPIC-KEY>, ...)`.
 
 - **Story** is the smallest unit to create. Every Story has an Epic as its parent.
-- Create an **Epic** only when bundling several related Stories that together take 1 week to 3 months. Parent it under `CAM-969` by default, or `CAM-974` for community-facing work (see above). If it's unclear which Objective fits, ask the user.
+- Create an **Epic** only when bundling several related Stories that together take 1 week to 3 months. Parent it under the Objective whose scope fits (see above): `CAM-969` for infrastructure, pipeline, CI, UI, and technical-docs work; `CAM-1551` for science use cases; `CAM-974` for user docs, training, and presentations. If it's unclear which Objective fits, ask the user.
 - Never create Research Projects, Objectives, or Sub-tasks.
 - Every work item gets the label `HydroFabric` (triage and wayfinder labels are added on top of it, never instead of it).
 - Order backlogs by Rank: `ORDER BY cf[10116] ASC` (`customfield_10116`).
@@ -37,7 +39,7 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 
 - **Create a Story**: `acli jira workitem create --project CAM --type Story --parent <EPIC-KEY> --label HydroFabric --summary "..." --description-file <file>`. Write the body to a temp file for multi-line descriptions. Plain text only: Jira does not render Markdown (use ADF JSON if rich formatting matters).
 
-- **Create an Epic**: same as above with `--type Epic --parent CAM-969` (or `--parent CAM-974`).
+- **Create an Epic**: same as above with `--type Epic --parent CAM-969` (or `--parent CAM-1551` / `--parent CAM-974`).
 
 - **Read a work item**: `acli jira workitem view <KEY> --fields "summary,issuetype,status,parent,labels,description,comment" --json | cat`.
 
@@ -135,7 +137,7 @@ PRs are opened on GitHub with `gh pr create --base main`, from a branch named as
 
 ## When a skill says "publish to the issue tracker"
 
-Create a Jira Story under the relevant Epic of `CAM-969` or `CAM-974` (or an Epic under one of those Objectives, if it's a multi-Story body of work), labelled `HydroFabric`. If no Epic clearly fits, ask the user which one to use rather than guessing.
+Create a Jira Story under the relevant Epic of `CAM-969`, `CAM-1551`, or `CAM-974` (or an Epic under one of those Objectives, if it's a multi-Story body of work), labelled `HydroFabric`. If no Epic clearly fits, ask the user which one to use rather than guessing.
 
 ## When a skill says "fetch the relevant ticket"
 
@@ -145,7 +147,7 @@ Read it as in **Read a work item** above. A bare `#42` refers to a GitHub PR; a 
 
 Used by `/wayfinder`. The **map** is a single Epic with **child** Stories as tickets.
 
-- **Map**: an Epic under `CAM-969` (or `CAM-974`, per the routing rule above), labelled `HydroFabric,wayfinder:map`, holding the Notes / Decisions-so-far / Fog body.
+- **Map**: an Epic under `CAM-969`, `CAM-1551`, or `CAM-974` (per the routing rule above), labelled `HydroFabric,wayfinder:map`, holding the Notes / Decisions-so-far / Fog body.
 
 - **Child ticket**: a Story with `--parent <map-epic>`, labelled `HydroFabric,wayfinder:<type>` (`research`/`prototype`/`grilling`/`task`). Once claimed, it's assigned to the driving dev.
 
