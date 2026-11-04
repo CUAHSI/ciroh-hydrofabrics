@@ -62,7 +62,7 @@ remotes::install_github("mikejohnson51/climateR")
 ```
 
 ```{r}
-remotes::install_github('NOAA-OWP/hydrofabric')
+remotes::install_github('NOAA-OWP/hydrofabric_v2.2')
 ```
 
 ```{r}

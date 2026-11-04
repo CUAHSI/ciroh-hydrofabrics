@@ -41,7 +41,7 @@ RUN Rscript -e "$R_FAIL remotes::install_github('mikejohnson51/zonal'); library(
 RUN Rscript -e "$R_FAIL remotes::install_github('lynker-spatial/hfngen'); library(hfngen)"
 RUN Rscript -e "$R_FAIL whitebox::install_whitebox(); library(whitebox)"
 RUN Rscript -e "$R_FAIL install.packages('nanoarrow'); library(nanoarrow)"
-RUN Rscript -e "$R_FAIL remotes::install_github('NOAA-OWP/hydrofabric')"
+RUN Rscript -e "$R_FAIL remotes::install_github('NOAA-OWP/hydrofabric_v2.2')"
 RUN Rscript -e "$R_FAIL install.packages('aws.s3'); library(aws.s3)"
 RUN Rscript -e "$R_FAIL install.packages('arrow'); library(arrow)"
 RUN Rscript -e "$R_FAIL install.packages('glue'); library(glue)"
