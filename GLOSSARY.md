@@ -44,15 +44,27 @@ _Avoid_: research hydrofabric, custom hydrofabric
 A Community Hydrofabric produced by one run of this project's pipeline, whether or not it has been reviewed.
 _Avoid_: draft, working copy, run output
 
+**Release Candidate**:
+A Build picked to become the next Release.
+_Avoid_: beta, pre-release
+
+**Release Review**:
+The check of a Release Candidate as a whole before it is published as a Release.
+_Avoid_: release QA, sign-off
+
 **Release**:
-A reviewed, versioned Build published for others to use (e.g. Community NextGen Hydrofabric v0.1).
+A Build that passed Release Review, versioned and published for others to use (e.g. Community NextGen Hydrofabric v0.1).
 _Avoid_: system release, drop, snapshot
 
 ## Contributions
 
 **Contribution**:
-A proposed change to how a Community Hydrofabric is built, submitted for review on its way into a Release. Its kind is set by its purpose, not by how it is implemented.
+A proposed change to how a Community Hydrofabric is built, submitted for Contribution Review on its way into a Release. Its kind is set by its purpose, not by how it is implemented.
 _Avoid_: patch, PR, submission
+
+**Contribution Review**:
+The review of a single Contribution before it is accepted into the project's main line; who must approve depends on the Contribution's kind.
+_Avoid_: PR review, code review
 
 **Correction**:
 A Contribution that fixes errors in the network, geometry, or hydrolocations.
