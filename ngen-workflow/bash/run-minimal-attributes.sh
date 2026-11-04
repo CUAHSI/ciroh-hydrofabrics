@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-if [ $# -lt 7 ]; then
-  echo "Usage: $0 <nextgen_gpkg> <soil_tif> <veg_tif> <imperv_tif> <gw_table> <channel_geom_table> <output_gpkg>"
+if [ $# -lt 8 ]; then
+  echo "Usage: $0 <nextgen_gpkg> <soil_tif> <veg_tif> <imperv_tif> <gw_table> <channel_geom_table> <vpu_id> <output_gpkg>"
   exit 1
 fi
 
@@ -12,7 +12,8 @@ veg_tif="$3"
 imperv_tif="$4"
 gw_table="$5"
 channel_geom_table="$6"
-output_gpkg="$7"
+vpu_id="$7"
+output_gpkg="$8"
 
 mkdir -p "$(dirname "$nextgen_gpkg")"
 
@@ -26,6 +27,7 @@ Rscript -e "
             impervious_grid = '$imperv_tif',
             groundwater_basins_table = '$gw_table',
             channel_geometry_table = '$channel_geom_table',
+            vpu_id = '$vpu_id',
             output_nextgen_geopackage = '$output_gpkg'
         )
     )
