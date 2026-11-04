@@ -78,6 +78,16 @@ _Avoid_: value-added content, enrichment
 A Contribution that changes how a processing step builds the hydrofabric.
 _Avoid_: new stage, custom stage
 
+## Checks
+
+**Consistency Check**:
+An automated check that a Build is internally sound: its network, geometry, and attributes agree with one another and with the schema the Build declares.
+_Avoid_: validation, QA check, integrity check
+
+**Alignment Check**:
+An automated check that compares a Build with the hydrofabric it was built from (an Official Hydrofabric or an earlier Release), to show what changed and confirm that only the intended changes were made.
+_Avoid_: diff, comparison, compliance check
+
 ## Between official and community
 
 **Downstream Update**:
