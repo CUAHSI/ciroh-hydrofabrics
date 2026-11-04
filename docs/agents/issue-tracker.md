@@ -121,6 +121,8 @@ Before the first REST call, check the file without reading it:
 
 - When setting due dates for dependent Stories, keep them consistent with `Blocks` links: a blocker's due date comes on or before the start date of every item it blocks.
 
+- Use `Blocks` only when an item cannot **start** until the other is done. When an item can start now but cannot **finish** until another is done (e.g. an Enhancement developed now but merged only once the Contribution Review gate exists), link them with `Relates` and write "finishes after <item>" in the dependent item's description; its due date comes on or after the other item's due date.
+
 ## Branches
 
 Work on a Story in its own branch off the latest `main` (this repo has no `develop` branch), named `<KEY>-<short-description>`: the Jira key, then a few lowercase, hyphenated words summarising the change (e.g. `CAM-1449-diff-geopackage-routine`). The key ties the branch, and the PR opened from it, back to the Story.
