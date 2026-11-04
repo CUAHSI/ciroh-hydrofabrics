@@ -41,7 +41,7 @@ _Avoid_: research hydrofabric, custom hydrofabric
 ## Lifecycle
 
 **Build**:
-A Community Hydrofabric produced by one run of this project's pipeline, whether or not it has been reviewed.
+A Community Hydrofabric produced by one run of one of this project's pipelines, whether or not it has been reviewed.
 _Avoid_: draft, working copy, run output
 
 **Release Candidate**:
