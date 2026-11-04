@@ -20,6 +20,9 @@ description of the project structure and purpose.
   change, since it is the canonical stage-by-stage reference.
 - Do not commit credentials (AWS/HydroShare profiles, tokens). Check for
   stray files like `github_token.txt` before adding new secrets.
+- Update this file (`AGENTS.md`) directly whenever new standing instructions
+  or conventions are established for this repository.
+
 
 ## Coding Principles
 - Follow the Unix philosophy: write small, focused pieces of code that do
@@ -32,8 +35,16 @@ description of the project structure and purpose.
 - Agents must always ask the user before editing files directly; do not
   make direct edits without explicit confirmation first.
 
-## Adding Future Context
-- Save durable project context/notes under `.ai/` (this directory) rather
-  than scattering new markdown files across the repo.
-- Update this file (`AGENTS.md`) directly whenever new standing instructions
-  or conventions are established for this repository.
+## Agent skills
+
+### Issue tracker
+
+Work items live in Jira project `CAM` under Objectives CAM-969 and CAM-974 (label `HydroFabric`), managed with `acli`; GitHub is for code and PRs only. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), applied as Jira labels alongside `HydroFabric`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain.md`.
