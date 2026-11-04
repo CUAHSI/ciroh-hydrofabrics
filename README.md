@@ -3,6 +3,26 @@
 
 This project uses [DVC (Data Version Control)](https://dvc.org/) to manage data pipelines and track changes to large datasets. DVC enables reproducible workflows and seamless collaboration.
 
+## Hydrofabric Viewer
+
+The Hydrofabric Viewer is a browser app for exploring hydrofabrics stored in HydroShare and downloading the network upstream of any point. It is available at:
+
+**<https://cuahsi.github.io/ciroh-hydrofabrics/subset.html>**
+
+Use the full `subset.html` address. The site root has no landing page and returns a 404.
+
+### Using the viewer
+
+1. Select **Sign in** and log in with your HydroShare account. The viewer reads hydrofabric data directly from HydroShare S3 storage, which requires your HydroShare credentials.
+2. Choose a hydrofabric with the **Resource ID** selector, or select **Custom…** and enter the ID of any HydroShare resource that contains a hydrofabric. You can also link to a resource directly with the `resource_id` query parameter, for example `subset.html?resource_id=e280863b7c31415f880432764c5b8eb1`.
+3. Use the **Layers** panel to show or hide divides, flowpaths, and nexus points. Turn on **Split View** to compare two hydrofabrics side by side, such as the researcher's data and the Community Hydrofabric.
+4. Click a nexus point on the map to select it as the outlet. The viewer finds every catchment upstream of it.
+5. Select **Subset & Download** to save the upstream network as a GeoPackage named `<nexus-id>_subset.gpkg`. It contains the divides, flowpaths, nexus, points of interest, hydrolocations, and lakes layers, plus their attribute tables.
+
+### Deployment
+
+The viewer's source lives in `subsetter/`. It has no build step: the [`deploy_pages.yaml`](.github/workflows/deploy_pages.yaml) workflow publishes the `subsetter/` folder to GitHub Pages as is, whenever a push to `main` changes a file under `subsetter/` or the workflow itself. To redeploy without a code change, run the workflow manually from the repository's **Actions** tab.
+
 ## DVC Installation
 
 To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via pip:
