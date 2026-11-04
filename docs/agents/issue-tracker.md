@@ -53,6 +53,10 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 
 - **Change status**: `acli jira workitem transition --key <KEY> --status "In Progress" --yes`.
 
+- **Move to another Epic**: `acli jira workitem edit` has no `--parent` flag, so set the parent through REST: `curl -sS -w "HTTP %{http_code}\n" --netrc-file ~/.jira/netrc -X PUT -H "Content-Type: application/json" -d '{"fields":{"parent":{"key":"<EPIC-KEY>"}}}' https://cuahsi.atlassian.net/rest/api/3/issue/<KEY>`. Success is HTTP 204. Read the parent back with `acli jira workitem view <KEY> --fields "parent" --json | cat`.
+
+- **Assign to someone else**: `--assignee` on `create`, `edit`, and `assign` accepts only an email or `@me`. It rejects account IDs ("invalid format for assignee email"), and other users' emails are hidden, so assign other people through REST. Find the account ID with `GET /rest/api/3/user/search?query=<name>`, then send `PUT /rest/api/3/issue/<KEY>/assignee` with `{"accountId":"<ID>"}`. Success is HTTP 204.
+
 - **Close**: comment with the reason, then transition to `Done` (resolved) or `Won't Do` (declined).
 
 - **Link**: `acli jira workitem link create --out <BLOCKED> --in <BLOCKER> --type Blocks --yes` creates "`<BLOCKER>` blocks `<BLOCKED>`". The flag names are the reverse of what they suggest, and acli's success message (`<BLOCKED> Blocks <BLOCKER>`) describes the opposite of what Jira stores, so read the link back after creating it (see **Read links** below). Other types: `Relates`, `Duplicate`. The REST equivalent is `POST /rest/api/3/issueLink` with `{"type":{"name":"Blocks"},"inwardIssue":{"key":"<BLOCKER>"},"outwardIssue":{"key":"<BLOCKED>"}}`; delete a link with `DELETE /rest/api/3/issueLink/<LINK-ID>`. Credentials for REST calls are described under **Sprints, start dates, and due dates** below.
@@ -63,7 +67,7 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 
 ## Sprints, start dates, and due dates (Jira REST API)
 
-`acli` (checked at 1.3.39) cannot set start dates, due dates, sprints, or any custom field on an existing work item. `acli jira workitem edit` only accepts `summary`, `description`, `assignee`, `type`, and labels; `--from-json` rejects other keys (`unknown field "duedate"`, `unknown field "fields"`) and there is no `--field` flag. Use the Jira REST API with `curl` for these instead.
+`acli` (checked at 1.3.39) cannot set start dates, due dates, sprints, or any custom field on an existing work item. `acli jira workitem edit` only accepts `summary`, `description`, `assignee`, `type`, and labels (no parent; see **Move to another Epic** above); `--from-json` rejects other keys (`unknown field "duedate"`, `unknown field "fields"`) and there is no `--field` flag. Use the Jira REST API with `curl` for these instead.
 
 | Item          | Value                                                               |
 | ------------- | ------------------------------------------------------------------- |
