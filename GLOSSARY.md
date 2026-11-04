@@ -68,9 +68,9 @@ _Avoid_: new stage, custom stage
 
 ## Between official and community
 
-**Upstream Update**:
+**Downstream Update**:
 A change to an Official Hydrofabric that Community Hydrofabric Builds then take up.
-_Avoid_: propagation, sync, pull-down
+_Avoid_: upstream update, propagation, sync, pull-down
 
 **Upstream Recommendation**:
 A change shown in Community Hydrofabric work and offered to the owner of an Official Hydrofabric for possible adoption.
