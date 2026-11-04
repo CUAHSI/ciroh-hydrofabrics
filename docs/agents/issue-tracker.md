@@ -59,7 +59,7 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 
 - **Close**: comment with the reason, then transition to `Done` (resolved) or `Won't Do` (declined).
 
-- **Link**: `acli jira workitem link create --out <BLOCKED> --in <BLOCKER> --type Blocks --yes` creates "`<BLOCKER>` blocks `<BLOCKED>`". The flag names are the reverse of what they suggest, and acli's success message (`<BLOCKED> Blocks <BLOCKER>`) describes the opposite of what Jira stores, so read the link back after creating it (see **Read links** below). Other types: `Relates`, `Duplicate`. The REST equivalent is `POST /rest/api/3/issueLink` with `{"type":{"name":"Blocks"},"inwardIssue":{"key":"<BLOCKER>"},"outwardIssue":{"key":"<BLOCKED>"}}`; delete a link with `DELETE /rest/api/3/issueLink/<LINK-ID>`. Credentials for REST calls are described under **Sprints, start dates, and due dates** below.
+- **Link**: `acli jira workitem link create --out <BLOCKED> --in <BLOCKER> --type Blocks --yes` creates "`<BLOCKER>` blocks `<BLOCKED>`". The flag names are the reverse of what they suggest, and acli's success message (`<BLOCKED> Blocks <BLOCKER>`) describes the opposite of what Jira stores, so read the link back after creating it (see **Read links** below). Other types: `Relates`, `Duplicate`. The CAM Timeline draws **every** link type as a "blocks" dependency, including `Relates` (shown as "<A> blocks <B>" in an arbitrary direction, and red when the dates overlap). Link items that have dates only with `Blocks`; record any other relationship in the description instead. The REST equivalent is `POST /rest/api/3/issueLink` with `{"type":{"name":"Blocks"},"inwardIssue":{"key":"<BLOCKER>"},"outwardIssue":{"key":"<BLOCKED>"}}`; delete a link with `DELETE /rest/api/3/issueLink/<LINK-ID>`. Credentials for REST calls are described under **Sprints, start dates, and due dates** below.
 
 - **Read links**: `curl -sS --netrc-file ~/.jira/netrc "https://cuahsi.atlassian.net/rest/api/3/issue/<KEY>?fields=issuelinks"`. For a `Blocks` link, an `inwardIssue` entry means `<KEY>` is blocked by that item, and an `outwardIssue` entry means `<KEY>` blocks it. Do not rely on `acli jira workitem link list`: it omits the other item's key for half of the links, so it cannot show direction.
 
@@ -125,7 +125,7 @@ Before the first REST call, check the file without reading it:
 
 - When setting due dates for dependent Stories, keep them consistent with `Blocks` links: a blocker's due date comes on or before the start date of every item it blocks.
 
-- Use `Blocks` only when an item cannot **start** until the other is done. When an item can start now but cannot **finish** until another is done (e.g. an Enhancement developed now but merged only once the Contribution Review gate exists), link them with `Relates` and write "finishes after <item>" in the dependent item's description; its due date comes on or after the other item's due date.
+- Use `Blocks` only when an item cannot **start** until the other is done. When an item can start now but cannot **finish** until another is done (e.g. an Enhancement developed now but merged only once the Contribution Review gate exists), do not link them; write "finishes after <item>" in the dependent item's description instead (a `Relates` link would show on the Timeline as a false "blocks" conflict, see **Link** above). The dependent item's due date comes on or after the other item's due date.
 
 ## Branches
 
