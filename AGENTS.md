@@ -20,10 +20,13 @@ description of the project structure and purpose.
   change, since it is the canonical stage-by-stage reference.
 - Do not commit credentials (AWS/HydroShare profiles, tokens). Check for
   stray files like `github_token.txt` before adding new secrets.
-- Save agent handoff documents to `.scratch/handoffs/`, named
-  `YYYY-MM-DD-<topic>.md`, not the OS temp directory, so they survive
-  reboots. `.scratch/` is git-ignored local scratch space: never commit
-  it, and don't treat it as shared or current documentation.
+- Write all agent scratch files (Jira dumps, comment and description
+  bodies, helper scripts, backups) under `.scratch/`, not `/tmp` or the
+  OS temp directory: the file tools and terminal `cd` only reach paths
+  inside the project, and `.scratch/` survives reboots. Save handoff
+  documents to `.scratch/handoffs/`, named `YYYY-MM-DD-<topic>.md`.
+  `.scratch/` is git-ignored local scratch space: never commit it, and
+  don't treat it as shared or current documentation.
 - Update this file (`AGENTS.md`) directly whenever new standing instructions
   or conventions are established for this repository.
 
