@@ -161,6 +161,10 @@ Used by `/wayfinder`. The **map** is a single Epic with **child** Stories as tic
 
 - **Frontier query**: `acli jira workitem search --jql "parent = <map> AND statusCategory != Done AND assignee is EMPTY ORDER BY cf[10116] ASC" --csv`, then drop any with an open blocker (check as in **Read links** above); first in Rank order wins.
 
-- **Claim**: `acli jira workitem assign --key <KEY> --assignee @me --yes`, the session's first write. Then transition to `In Progress`.
+- **Claim**: `acli jira workitem assign --key <KEY> --assignee @me --yes`, the session's first write (approved by the user, like every Jira write). Then transition to `In Progress`.
+
+- **Read the ticket**: its body and every comment on it, before asking anything. Earlier sessions leave input comments there naming what to read.
 
 - **Resolve**: comment with the answer, transition to `Done`, then append a context pointer (gist + key) to the map Epic's Decisions-so-far.
+
+- **Hand off**: for each open ticket this resolution feeds, post an input comment naming what its session should read (which resolution comments, which sections). End by giving the user the one-line call for the next session: `/wayfinder Work through map <map>, ticket <KEY>.` The reading list lives in Jira, so the call stays one line.

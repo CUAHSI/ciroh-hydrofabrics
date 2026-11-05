@@ -27,8 +27,12 @@ description of the project structure and purpose.
   documents to `.scratch/handoffs/`, named `YYYY-MM-DD-<topic>.md`.
   `.scratch/` is git-ignored local scratch space: never commit it, and
   don't treat it as shared or current documentation.
-- Update this file (`AGENTS.md`) directly whenever new standing instructions
-  or conventions are established for this repository.
+- Propose an update to this file (`AGENTS.md`) whenever new standing
+  instructions or conventions are established for this repository.
+- Show the user every Jira write (create, edit, comment, transition,
+  assign, link, date, or parent change) and wait for approval before
+  running it. Batch related writes into one request so they can be
+  approved together.
 
 
 ## Coding Principles
@@ -39,8 +43,9 @@ description of the project structure and purpose.
 - Comments are required on non-trivial code and should explain what is
   being done at a high level (intent/purpose), not restate the code
   line-by-line.
-- Agents must always ask the user before editing files directly; do not
-  make direct edits without explicit confirmation first.
+- Agents must always ask the user before editing tracked files in this
+  repo; do not make direct edits without explicit confirmation first.
+  Files under `.scratch/` need no confirmation.
 
 ## Agent skills
 
