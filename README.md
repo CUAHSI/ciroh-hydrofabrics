@@ -23,6 +23,14 @@ Use the full `subset.html` address. The site root has no landing page and return
 
 The viewer's source lives in `subsetter/`. It has no build step: the [`deploy_pages.yaml`](.github/workflows/deploy_pages.yaml) workflow publishes the `subsetter/` folder to GitHub Pages as is, whenever a push to `main` changes a file under `subsetter/` or the workflow itself. To redeploy without a code change, run the workflow manually from the repository's **Actions** tab.
 
+## Consistency Checks
+
+Check one Build's GeoPackages locally or from a public HydroShare resource with
+`pixi run consistency-check <target>`. For a single local file, also provide
+`--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. Checks
+currently run in advisory mode; the runner and its limits are described in
+[Consistency Checks](validation/consistency/README.md).
+
 ## DVC Installation
 
 To use this project, you must have [DVC](https://dvc.org/doc/install) installed. The recommended way is via pip:
