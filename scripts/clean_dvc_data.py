@@ -1,46 +1,79 @@
 #!/usr/bin/env python3
+"""Remove stage/output checksums and frozen flags from .dvc files.
+
+Usage: python clean_dvc_data.py /path/to/directory [--dry-run]
 """
-Usage: python strip_dvc.py /path/to/directory [--dry-run]
-Removes 'frozen: true', and 'md5:'/'size:' lines inside the outs: block.
-"""
-import sys
-import re
 import argparse
+import re
+import sys
 from pathlib import Path
+
+import yaml
 
 
 def clean_dvc_file(path: Path, dry_run: bool = False) -> list[str]:
     """Clean a single .dvc file. Returns list of removed lines."""
     lines = path.read_text().splitlines(keepends=True)
-    cleaned = []
+    document = yaml.compose("".join(lines), Loader=yaml.SafeLoader)
+    if not isinstance(document, yaml.MappingNode):
+        raise TypeError(f"{path}: expected a YAML mapping")
+
+    fields_to_remove = []
+
+    def collect_frozen(node):
+        if isinstance(node, yaml.MappingNode):
+            for key, value in node.value:
+                if (
+                    key.value == "frozen"
+                    and isinstance(value, yaml.ScalarNode)
+                    and value.tag == "tag:yaml.org,2002:bool"
+                    and value.value == "true"
+                ):
+                    fields_to_remove.append((key, value))
+                else:
+                    collect_frozen(value)
+        elif isinstance(node, yaml.SequenceNode):
+            for item in node.value:
+                collect_frozen(item)
+
+    collect_frozen(document)
+    for key, value in document.value:
+        if key.value == "md5":
+            fields_to_remove.append((key, value))
+        elif key.value == "outs" and isinstance(value, yaml.SequenceNode):
+            for output in value.value:
+                if isinstance(output, yaml.MappingNode):
+                    fields_to_remove.extend(
+                        (field, field_value)
+                        for field, field_value in output.value
+                        if field.value in {"md5", "size"}
+                    )
+
     removed = []
-    past_outs = False
+    # Use YAML node positions to preserve unrelated text, comments and dependencies.
+    for key, value in sorted(fields_to_remove, key=lambda pair: pair[0].start_mark.index):
+        line_number = key.start_mark.line
+        line = lines[line_number]
+        prefix = line[:key.start_mark.column]
+        suffix = line[value.end_mark.column:].strip()
+        if (
+            key.start_mark.line != value.end_mark.line
+            or not re.fullmatch(r"[ \t]*(?:-[ \t]+)?", prefix)
+            or (suffix and not suffix.startswith("#"))
+        ):
+            raise ValueError(
+                f"{path}:{line_number + 1}: cannot safely remove inline YAML field"
+            )
 
-    for line in lines:
-        # One-way flag: once we see outs: we never reset it
-        if re.match(r"^outs:", line):
-            past_outs = True
-            cleaned.append(line)
-            continue
-
-        # Remove frozen: true anywhere
-        if re.match(r"^\s*frozen:\s*true\s*$", line):
-            removed.append(line.rstrip())
-            continue
-
-        # After outs:, remove md5: and size: at any indentation
-        if past_outs and re.match(r"^\s*md5:", line):
-            removed.append(line.rstrip())
-            continue
-
-        if past_outs and re.match(r"^\s*size:", line):
-            removed.append(line.rstrip())
-            continue
-
-        cleaned.append(line)
+        removed.append(line.rstrip())
+        if "-" in prefix:
+            # Keep the sequence item when its first mapping field is removed.
+            lines[line_number] = prefix.rstrip() + ("\n" if line.endswith("\n") else "")
+        else:
+            lines[line_number] = ""
 
     if removed and not dry_run:
-        path.write_text("".join(cleaned))
+        path.write_text("".join(lines))
 
     return removed
 
