@@ -1,0 +1,33 @@
+name: Lint GitHub Workflows
+
+# Run actionlint (with shellcheck, preinstalled on ubuntu-latest) over every
+# workflow file when a workflow changes. Catches expression, syntax, and
+# shell-script errors before they reach main.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The download script is pinned to the same tag as the binary.
+      - name: Download actionlint
+        run: bash <(curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
+        shell: bash
+
+      - name: Run actionlint
+        run: ./actionlint -color
