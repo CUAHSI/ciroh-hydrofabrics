@@ -223,3 +223,7 @@ tests/**/assets/
 validation/hf-comparison/.cache/
 validation/hf-comparison/reports/
 validation/hf-comparison/examples/*.png
+
+# Local agent scratch space (handoffs, local tickets, Jira backups).
+# Never committed; see AGENTS.md.
+.scratch/
