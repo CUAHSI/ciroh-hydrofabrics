@@ -1,0 +1,3 @@
+# Counts are keyed by data model, output kind, VPU, check, and metric.
+# Missing counts default to zero. Populate from the matching official products.
+{}
