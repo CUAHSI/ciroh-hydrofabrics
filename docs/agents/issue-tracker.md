@@ -1,6 +1,6 @@
 # Issue tracker: Jira (CAM)
 
-Tickets and specs live in Jira, project `CAM`, on `cuahsi.atlassian.net`. Use the Atlassian CLI (`acli`) for all operations. GitHub (`CUAHSI/ciroh-hydrofabrics`) is used **only for source code and pull requests**; never create GitHub issues.
+Tickets and specs live in Jira, project `CAM`, on `cuahsi.atlassian.net`. Use `python3 scripts/jira.py` to read work items and links, set dates and parents, assign, link, and comment (`--help` lists the commands; every write prints its HTTP status and reads the result back). Use the Atlassian CLI (`acli`) to create, search, transition, and label. GitHub (`CUAHSI/ciroh-hydrofabrics`) is used **only for source code and pull requests**; never create GitHub issues.
 
 `CAM` is shared by every Compute and Modeling team project. This repo's work lives under three Objectives of Research Project `CAM-1020` (Community HydroFabrics), one per research objective (RO) in the project proposal (attached to `CAM-1020`):
 
@@ -24,7 +24,7 @@ CAM-1020  Research Project   Community HydroFabrics
             └── Sub-task     (created by humans; agents don't create these)
 ```
 
-List the current Epics with `acli jira workitem search --jql "parent in (CAM-969, CAM-1551, CAM-974) AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`.
+List the current Epics with `python3 scripts/jira.py epics` (Rank order, with dates and leads; it also reports missing dates and `Blocks` conflicts). For CSV output, use `acli jira workitem search --jql "parent in (CAM-969, CAM-1551, CAM-974) AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`.
 
 `acli` search does not support `childIssuesOf()`, and `parent` is not allowed in `--fields`. To list Stories, take the Epic keys from the query above and run a second search with `parent in (<EPIC-KEY>, <EPIC-KEY>, ...)`.
 
@@ -41,33 +41,33 @@ List the current Epics with `acli jira workitem search --jql "parent in (CAM-969
 
 - **Create an Epic**: same as above with `--type Epic --parent CAM-969` (or `--parent CAM-1551` / `--parent CAM-974`).
 
-- **Read a work item**: `acli jira workitem view <KEY> --fields "summary,issuetype,status,parent,labels,description,comment" --json | cat`.
-
-- **Read comments**: `acli jira workitem comment list --key <KEY>`.
+- **Read a work item**: `python3 scripts/jira.py show <KEY>` prints its fields, links (with direction), and description as plain text. Add `--comments` to include the comments.
 
 - **List this repo's work**: `acli jira workitem search --jql "project = CAM AND labels = HydroFabric AND statusCategory != Done ORDER BY cf[10116] ASC" --fields "key,issuetype,summary,status,labels" --csv`. Narrow with `AND parent = <EPIC-KEY>`, `AND labels = ready-for-agent`, `AND issuetype = Story`, etc.
 
-- **Comment**: `acli jira workitem comment create --key <KEY> --body "..."` (or `--body-file <file>`).
+- **Comment**: `python3 scripts/jira.py comment <KEY> <file>` (or `-` for stdin). Blank lines separate paragraphs, and lines starting `- ` or `1. ` form lists. `acli jira workitem comment create --body-file` puts the whole file in one paragraph.
 
 - **Apply / remove labels**: `acli jira workitem edit --key <KEY> --labels "..." --yes` / `--remove-labels "..." --yes`. Labels are created on first use.
 
 - **Change status**: `acli jira workitem transition --key <KEY> --status "In Progress" --yes`.
 
-- **Move to another Epic**: `acli jira workitem edit` has no `--parent` flag, so set the parent through REST: `curl -sS -w "HTTP %{http_code}\n" --netrc-file ~/.jira/netrc -X PUT -H "Content-Type: application/json" -d '{"fields":{"parent":{"key":"<EPIC-KEY>"}}}' https://cuahsi.atlassian.net/rest/api/3/issue/<KEY>`. Success is HTTP 204. Read the parent back with `acli jira workitem view <KEY> --fields "parent" --json | cat`.
+- **Start a Story**: when you begin implementing a Story, run `python3 scripts/jira.py start <KEY>` (one approval). It assigns the Story to you, transitions it to `In Progress`, and adds it to the active sprint, skipping any step already done. It refuses a Story assigned to someone else unless `--force` is given.
 
-- **Assign to someone else**: `--assignee` on `create`, `edit`, and `assign` accepts only an email or `@me`. It rejects account IDs ("invalid format for assignee email"), and other users' emails are hidden, so assign other people through REST. Find the account ID with `GET /rest/api/3/user/search?query=<name>`, then send `PUT /rest/api/3/issue/<KEY>/assignee` with `{"accountId":"<ID>"}`. Success is HTTP 204.
+- **Move to another Epic**: `python3 scripts/jira.py set-parent <KEY> <EPIC-KEY>` (`acli jira workitem edit` has no `--parent` flag).
+
+- **Assign**: `python3 scripts/jira.py assign <KEY> "<name>"` (all or part of a display name) or `@me`. `acli`'s `--assignee` accepts only an email or `@me`, and other users' emails are hidden.
 
 - **Close**: comment with the reason, then transition to `Done` (resolved) or `Won't Do` (declined).
 
-- **Link**: `acli jira workitem link create --out <BLOCKED> --in <BLOCKER> --type Blocks --yes` creates "`<BLOCKER>` blocks `<BLOCKED>`". The flag names are the reverse of what they suggest, and acli's success message (`<BLOCKED> Blocks <BLOCKER>`) describes the opposite of what Jira stores, so read the link back after creating it (see **Read links** below). Other types: `Relates`, `Duplicate`. The CAM Timeline draws **every** link type as a "blocks" dependency, including `Relates` (shown as "<A> blocks <B>" in an arbitrary direction, and red when the dates overlap). Link items that have dates only with `Blocks`; record any other relationship in the description instead. The REST equivalent is `POST /rest/api/3/issueLink` with `{"type":{"name":"Blocks"},"inwardIssue":{"key":"<BLOCKER>"},"outwardIssue":{"key":"<BLOCKED>"}}`; delete a link with `DELETE /rest/api/3/issueLink/<LINK-ID>`. Credentials for REST calls are described under **Sprints, start dates, and due dates** below.
+- **Link**: `python3 scripts/jira.py block <BLOCKER> <BLOCKED>` creates "`<BLOCKER>` blocks `<BLOCKED>`" and warns if `<BLOCKER>` is due after `<BLOCKED>` starts. Delete a link with `python3 scripts/jira.py unlink <LINK-ID>` (IDs are shown by `links` and `show`). Avoid `acli jira workitem link create`: its `--in`/`--out` flags are the reverse of what they suggest, and its success message describes the opposite of what Jira stores. The CAM Timeline draws **every** link type as a "blocks" dependency, including `Relates` (shown as "<A> blocks <B>" in an arbitrary direction, and red when the dates overlap). Link items that have dates only with `Blocks`; record any other relationship in the description instead.
 
-- **Read links**: `curl -sS --netrc-file ~/.jira/netrc "https://cuahsi.atlassian.net/rest/api/3/issue/<KEY>?fields=issuelinks"`. For a `Blocks` link, an `inwardIssue` entry means `<KEY>` is blocked by that item, and an `outwardIssue` entry means `<KEY>` blocks it. Do not rely on `acli jira workitem link list`: it omits the other item's key for half of the links, so it cannot show direction.
+- **Read links**: `python3 scripts/jira.py links <KEY>` prints each link with its direction ("blocks" / "is blocked by") and link ID. Do not rely on `acli jira workitem link list`: it omits the other item's key for half of the links, so it cannot show direction.
 
 - **Read any field**: `acli jira workitem view <KEY> --fields "duedate,customfield_10115" --json | cat`. `view` reads any system or custom field, but `edit` can only write the fields listed below.
 
-## Sprints, start dates, and due dates (Jira REST API)
+## Sprints, start dates, and due dates
 
-`acli` (checked at 1.3.39) cannot set start dates, due dates, sprints, or any custom field on an existing work item. `acli jira workitem edit` only accepts `summary`, `description`, `assignee`, `type`, and labels (no parent; see **Move to another Epic** above); `--from-json` rejects other keys (`unknown field "duedate"`, `unknown field "fields"`) and there is no `--field` flag. Use the Jira REST API with `curl` for these instead.
+`acli` (checked at 1.3.39) cannot set start dates, due dates, sprints, or any custom field on an existing work item: `acli jira workitem edit` only accepts `summary`, `description`, `assignee`, `type`, and labels. Use `scripts/jira.py` for dates, and the Jira REST API with `curl` for sprints.
 
 | Item          | Value                                                               |
 | ------------- | ------------------------------------------------------------------- |
@@ -105,23 +105,19 @@ One-time setup, done by the user:
 
    `machine` is the bare host (no `https://`, no trailing `/`), `login` is the Atlassian sign-in email, and `password` is the token exactly as issued, with no quotes. End the file with a newline.
 
-Before the first REST call, check the file without reading it:
+Before the first `scripts/jira.py` or REST call, check the file without reading it:
 
 - **Permissions**: `ls -l ~/.jira/netrc` must start with `-rw-------`. If it doesn't, ask the user to run `chmod 600 ~/.jira/netrc`.
 
-- **Login** (read-only): `curl -sS --netrc-file ~/.jira/netrc https://cuahsi.atlassian.net/rest/api/3/myself`. Expect HTTP 200 and print only `displayName`. HTTP 401 means the email, token, or `machine` host is wrong.
+- **Login** (read-only): `python3 scripts/jira.py show <any KEY>`. HTTP 401 means the email, token, or `machine` host is wrong.
 
 ### Requests
 
-- **Set a due date**: `curl -sS -w "HTTP %{http_code}\n" --netrc-file ~/.jira/netrc -X PUT -H "Content-Type: application/json" -d '{"fields":{"duedate":"2026-11-06"}}' https://cuahsi.atlassian.net/rest/api/3/issue/<KEY>`. Success is HTTP 204. Send `"duedate":null` to clear it.
-
-- **Set a start date**: same request with `-d '{"fields":{"customfield_10504":"2026-10-29"}}'`. Every scheduled work item needs both a start date and a due date; set them together.
-
-- **Before overwriting** an existing start or due date, check the item's changelog (`GET /rest/api/3/issue/<KEY>/changelog`) and tell the user if a person set it.
+- **Set dates**: `python3 scripts/jira.py set-dates <KEY> <START> <DUE>` (`YYYY-MM-DD`). Every scheduled work item needs both dates, so the script sets them together. It refuses to overwrite a date another person set; tell the user, and rerun with `--force` only once they agree.
 
 - **Add work items to a sprint**: `curl -sS -w "HTTP %{http_code}\n" --netrc-file ~/.jira/netrc -X POST -H "Content-Type: application/json" -d '{"issues":["<KEY>","<KEY>"]}' https://cuahsi.atlassian.net/rest/agile/1.0/sprint/<SPRINT-ID>/issue`. Success is HTTP 204. Add Stories, not Epics.
 
-- **Verify** every write by reading it back with `acli jira workitem view <KEY> --fields "customfield_10504,duedate,customfield_10115" --json | cat`.
+- **Verify** the sprint by reading it back with `acli jira workitem view <KEY> --fields "customfield_10115" --json | cat`.
 
 - When setting due dates for dependent Stories, keep them consistent with `Blocks` links: a blocker's due date comes on or before the start date of every item it blocks.
 
@@ -161,7 +157,7 @@ Used by `/wayfinder`. The **map** is a single Epic with **child** Stories as tic
 
 - **Frontier query**: `acli jira workitem search --jql "parent = <map> AND statusCategory != Done AND assignee is EMPTY ORDER BY cf[10116] ASC" --csv`, then drop any with an open blocker (check as in **Read links** above); first in Rank order wins.
 
-- **Claim**: `acli jira workitem assign --key <KEY> --assignee @me --yes`, the session's first write (approved by the user, like every Jira write). Then transition to `In Progress`.
+- **Claim**: `python3 scripts/jira.py start <KEY>` (see **Start a Story** above), the session's first write (approved by the user, like every Jira write).
 
 - **Read the ticket**: its body and every comment on it, before asking anything. Earlier sessions leave input comments there naming what to read.
 
