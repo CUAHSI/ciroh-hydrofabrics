@@ -26,8 +26,10 @@ The viewer's source lives in `subsetter/`. It has no build step: the [`deploy_pa
 ## Consistency Checks
 
 Check one Build's GeoPackages locally or from a public HydroShare resource with
-`pixi run consistency-check <target>`. Checks currently run in advisory mode;
-the runner and its limits are described in [Consistency Checks](validation/consistency/README.md).
+`pixi run consistency-check <target>`. For a single local file, also provide
+`--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. Checks
+currently run in advisory mode; the runner and its limits are described in
+[Consistency Checks](validation/consistency/README.md).
 
 ## DVC Installation
 

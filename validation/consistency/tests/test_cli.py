@@ -52,8 +52,77 @@ def run_command(*args):
     )
 
 
+def test_single_file_uses_explicit_metadata_instead_of_filename(gpkg, tmp_path):
+    path = gpkg.rename(tmp_path / "my-build.gpkg")
+    counts = tmp_path / "counts.yaml"
+    counts.write_text(yaml.safe_dump({
+        "custom-model": {"reference": {"01": {"geopackage_layers": {"missing_layers": 2}}}}
+    }))
+
+    result = run_command(path, "--data-model", "custom-model", "--type", "reference", "--vpu", "01", "--counts", counts)
+
+    assert result.returncode == 0, result.stderr
+    assert "my-build.gpkg | custom-model | reference | 01" in result.stdout
+    assert "missing_layers | 0 | 2 | PASS | advisory" in result.stdout
+
+
+def test_single_file_explicit_metadata_takes_precedence_over_filename(gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text(yaml.safe_dump({
+        "v2.2": {"reference": {"16": {"geopackage_layers": {"missing_layers": 2}}}}
+    }))
+    result = run_command(gpkg, "--type", "reference", "--vpu", "16", "--counts", counts)
+
+    assert result.returncode == 0, result.stderr
+    assert "| v2.2 | reference | 16" in result.stdout
+    assert "missing_layers | 0 | 2 | PASS | advisory" in result.stdout
+
+
+@pytest.mark.parametrize("flags", [[], ["--type", "ngen"], ["--vpu", "03S"]])
+def test_single_file_requires_explicit_type_and_vpu(gpkg, flags):
+    result = run_command(gpkg, *flags)
+
+    assert result.returncode == 2
+    assert "--type" in result.stderr
+    assert "--vpu" in result.stderr
+    assert "PASS" not in result.stdout
+
+
+@pytest.mark.parametrize("vpu", ["", "03-S", "01/02"])
+def test_single_file_rejects_invalid_vpu(gpkg, vpu):
+    result = run_command(gpkg, "--type", "ngen", "--vpu", vpu)
+
+    assert result.returncode == 2
+    assert "VPU" in result.stderr
+
+
+def test_single_file_rejects_unknown_output_type(gpkg):
+    result = run_command(gpkg, "--type", "other", "--vpu", "03S")
+
+    assert result.returncode == 2
+    assert "invalid choice" in result.stderr
+
+
+def test_batch_does_not_accept_single_file_metadata(gpkg, tmp_path):
+    result = run_command(tmp_path, "--type", "ngen", "--vpu", "03S")
+
+    assert result.returncode == 2
+    assert "single" in result.stderr
+    assert "PASS" not in result.stdout
+
+
+def test_hydroshare_batch_rejects_single_file_metadata_without_downloading(runner, monkeypatch, capsys):
+    def fail_if_called(*args):
+        pytest.fail("a batch with single-file metadata must not make network requests")
+
+    monkeypatch.setattr(runner.urllib.request, "build_opener", fail_if_called)
+    resource = "a" * 32
+    assert runner.main([f"https://www.hydroshare.org/resource/{resource}/", "--type", "ngen", "--vpu", "03S"]) == 2
+    assert "single" in capsys.readouterr().err
+
+
 def test_reports_metrics_for_a_geopackage(gpkg):
-    result = run_command(gpkg)
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S")
 
     assert result.returncode == 0, result.stderr
     assert "ngen-hydrofabric-vpu-03S.gpkg" in result.stdout
@@ -71,11 +140,11 @@ def test_counts_are_selected_by_model_kind_vpu_and_metric(empty_gpkg, tmp_path):
     counts.write_text(yaml.safe_dump({
         "v2.2": {"reference": {"16": {"geopackage_layers": {"empty_layers": 1}}}}
     }))
-    result = run_command(empty_gpkg, "--counts", counts)
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts)
 
     assert result.returncode == 0, result.stderr
     assert "empty_layers | 1 | 1 | PASS | advisory" in result.stdout
-    other_model = run_command(empty_gpkg, "--counts", counts, "--data-model", "other")
+    other_model = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts, "--data-model", "other")
     assert other_model.returncode == 0, other_model.stderr
     assert "empty_layers | 1 | 0 | FAIL | advisory" in other_model.stdout
 
@@ -215,7 +284,7 @@ def test_failing_check_does_not_hide_other_check_results(runner, gpkg, tmp_path,
     monkeypatch.setattr(runner, "CHECKS", {"broken": broken, "healthy": healthy})
     config = tmp_path / "checks.yaml"
     config.write_text("broken:\n  blocking: false\nhealthy:\n  blocking: false\n")
-    assert runner.main([str(gpkg), "--config", str(config)]) == 2
+    assert runner.main([str(gpkg), "--type", "ngen", "--vpu", "03S", "--config", str(config)]) == 2
     captured = capsys.readouterr()
     assert "broken" in captured.err
     assert "healthy | problem_count | 0 | 0 | PASS | advisory" in captured.out
@@ -229,7 +298,7 @@ def test_invalid_check_results_do_not_hide_later_checks(runner, gpkg, tmp_path, 
     })
     config = tmp_path / "checks.yaml"
     config.write_text("invalid:\n  blocking: false\nhealthy:\n  blocking: false\n")
-    assert runner.main([str(gpkg), "--config", str(config)]) == 2
+    assert runner.main([str(gpkg), "--type", "ngen", "--vpu", "03S", "--config", str(config)]) == 2
     captured = capsys.readouterr()
     assert "invalid" in captured.err
     assert "healthy | problem_count | 0 | 0 | PASS | advisory" in captured.out
@@ -275,7 +344,7 @@ def test_directory_continues_after_corrupt_geopackage(gpkg, tmp_path):
 def test_invalid_config_does_not_silently_disable_blocking(gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
     config.write_text('geopackage_layers:\n  blocking: "false"\n')
-    result = run_command(gpkg, "--config", config)
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--config", config)
     assert result.returncode == 2
     assert "boolean blocking" in result.stderr
 
@@ -283,7 +352,7 @@ def test_invalid_config_does_not_silently_disable_blocking(gpkg, tmp_path):
 def test_unquoted_vpu_key_does_not_silently_discard_counts(empty_gpkg, tmp_path):
     counts = tmp_path / "counts.yaml"
     counts.write_text("v2.2:\n  reference:\n    16:\n      geopackage_layers:\n        empty_layers: 1\n")
-    result = run_command(empty_gpkg, "--counts", counts)
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts)
     assert result.returncode == 2
     assert "VPU" in result.stderr
     assert "quote" in result.stderr.lower()
@@ -292,7 +361,7 @@ def test_unquoted_vpu_key_does_not_silently_discard_counts(empty_gpkg, tmp_path)
 def test_duplicate_config_keys_are_rejected(gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
     config.write_text("geopackage_layers:\n  blocking: true\n  blocking: false\n")
-    result = run_command(gpkg, "--config", config)
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--config", config)
     assert result.returncode == 2
     assert "duplicate" in result.stderr.lower()
 
@@ -300,7 +369,7 @@ def test_duplicate_config_keys_are_rejected(gpkg, tmp_path):
 def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
     counts = tmp_path / "counts.yaml"
     counts.write_text('v2.2:\n  reference:\n    "16":\n      geopackage_layers:\n        empty_layers: -1\n')
-    result = run_command(empty_gpkg, "--counts", counts)
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts)
     assert result.returncode == 2
     assert "invalid recorded count" in result.stderr
 
@@ -308,7 +377,7 @@ def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
 def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
     config.write_text("geopackage_layers:\n  blocking: true\n")
-    failed = run_command(empty_gpkg, "--config", config)
+    failed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config)
     assert failed.returncode == 1, failed.stderr
     assert "empty_layers | 1 | 0 | FAIL | blocking" in failed.stdout
 
@@ -316,6 +385,6 @@ def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     counts.write_text(yaml.safe_dump({
         "v2.2": {"reference": {"16": {"geopackage_layers": {"empty_layers": 1}}}}
     }))
-    passed = run_command(empty_gpkg, "--config", config, "--counts", counts)
+    passed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config, "--counts", counts)
     assert passed.returncode == 0, passed.stderr
     assert "empty_layers | 1 | 1 | PASS | blocking" in passed.stdout

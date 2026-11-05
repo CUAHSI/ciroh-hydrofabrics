@@ -3,16 +3,22 @@
 Run the same Consistency Checks locally and in CI using Pixi:
 
 ```sh
-pixi run consistency-check path/to/ngen-hydrofabric-vpu-16.gpkg
+pixi run consistency-check path/to/my-hydrofabric.gpkg --type ngen --vpu 16 --data-model v2.2
 pixi run consistency-check path/to/build-directory --data-model v2.2
 pixi run consistency-check https://www.hydroshare.org/resource/RESOURCE_ID/
 ```
 
-A directory is searched recursively for GeoPackages. Every GeoPackage must be
-named `reference-hydrofabric-vpu-<VPU>.gpkg` or
-`ngen-hydrofabric-vpu-<VPU>.gpkg`; the VPU is case-sensitive and may contain
-letters and digits (for example `01`, `03S`, or `16`). Other files are ignored.
-Rename or copy pipeline outputs that do not yet follow this naming convention.
+For a single local GeoPackage, the filename is unrestricted; supply `--type`
+(`ngen` or `reference`) and `--vpu`. The VPU is case-sensitive and may contain
+letters and digits (for example `01`, `03S`, or `16`). The default Data Model is
+`v2.2`; use `--data-model` to select another.
+
+A directory is searched recursively for GeoPackages. For directories and
+HydroShare resources, each GeoPackage must be named
+`reference-hydrofabric-vpu-<VPU>.gpkg` or `ngen-hydrofabric-vpu-<VPU>.gpkg`
+so its type and VPU can be inferred separately. Other files are ignored. The
+`--type` and `--vpu` flags apply only to a single file and are rejected for batch
+inputs.
 
 The HydroShare target is a **public** resource landing URL, not a direct file
 link. The command lists its files, downloads each GeoPackage individually, checks

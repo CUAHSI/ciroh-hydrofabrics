@@ -78,11 +78,12 @@ def mapping_at(mapping, keys):
     return mapping
 
 
-def check_file(path, label, model, config, counts):
-    match = FILENAME.fullmatch(path.name)
-    if not match:
-        raise ValueError(f"unrecognized GeoPackage filename: {label}")
-    kind, vpu = match.groups()
+def check_file(path, label, model, config, counts, kind=None, vpu=None):
+    if kind is None or vpu is None:
+        match = FILENAME.fullmatch(path.name)
+        if not match:
+            raise ValueError(f"unrecognized GeoPackage filename: {label}")
+        kind, vpu = match.groups()
     recorded = mapping_at(counts, [model, kind, vpu])
     print(f"{label} | {model} | {kind} | {vpu}")
     print("check | metric | value | recorded count | result | mode")
@@ -226,6 +227,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("target", help="GeoPackage, directory, or HydroShare resource URL")
     parser.add_argument("--data-model", default="v2.2")
+    parser.add_argument("--type", choices=("ngen", "reference"), help="output type for a single GeoPackage")
+    parser.add_argument("--vpu", help="VPU for a single GeoPackage")
     parser.add_argument("--counts", type=Path, default=HERE / "counts.yaml")
     parser.add_argument("--config", type=Path, default=HERE / "checks.yaml")
     args = parser.parse_args(argv)
@@ -238,15 +241,25 @@ def main(argv=None):
         for name in CHECKS:
             if not isinstance(config.get(name), dict) or type(config[name].get("blocking")) is not bool:
                 raise ValueError(f"{args.config}: {name} must have a boolean blocking flag")
+        metadata = (None, None)
         if urllib.parse.urlsplit(args.target).scheme:
+            if args.type is not None or args.vpu is not None:
+                raise ValueError("--type and --vpu are only valid for a single GeoPackage")
             paths = hydroshare_files(args.target)
         else:
             target = Path(args.target)
             if target.is_dir():
+                if args.type is not None or args.vpu is not None:
+                    raise ValueError("--type and --vpu are only valid for a single GeoPackage")
                 local = sorted(path for path in target.rglob("*") if path.is_file() and path.suffix.lower() == ".gpkg")
                 if not local:
                     raise ValueError(f"no GeoPackages found in {target}")
             elif target.is_file():
+                if args.type is None or args.vpu is None:
+                    raise ValueError("a single GeoPackage requires --type and --vpu")
+                if not re.fullmatch(r"[A-Za-z0-9]+", args.vpu):
+                    raise ValueError("VPU must contain only letters and digits")
+                metadata = (args.type, args.vpu)
                 local = [target]
             else:
                 raise ValueError(f"target does not exist: {target}")
@@ -257,7 +270,7 @@ def main(argv=None):
                 status = 2
                 continue
             try:
-                status = max(status, check_file(path, label, args.data_model, config, counts))
+                status = max(status, check_file(path, label, args.data_model, config, counts, *metadata))
             except (OSError, RuntimeError, ValueError) as exc:
                 print(f"error: {exc}", file=sys.stderr)
                 status = 2
