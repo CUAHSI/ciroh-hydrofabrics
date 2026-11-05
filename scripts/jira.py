@@ -4,9 +4,9 @@ jira.py
 
 Jira helpers for the CAM project, covering what `acli` cannot do (or does
 awkwardly): read a work item as plain text, show link direction, set start
-and due dates, move an item to another Epic, assign other people, create and
-delete Blocks links, post comments, and list the Objectives' Epics with
-schedule conflicts.
+and due dates, move an item to another Epic, assign other people, start work
+on a Story (assign, In Progress, active sprint), create and delete Blocks
+links, post comments, and list the Objectives' Epics with schedule conflicts.
 
 Every write prints the HTTP status, then reads the item back to verify it.
 Credentials come only from ~/.jira/netrc (see the Credentials section of
@@ -32,6 +32,8 @@ HOST = "cuahsi.atlassian.net"
 BASE_URL = f"https://{HOST}"
 NETRC_PATH = os.path.expanduser("~/.jira/netrc")
 START_FIELD = "customfield_10504"  # CAM's "Start date" (not "Target start")
+SPRINT_FIELD = "customfield_10115"
+BOARD_ID = 18  # "CAM board" (scrum); its active sprint is where started work goes
 OBJECTIVES = ("CAM-969", "CAM-1551", "CAM-974")
 SHOW_FIELDS = [
     "summary", "issuetype", "status", "parent", "assignee", START_FIELD,
@@ -426,6 +428,76 @@ def cmd_assign(args):
     print(f"{args.key} assigned to {_person(after)} (verified)")
 
 
+def pick_active_sprint(sprints):
+    """Return the board's one active sprint; refuse to guess between several."""
+    active = [s for s in sprints if s.get("state") == "active"]
+    if len(active) != 1:
+        names = ", ".join(f"{s['name']} ({s['id']})" for s in active) or "none"
+        raise JiraError(f"expected one active sprint on board {BOARD_ID}, found: {names}")
+    return active[0]
+
+
+def pick_transition(transitions, status):
+    """Return the transition that leads to the named status."""
+    for transition in transitions:
+        if transition["to"]["name"].lower() == status.lower():
+            return transition
+    reachable = ", ".join(sorted({t["to"]["name"] for t in transitions})) or "none"
+    raise JiraError(f"no transition to {status}; reachable statuses: {reachable}")
+
+
+def cmd_start(args):
+    """Start work on an item: assign @me, move to In Progress, add to the active sprint."""
+    fields = get_issue(args.key, ["issuetype", "status", "assignee", SPRINT_FIELD])["fields"]
+    me = get_myself()
+    _, data = request("GET", f"/rest/agile/1.0/board/{BOARD_ID}/sprint?state=active")
+    sprint = pick_active_sprint(data.get("values", []))
+
+    # Check everything before the first write, so a refusal leaves the item untouched.
+    kind = fields["issuetype"]
+    if kind["name"] == "Epic" or kind.get("subtask"):
+        raise JiraError(f"{args.key} has type {kind['name']}; start is for Stories (sprints hold Stories, not Epics)")
+    if fields["status"]["statusCategory"]["key"] == "done":
+        raise JiraError(f"{args.key} is already {fields['status']['name']}")
+    owner = fields.get("assignee")
+    if owner and owner["accountId"] != me["accountId"] and not args.force:
+        raise JiraError(f"{args.key} is assigned to {_person(owner)}. Check with the user, then rerun with --force")
+
+    if owner and owner["accountId"] == me["accountId"]:
+        print(f"{args.key} already assigned to {_person(owner)}")
+    else:
+        status, _ = request("PUT", f"/rest/api/3/issue/{args.key}/assignee", {"accountId": me["accountId"]})
+        print(f"PUT {args.key} assignee -> HTTP {status}")
+
+    if fields["status"]["name"] == "In Progress":
+        print(f"{args.key} already In Progress")
+    else:
+        _, data = request("GET", f"/rest/api/3/issue/{args.key}/transitions")
+        transition = pick_transition(data.get("transitions", []), "In Progress")
+        status, _ = request("POST", f"/rest/api/3/issue/{args.key}/transitions",
+                            {"transition": {"id": transition["id"]}})
+        print(f"POST {args.key} transition -> HTTP {status}")
+
+    if any(s["id"] == sprint["id"] for s in fields.get(SPRINT_FIELD) or []):
+        print(f"{args.key} already in sprint {sprint['name']}")
+    else:
+        status, _ = request("POST", f"/rest/agile/1.0/sprint/{sprint['id']}/issue", {"issues": [args.key]})
+        print(f"POST sprint {sprint['id']} issue -> HTTP {status}")
+
+    after = get_issue(args.key, ["status", "assignee", SPRINT_FIELD])["fields"]
+    problems = []
+    if (after.get("assignee") or {}).get("accountId") != me["accountId"]:
+        problems.append(f"assignee is {_person(after.get('assignee'))}")
+    if after["status"]["name"] != "In Progress":
+        problems.append(f"status is {after['status']['name']}")
+    if not any(s["id"] == sprint["id"] for s in after.get(SPRINT_FIELD) or []):
+        problems.append(f"not in sprint {sprint['name']}")
+    if problems:
+        raise JiraError("read-back shows " + "; ".join(problems))
+    print(f"{args.key} assigned to {_person(after['assignee'])}, In Progress, "
+          f"in sprint {sprint['name']} (verified)")
+
+
 def cmd_block(args):
     """Create "BLOCKER blocks BLOCKED" and warn if the dates conflict."""
     if args.blocker == args.blocked:
@@ -576,6 +648,13 @@ def build_parser():
     p = add("assign", cmd_assign, "Assign a work item to a person by display name (or part of it), or @me.")
     p.add_argument("key", type=issue_key)
     p.add_argument("who", help='display name, e.g. "Irene Garousi-Nejad", or @me')
+
+    p = add("start", cmd_start,
+            f"Start work on a Story: assign it to @me, move it to In Progress, and add it to the "
+            f"active sprint of board {BOARD_ID}. Skips steps already done. Refuses an item "
+            f"assigned to someone else unless --force is given.")
+    p.add_argument("key", type=issue_key)
+    p.add_argument("--force", action="store_true", help="take over an item assigned to another person")
 
     p = add("block", cmd_block,
             "Create a Blocks link: BLOCKER blocks BLOCKED (BLOCKED cannot start until BLOCKER is "

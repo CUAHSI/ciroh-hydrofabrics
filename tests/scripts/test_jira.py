@@ -143,6 +143,23 @@ class PickUser(unittest.TestCase):
             jira.pick_user(self.PEOPLE[2:], "Automation")
 
 
+class StartPickers(unittest.TestCase):
+    def test_one_active_sprint_is_required(self):
+        sprints = [{"id": 150, "name": "2026 Q3", "state": "closed"},
+                   {"id": 151, "name": "2026 Q4", "state": "active"}]
+        self.assertEqual(jira.pick_active_sprint(sprints)["id"], 151)
+        for bad in ([], sprints + [{"id": 152, "name": "Extra", "state": "active"}]):
+            with self.assertRaises(jira.JiraError):
+                jira.pick_active_sprint(bad)
+
+    def test_transition_is_chosen_by_target_status(self):
+        transitions = [{"id": "11", "name": "Start", "to": {"name": "In Progress"}},
+                       {"id": "31", "name": "Finish", "to": {"name": "Done"}}]
+        self.assertEqual(jira.pick_transition(transitions, "in progress")["id"], "11")
+        with self.assertRaisesRegex(jira.JiraError, "Done, In Progress"):
+            jira.pick_transition(transitions, "In Review")
+
+
 class Arguments(unittest.TestCase):
     def test_keys_dates_and_link_ids_are_validated(self):
         parser = jira.build_parser()

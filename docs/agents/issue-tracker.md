@@ -51,7 +51,7 @@ List the current Epics with `python3 scripts/jira.py epics` (Rank order, with da
 
 - **Change status**: `acli jira workitem transition --key <KEY> --status "In Progress" --yes`.
 
-- **Start a Story**: when you begin implementing a Story, assign it to yourself, transition it to `In Progress`, and add it to the active sprint (find the sprint ID with the **Active sprint** command in the table below, then see **Add work items to a sprint**). Ask for approval of all three writes in one request.
+- **Start a Story**: when you begin implementing a Story, run `python3 scripts/jira.py start <KEY>` (one approval). It assigns the Story to you, transitions it to `In Progress`, and adds it to the active sprint, skipping any step already done. It refuses a Story assigned to someone else unless `--force` is given.
 
 - **Move to another Epic**: `python3 scripts/jira.py set-parent <KEY> <EPIC-KEY>` (`acli jira workitem edit` has no `--parent` flag).
 
@@ -157,7 +157,7 @@ Used by `/wayfinder`. The **map** is a single Epic with **child** Stories as tic
 
 - **Frontier query**: `acli jira workitem search --jql "parent = <map> AND statusCategory != Done AND assignee is EMPTY ORDER BY cf[10116] ASC" --csv`, then drop any with an open blocker (check as in **Read links** above); first in Rank order wins.
 
-- **Claim**: `acli jira workitem assign --key <KEY> --assignee @me --yes`, the session's first write (approved by the user, like every Jira write). Then transition to `In Progress` and add it to the active sprint, as in **Start a Story** above.
+- **Claim**: `python3 scripts/jira.py start <KEY>` (see **Start a Story** above), the session's first write (approved by the user, like every Jira write).
 
 - **Read the ticket**: its body and every comment on it, before asking anything. Earlier sessions leave input comments there naming what to read.
 
