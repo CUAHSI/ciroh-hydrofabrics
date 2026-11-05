@@ -60,6 +60,10 @@ _Avoid_: release QA, sign-off
 A Build that passed Release Review, versioned and published for others to use (e.g. Community NextGen Hydrofabric v0.1).
 _Avoid_: system release, drop, snapshot
 
+**Release Line**:
+The sequence of Releases built from one version of an Official Hydrofabric (e.g. the v2.2 line). A new Official Hydrofabric version starts a new line from a baseline Release with no Contributions.
+_Avoid_: branch, track, series, line (unqualified)
+
 ## Contributions
 
 **Contribution**:
