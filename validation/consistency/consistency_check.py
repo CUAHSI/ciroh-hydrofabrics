@@ -5,10 +5,12 @@ import json
 import math
 import re
 import shutil
+import sqlite3
 import sys
 import tempfile
 import urllib.parse
 import urllib.request
+from contextlib import closing
 from pathlib import Path
 
 import pyogrio
@@ -29,7 +31,107 @@ def geopackage_layers(path, model, kind):
     return {"missing_layers": int(len(layers) == 0), "empty_layers": empty}
 
 
-CHECKS = {"geopackage_layers": geopackage_layers}
+def quote_identifier(name):
+    """Quote an SQLite identifier, which cannot be supplied as a query parameter."""
+    return '"' + name.replace('"', '""') + '"'
+
+
+def schema_geometry(connection, name, expected):
+    """Compare registered geometry and CRS, allowing generic types on empty layers."""
+    actual = connection.execute(
+        "SELECT column_name, geometry_type_name, srs_id FROM gpkg_geometry_columns WHERE table_name = ?",
+        (name,),
+    ).fetchone()
+    metrics = {f"missing_geometry_registration.{name}": int(actual is None)}
+    if actual:
+        metrics[f"geometry_column.{name}"] = int(actual[0] != expected["column"])
+        metrics[f"geometry_crs.{name}"] = int(actual[2] != expected["srs_id"])
+        authority = connection.execute(
+            "SELECT organization, organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ?",
+            (actual[2],),
+        ).fetchone()
+        crs = expected["crs"]
+        metrics[f"crs_authority.{name}"] = int(authority != (crs["authority"], crs["code"]))
+        # GDAL can use a generic geometry declaration for empty layers.
+        populated = connection.execute(f"SELECT EXISTS(SELECT 1 FROM {quote_identifier(name)})").fetchone()[0]
+        metrics[f"geometry_type.{name}"] = int(
+            expected["type"] != "GEOMETRY" and actual[1] != expected["type"]
+            and not (not populated and actual[1] == "GEOMETRY")
+        )
+    return metrics
+
+
+def schema_layer(connection, name, expected, contents):
+    """Compare registration and columns of one existing layer."""
+    metrics = {f"missing_registration.{name}": int(name not in contents)}
+    if name in contents:
+        metrics[f"layer_type.{name}"] = int(contents[name][0] != expected["gpkg_contents"]["data_type"])
+        if expected["geometry"]:
+            metrics[f"contents_crs.{name}"] = int(contents[name][1] != expected["geometry"]["srs_id"])
+    actual = {row[1]: row[2] for row in connection.execute("SELECT * FROM pragma_table_info(?)", (name,))}
+    target = {column["name"]: column["type"] for column in expected["columns"]}
+    actual_names, target_names = set(actual), set(target)
+    metrics[f"missing_columns.{name}"] = len(target_names - actual_names)
+    metrics[f"extra_columns.{name}"] = len(actual_names - target_names)
+    # Compare relative order even if missing columns have an allowed recorded count.
+    common = actual_names & target_names
+    metrics[f"column_order.{name}"] = int(
+        [column for column in actual if column in common] != [column for column in target if column in common]
+    )
+    metrics[f"column_types.{name}"] = sum(
+        actual[column] != target[column] for column in common if column != "geom"
+    )
+    if expected["geometry"]:
+        metrics.update(schema_geometry(connection, name, expected["geometry"]))
+    return metrics, actual_names
+
+
+def schema_identifiers(connection, identifiers, columns_by_table):
+    """Report unprefixed IDs and prefixes absent from the source observations."""
+    metrics = {}
+    for identifier in identifiers:
+        name, column = identifier["table"], identifier["column"]
+        if "observed_prefixes" not in identifier or column not in columns_by_table.get(name, set()):
+            continue
+        table_sql, column_sql = quote_identifier(name), quote_identifier(column)
+        if not connection.execute(f"SELECT EXISTS(SELECT 1 FROM {table_sql} WHERE {column_sql} IS NOT NULL)").fetchone()[0]:
+            continue
+        # Query distinct prefixes over the entire column, not a feature sample.
+        prefixes = {
+            row[0] for row in connection.execute(
+                f"SELECT DISTINCT substr({column_sql}, 1, instr({column_sql}, '-') - 1) "
+                f"FROM {table_sql} WHERE instr({column_sql}, '-') > 1"
+            )
+        }
+        metrics[f"unobserved_id_prefixes.{name}.{column}"] = len(prefixes - set(identifier["observed_prefixes"]))
+        metrics[f"unprefixed_ids.{name}.{column}"] = connection.execute(
+            f"SELECT COUNT(*) FROM {table_sql} WHERE {column_sql} IS NOT NULL AND instr({column_sql}, '-') <= 1"
+        ).fetchone()[0]
+    return metrics
+
+
+def schema(path, model, kind):
+    """Check a Build against its selected Data Model specification."""
+    if model != "v2.2" or kind not in {"ngen", "reference"}:
+        raise ValueError(f"no schema specification for Data Model {model!r}, output kind {kind!r}")
+    spec_path = HERE / "models" / model / f"{kind}.json"
+    with spec_path.open(encoding="utf-8") as stream:
+        spec = json.load(stream)
+    with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
+        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        contents = {row[0]: (row[1], row[2]) for row in connection.execute("SELECT table_name, data_type, srs_id FROM gpkg_contents")}
+        metrics = {}
+        columns_by_table = {}
+        for name, expected in spec["tables"].items():
+            metrics[f"missing_layer.{name}"] = int(name not in tables)
+            if name in tables:
+                layer_metrics, columns_by_table[name] = schema_layer(connection, name, expected, contents)
+                metrics.update(layer_metrics)
+        metrics.update(schema_identifiers(connection, spec["identifiers"], columns_by_table))
+        return metrics
+
+
+CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):

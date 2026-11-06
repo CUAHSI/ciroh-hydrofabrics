@@ -1,3 +1,5 @@
 # Checks start advisory; maintainers may turn on blocking individually.
 geopackage_layers:
   blocking: false
+schema:
+  blocking: false

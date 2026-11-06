@@ -1,0 +1,1702 @@
+{
+  "format_version": "1.0",
+  "data_model_version": "v2.2",
+  "structure_basis": "Registered tables and declarations observed in the cited local GeoPackage(s); not proof of every valid variant.",
+  "identifier_basis": "Whole-column observations in the cited VPUs, not an exhaustive vocabulary or a normative validation rule.",
+  "output_kind": "ngen",
+  "sources": [
+    {
+      "vpu": "03S",
+      "filename": "ngen-hydrofabric-vpu-03S.gpkg",
+      "resource_url": "https://www.hydroshare.org/resource/bbbabc296b65401ca1f4f3985e4b2b00/",
+      "file_url": "https://www.hydroshare.org/resource/bbbabc296b65401ca1f4f3985e4b2b00/data/contents/ngen-hydrofabric-vpu-03S.gpkg",
+      "local_path": "tests/v2.2/assets/ngen-hydrofabric-vpu-03S.gpkg",
+      "sha256": "b4077c77f2253e460eeb758cbc9b80087156c9cb8db4b98b54abdc87afc7b027"
+    },
+    {
+      "vpu": "16",
+      "filename": "ngen-hydrofabric-vpu-16.gpkg",
+      "resource_url": "https://www.hydroshare.org/resource/bbbabc296b65401ca1f4f3985e4b2b00/",
+      "file_url": "https://www.hydroshare.org/resource/bbbabc296b65401ca1f4f3985e4b2b00/data/contents/ngen-hydrofabric-vpu-16.gpkg",
+      "local_path": ".scratch/cam-971/data/ngen-hydrofabric-vpu-16.gpkg",
+      "sha256": "9f9d08ff0f0f8763ced47f25bb4e1ce652d6a2eb7edaa65a4f3744ec1d424416"
+    }
+  ],
+  "tables": {
+    "divide-attributes": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "divide_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "mode.bexp_soil_layers_stag=1",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.bexp_soil_layers_stag=2",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.bexp_soil_layers_stag=3",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.bexp_soil_layers_stag=4",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.ISLTYP",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.IVGTYP",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.dksat_soil_layers_stag=1",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.dksat_soil_layers_stag=2",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.dksat_soil_layers_stag=3",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.dksat_soil_layers_stag=4",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.psisat_soil_layers_stag=1",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.psisat_soil_layers_stag=2",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.psisat_soil_layers_stag=3",
+          "type": "REAL"
+        },
+        {
+          "name": "geom_mean.psisat_soil_layers_stag=4",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.cwpvt",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.mfsno",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.mp",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.refkdt",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.slope_1km",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcmax_soil_layers_stag=1",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcmax_soil_layers_stag=2",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcmax_soil_layers_stag=3",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcmax_soil_layers_stag=4",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcwlt_soil_layers_stag=1",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcwlt_soil_layers_stag=2",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcwlt_soil_layers_stag=3",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.smcwlt_soil_layers_stag=4",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.vcmx25",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.Coeff",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.Zmax",
+          "type": "REAL"
+        },
+        {
+          "name": "mode.Expon",
+          "type": "REAL"
+        },
+        {
+          "name": "centroid_x",
+          "type": "REAL"
+        },
+        {
+          "name": "centroid_y",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.impervious",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.elevation",
+          "type": "REAL"
+        },
+        {
+          "name": "mean.slope",
+          "type": "REAL"
+        },
+        {
+          "name": "circ_mean.aspect",
+          "type": "REAL"
+        },
+        {
+          "name": "dist_4.twi",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "divides": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POLYGON",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "POLYGON"
+        },
+        {
+          "name": "divide_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "type",
+          "type": "TEXT"
+        },
+        {
+          "name": "ds_id",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "tot_drainage_areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "has_flowline",
+          "type": "BOOLEAN"
+        }
+      ]
+    },
+    "flowpath-attributes": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "link",
+          "type": "TEXT"
+        },
+        {
+          "name": "to",
+          "type": "TEXT"
+        },
+        {
+          "name": "Length_m",
+          "type": "REAL"
+        },
+        {
+          "name": "Y",
+          "type": "REAL"
+        },
+        {
+          "name": "n",
+          "type": "REAL"
+        },
+        {
+          "name": "nCC",
+          "type": "REAL"
+        },
+        {
+          "name": "BtmWdth",
+          "type": "REAL"
+        },
+        {
+          "name": "TopWdth",
+          "type": "REAL"
+        },
+        {
+          "name": "TopWdthCC",
+          "type": "REAL"
+        },
+        {
+          "name": "ChSlp",
+          "type": "REAL"
+        },
+        {
+          "name": "alt",
+          "type": "REAL"
+        },
+        {
+          "name": "So",
+          "type": "REAL"
+        },
+        {
+          "name": "MusX",
+          "type": "REAL"
+        },
+        {
+          "name": "MusK",
+          "type": "REAL"
+        },
+        {
+          "name": "gage",
+          "type": "TEXT"
+        },
+        {
+          "name": "gage_nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "WaterbodyID",
+          "type": "TEXT"
+        },
+        {
+          "name": "waterbody_nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "flowpath-attributes-ml": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "link",
+          "type": "TEXT"
+        },
+        {
+          "name": "to",
+          "type": "TEXT"
+        },
+        {
+          "name": "Length_m",
+          "type": "REAL"
+        },
+        {
+          "name": "alt",
+          "type": "REAL"
+        },
+        {
+          "name": "So",
+          "type": "REAL"
+        },
+        {
+          "name": "MusX",
+          "type": "REAL"
+        },
+        {
+          "name": "MusK",
+          "type": "REAL"
+        },
+        {
+          "name": "gage",
+          "type": "TEXT"
+        },
+        {
+          "name": "gage_nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "WaterbodyID",
+          "type": "TEXT"
+        },
+        {
+          "name": "waterbody_nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "n",
+          "type": "REAL"
+        },
+        {
+          "name": "BtmWdth",
+          "type": "REAL"
+        },
+        {
+          "name": "TopWdth",
+          "type": "REAL"
+        },
+        {
+          "name": "ChSlp",
+          "type": "REAL"
+        },
+        {
+          "name": "nCC",
+          "type": "REAL"
+        },
+        {
+          "name": "TopWdthCC",
+          "type": "REAL"
+        },
+        {
+          "name": "Y",
+          "type": "REAL"
+        },
+        {
+          "name": "YCC",
+          "type": "REAL"
+        },
+        {
+          "name": "dingman_r",
+          "type": "REAL"
+        }
+      ]
+    },
+    "flowpaths": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "GEOMETRY",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "GEOMETRY"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "mainstem",
+          "type": "REAL"
+        },
+        {
+          "name": "order",
+          "type": "REAL"
+        },
+        {
+          "name": "hydroseq",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "tot_drainage_areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "has_divide",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "divide_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "poi_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "hydrolocations": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POINT",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "hf_id",
+          "type": "REAL"
+        },
+        {
+          "name": "hl_link",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_reference",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_uri",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_source",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_x",
+          "type": "REAL"
+        },
+        {
+          "name": "hl_y",
+          "type": "REAL"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "geom",
+          "type": "POINT"
+        }
+      ]
+    },
+    "lakes": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POINT",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "POINT"
+        },
+        {
+          "name": "lake_id",
+          "type": "REAL"
+        },
+        {
+          "name": "LkArea",
+          "type": "REAL"
+        },
+        {
+          "name": "LkMxE",
+          "type": "REAL"
+        },
+        {
+          "name": "WeirC",
+          "type": "REAL"
+        },
+        {
+          "name": "WeirL",
+          "type": "REAL"
+        },
+        {
+          "name": "OrificeC",
+          "type": "REAL"
+        },
+        {
+          "name": "OrificeA",
+          "type": "REAL"
+        },
+        {
+          "name": "OrificeE",
+          "type": "REAL"
+        },
+        {
+          "name": "WeirE",
+          "type": "REAL"
+        },
+        {
+          "name": "ifd",
+          "type": "REAL"
+        },
+        {
+          "name": "Dam_Length",
+          "type": "REAL"
+        },
+        {
+          "name": "domain",
+          "type": "TEXT"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "hf_id",
+          "type": "REAL"
+        },
+        {
+          "name": "reservoir_index_AnA",
+          "type": "REAL"
+        },
+        {
+          "name": "reservoir_index_Extended_AnA",
+          "type": "REAL"
+        },
+        {
+          "name": "reservoir_index_GDL_AK",
+          "type": "REAL"
+        },
+        {
+          "name": "reservoir_index_Medium_Range",
+          "type": "REAL"
+        },
+        {
+          "name": "reservoir_index_Short_Range",
+          "type": "REAL"
+        },
+        {
+          "name": "res_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "lake_x",
+          "type": "REAL"
+        },
+        {
+          "name": "lake_y",
+          "type": "REAL"
+        }
+      ]
+    },
+    "network": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "divide_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "ds_id",
+          "type": "REAL"
+        },
+        {
+          "name": "mainstem",
+          "type": "REAL"
+        },
+        {
+          "name": "hydroseq",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "hf_source",
+          "type": "TEXT"
+        },
+        {
+          "name": "hf_id",
+          "type": "REAL"
+        },
+        {
+          "name": "lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "tot_drainage_areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "type",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "hf_hydroseq",
+          "type": "REAL"
+        },
+        {
+          "name": "hf_lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "hf_mainstem",
+          "type": "REAL"
+        },
+        {
+          "name": "topo",
+          "type": "TEXT"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "hl_uri",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "nexus": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POINT",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "POINT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "toid",
+          "type": "TEXT"
+        },
+        {
+          "name": "type",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        }
+      ]
+    },
+    "pois": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "id",
+          "type": "TEXT"
+        },
+        {
+          "name": "nex_id",
+          "type": "TEXT"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    }
+  },
+  "identifiers": [
+    {
+      "table": "divides",
+      "column": "divide_id",
+      "observed_prefixes": ["cat"],
+      "observations": {
+        "03S": {
+          "row_count": 14138,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 14138
+          }
+        },
+        "16": {
+          "row_count": 34401,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 34401
+          }
+        }
+      }
+    },
+    {
+      "table": "divides",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 14138,
+          "null_count": 260,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 13878
+          }
+        },
+        "16": {
+          "row_count": 34401,
+          "null_count": 184,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 34217
+          }
+        }
+      }
+    },
+    {
+      "table": "divides",
+      "column": "toid",
+      "observed_prefixes": ["cnx", "inx", "nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 14138,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cnx": 227,
+            "inx": 33,
+            "nex": 12975,
+            "tnx": 903
+          }
+        },
+        "16": {
+          "row_count": 34401,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "inx": 184,
+            "nex": 30904,
+            "tnx": 3313
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 13878,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 13878
+          }
+        },
+        "16": {
+          "row_count": 34223,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 34223
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "toid",
+      "observed_prefixes": ["nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 13878,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 12975,
+            "tnx": 903
+          }
+        },
+        "16": {
+          "row_count": 34223,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 30905,
+            "tnx": 3318
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "divide_id",
+      "observed_prefixes": ["cat"],
+      "observations": {
+        "03S": {
+          "row_count": 13878,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 13878
+          }
+        },
+        "16": {
+          "row_count": 34223,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 34223
+          }
+        }
+      }
+    },
+    {
+      "table": "nexus",
+      "column": "id",
+      "observed_prefixes": ["cnx", "inx", "nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 7864,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cnx": 227,
+            "inx": 33,
+            "nex": 6795,
+            "tnx": 809
+          }
+        },
+        "16": {
+          "row_count": 18425,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "inx": 184,
+            "nex": 15545,
+            "tnx": 2696
+          }
+        }
+      }
+    },
+    {
+      "table": "nexus",
+      "column": "toid",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 7864,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 7864
+          }
+        },
+        "16": {
+          "row_count": 18425,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 18425
+          }
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "id",
+      "observed_prefixes": ["nex", "tnx", "wb"],
+      "observations": {
+        "03S": {
+          "row_count": 67144,
+          "null_count": 33,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 6773,
+            "tnx": 809,
+            "wb": 59529
+          }
+        },
+        "16": {
+          "row_count": 122957,
+          "null_count": 184,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 15539,
+            "tnx": 2696,
+            "wb": 104538
+          }
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "toid",
+      "observed_prefixes": ["inx", "nex", "tnx", "wb"],
+      "observations": {
+        "03S": {
+          "row_count": 67144,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "inx": 33,
+            "nex": 55175,
+            "tnx": 4354,
+            "wb": 7582
+          }
+        },
+        "16": {
+          "row_count": 122957,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "inx": 184,
+            "nex": 95050,
+            "tnx": 9488,
+            "wb": 18235
+          }
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "divide_id",
+      "observed_prefixes": ["cat"],
+      "observations": {
+        "03S": {
+          "row_count": 67144,
+          "null_count": 7582,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 59562
+          }
+        },
+        "16": {
+          "row_count": 122957,
+          "null_count": 18235,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "cat": 104722
+          }
+        }
+      }
+    },
+    {
+      "table": "pois",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 2286,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 2286
+          }
+        },
+        "16": {
+          "row_count": 4647,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 4647
+          }
+        }
+      }
+    },
+    {
+      "table": "pois",
+      "column": "nex_id",
+      "observed_prefixes": ["nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 2286,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 2063,
+            "tnx": 223
+          }
+        },
+        "16": {
+          "row_count": 4647,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 2625,
+            "tnx": 2022
+          }
+        }
+      }
+    },
+    {
+      "table": "hydrolocations",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 3159,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 3159
+          }
+        },
+        "16": {
+          "row_count": 6057,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 6057
+          }
+        }
+      }
+    },
+    {
+      "table": "hydrolocations",
+      "column": "nex_id",
+      "observed_prefixes": ["nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 3159,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 2896,
+            "tnx": 263
+          }
+        },
+        "16": {
+          "row_count": 6057,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 3560,
+            "tnx": 2497
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpath-attributes",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 13888,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 13888
+          }
+        },
+        "16": {
+          "row_count": 34231,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 34231
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpath-attributes",
+      "column": "toid",
+      "observed_prefixes": ["nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 13888,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 12985,
+            "tnx": 903
+          }
+        },
+        "16": {
+          "row_count": 34231,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 30913,
+            "tnx": 3318
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpath-attributes-ml",
+      "column": "id",
+      "observed_prefixes": ["wb"],
+      "observations": {
+        "03S": {
+          "row_count": 13888,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 13888
+          }
+        },
+        "16": {
+          "row_count": 34231,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "wb": 34231
+          }
+        }
+      }
+    },
+    {
+      "table": "flowpath-attributes-ml",
+      "column": "toid",
+      "observed_prefixes": ["nex", "tnx"],
+      "observations": {
+        "03S": {
+          "row_count": 13888,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 12985,
+            "tnx": 903
+          }
+        },
+        "16": {
+          "row_count": 34231,
+          "null_count": 0,
+          "unprefixed_count": 0,
+          "prefix_counts": {
+            "nex": 30913,
+            "tnx": 3318
+          }
+        }
+      }
+    }
+  ],
+  "terminal_observations": [
+    {
+      "table": "nexus",
+      "vpu": "03S",
+      "groups": [
+        {
+          "id_prefix": "cnx",
+          "type": "coastal",
+          "toid": "wb-0",
+          "count": 227
+        },
+        {
+          "id_prefix": "inx",
+          "type": "internal",
+          "toid": "wb-0",
+          "count": 33
+        },
+        {
+          "id_prefix": "tnx",
+          "type": "terminal",
+          "toid": "wb-0",
+          "count": 809
+        }
+      ]
+    },
+    {
+      "table": "network",
+      "vpu": "03S",
+      "groups": [
+        {
+          "id_prefix": "tnx",
+          "type": "terminal",
+          "toid": "wb-0",
+          "count": 809
+        }
+      ]
+    },
+    {
+      "table": "nexus",
+      "vpu": "16",
+      "groups": [
+        {
+          "id_prefix": "inx",
+          "type": "internal",
+          "toid": "wb-0",
+          "count": 184
+        },
+        {
+          "id_prefix": "tnx",
+          "type": "terminal",
+          "toid": "wb-0",
+          "count": 2696
+        }
+      ]
+    },
+    {
+      "table": "network",
+      "vpu": "16",
+      "groups": [
+        {
+          "id_prefix": "tnx",
+          "type": "terminal",
+          "toid": "wb-0",
+          "count": 2696
+        }
+      ]
+    }
+  ],
+  "attribute_constraints": {
+    "numeric_value_policy": {
+      "scope": "numeric operand columns of these rules, independent of row applicability",
+      "sqlite_storage_classes": ["integer", "real"],
+      "require_finite": true,
+      "invalid_or_nonfinite": "report",
+      "nonfinite_intermediate": "report",
+      "null": "undetermined",
+      "null_reporting": "report_indeterminate",
+      "note": "SQLite may expose NaN as NULL; when indistinguishable, apply the undetermined NULL policy."
+    },
+    "sentinel_handling": {
+      "scope": "numeric operand columns of these rules, independent of row applicability",
+      "unrecognized_candidate": "report",
+      "field_defined_missing": "apply_null_policy",
+      "otherwise_apply_numeric_rules_when_applicable": true
+    },
+    "rules": [
+      {
+        "id": "divides.areasqkm_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "divides",
+        "column": "areasqkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpaths.lengthkm_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpaths",
+        "column": "lengthkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpaths.areasqkm_positive_with_divide",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpaths",
+        "column": "areasqkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "column_equals",
+          "column": "has_divide",
+          "value": 1,
+          "sqlite_boolean_storage_class": "integer",
+          "valid_values": [0, 1],
+          "false_policy": "not_applicable",
+          "null_or_nonboolean_policy": "report_indeterminate"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes.Length_m_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes",
+        "column": "Length_m",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes.So_nonnegative",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes",
+        "column": "So",
+        "operator": "ge",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes.n_range",
+        "kind": "interval",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes",
+        "column": "n",
+        "lower": 0,
+        "lower_inclusive": false,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes.MusX_range",
+        "kind": "interval",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes",
+        "column": "MusX",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 0.5,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes.length_consistency",
+        "kind": "scaled_difference",
+        "source": "CAM-1602 (user-supplied)",
+        "join_cardinality": "undetermined",
+        "duplicate_key_policy": "report_indeterminate",
+        "duplicate_violation_counting": "undetermined",
+        "left": {
+          "table": "flowpath-attributes",
+          "column": "Length_m"
+        },
+        "right": {
+          "table": "flowpaths",
+          "column": "lengthkm",
+          "scale": 1000
+        },
+        "join": [
+          {
+            "left": "id",
+            "right": "id"
+          }
+        ],
+        "max_absolute_difference": 1,
+        "units": "m",
+        "applies_when": {
+          "kind": "matched_rows"
+        },
+        "null_policy": "undetermined",
+        "unmatched_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes-ml.Length_m_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes-ml",
+        "column": "Length_m",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes-ml.So_nonnegative",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes-ml",
+        "column": "So",
+        "operator": "ge",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes-ml.n_range",
+        "kind": "interval",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes-ml",
+        "column": "n",
+        "lower": 0,
+        "lower_inclusive": false,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes-ml.MusX_range",
+        "kind": "interval",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpath-attributes-ml",
+        "column": "MusX",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 0.5,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpath-attributes-ml.length_consistency",
+        "kind": "scaled_difference",
+        "source": "CAM-1602 (user-supplied)",
+        "join_cardinality": "undetermined",
+        "duplicate_key_policy": "report_indeterminate",
+        "duplicate_violation_counting": "undetermined",
+        "left": {
+          "table": "flowpath-attributes-ml",
+          "column": "Length_m"
+        },
+        "right": {
+          "table": "flowpaths",
+          "column": "lengthkm",
+          "scale": 1000
+        },
+        "join": [
+          {
+            "left": "id",
+            "right": "id"
+          }
+        ],
+        "max_absolute_difference": 1,
+        "units": "m",
+        "applies_when": {
+          "kind": "matched_rows"
+        },
+        "null_policy": "undetermined",
+        "unmatched_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      }
+    ],
+    "sentinels": [
+      {
+        "value": -9998,
+        "source": "CAM-1602 (user-supplied)",
+        "meaning": "undetermined",
+        "applicable_fields": "undetermined",
+        "treatment": "report_unless_field_defined_missing"
+      }
+    ],
+    "unlisted_constraints": "undetermined",
+    "note": "These are CAM-1602 requested validation assumptions, not universal physical laws or guarantees that published data satisfy them. Sentinel meaning and NULL handling remain undetermined without field-specific definitions."
+  }
+}

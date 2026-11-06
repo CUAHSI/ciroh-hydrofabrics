@@ -1,0 +1,680 @@
+{
+  "format_version": "1.0",
+  "data_model_version": "v2.2",
+  "structure_basis": "Registered tables and declarations observed in the cited local GeoPackage(s); not proof of every valid variant.",
+  "identifier_basis": "Whole-column observations in the cited VPUs, not an exhaustive vocabulary or a normative validation rule.",
+  "output_kind": "reference",
+  "sources": [
+    {
+      "vpu": "16",
+      "filename": "reference-hydrofabric-vpu-16.gpkg",
+      "resource_url": "https://www.hydroshare.org/resource/563b75efa7614b358a65a7147124e0d7/",
+      "file_url": "https://www.hydroshare.org/resource/563b75efa7614b358a65a7147124e0d7/data/contents/reference-hydrofabric-vpu-16.gpkg",
+      "local_path": "validation/hf-comparison/.cache/reference-hydrofabric-vpu-16.gpkg",
+      "sha256": "520219db50f57c7391f9f3faed5bd2313bba6bad0ca8f50d8ca2a6be3e653a25"
+    }
+  ],
+  "tables": {
+    "divides": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POLYGON",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "POLYGON"
+        },
+        {
+          "name": "divide_id",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "has_flowline",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "id",
+          "type": "REAL"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "flowpaths": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "LINESTRING",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "LINESTRING"
+        },
+        {
+          "name": "id",
+          "type": "REAL"
+        },
+        {
+          "name": "toid",
+          "type": "REAL"
+        },
+        {
+          "name": "terminalpa",
+          "type": "REAL"
+        },
+        {
+          "name": "mainstemlp",
+          "type": "REAL"
+        },
+        {
+          "name": "reachcode",
+          "type": "TEXT"
+        },
+        {
+          "name": "frommeas",
+          "type": "REAL"
+        },
+        {
+          "name": "tomeas",
+          "type": "REAL"
+        },
+        {
+          "name": "lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "streamorde",
+          "type": "REAL"
+        },
+        {
+          "name": "totdasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "hydroseq",
+          "type": "REAL"
+        },
+        {
+          "name": "dnhydroseq",
+          "type": "REAL"
+        },
+        {
+          "name": "outlet_X",
+          "type": "REAL"
+        },
+        {
+          "name": "outlet_Y",
+          "type": "REAL"
+        },
+        {
+          "name": "has_divide",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "divide_id",
+          "type": "REAL"
+        },
+        {
+          "name": "vpuid",
+          "type": "TEXT"
+        }
+      ]
+    },
+    "hydrolocations": {
+      "gpkg_contents": {
+        "data_type": "features",
+        "srs_id": 5070
+      },
+      "geometry": {
+        "column": "geom",
+        "type": "POINT",
+        "srs_id": 5070,
+        "crs": {
+          "name": "NAD83 / Conus Albers",
+          "authority": "EPSG",
+          "code": 5070
+        },
+        "z": 0,
+        "m": 0
+      },
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "geom",
+          "type": "POINT"
+        },
+        {
+          "name": "flowpath_id",
+          "type": "REAL"
+        },
+        {
+          "name": "poi_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "hl_id",
+          "type": "MEDIUMINT"
+        },
+        {
+          "name": "hl_link",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_type",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_reference",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_class",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_source",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_uri",
+          "type": "TEXT"
+        },
+        {
+          "name": "pathmeas",
+          "type": "REAL"
+        },
+        {
+          "name": "reachmeas",
+          "type": "REAL"
+        }
+      ]
+    },
+    "network": {
+      "gpkg_contents": {
+        "data_type": "attributes",
+        "srs_id": 0
+      },
+      "geometry": null,
+      "columns": [
+        {
+          "name": "fid",
+          "type": "INTEGER"
+        },
+        {
+          "name": "divide_id",
+          "type": "REAL"
+        },
+        {
+          "name": "areasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "id",
+          "type": "REAL"
+        },
+        {
+          "name": "toid",
+          "type": "REAL"
+        },
+        {
+          "name": "terminalpa",
+          "type": "REAL"
+        },
+        {
+          "name": "mainstemlp",
+          "type": "REAL"
+        },
+        {
+          "name": "reachcode",
+          "type": "TEXT"
+        },
+        {
+          "name": "frommeas",
+          "type": "REAL"
+        },
+        {
+          "name": "tomeas",
+          "type": "REAL"
+        },
+        {
+          "name": "lengthkm",
+          "type": "REAL"
+        },
+        {
+          "name": "streamorde",
+          "type": "REAL"
+        },
+        {
+          "name": "totdasqkm",
+          "type": "REAL"
+        },
+        {
+          "name": "hydroseq",
+          "type": "REAL"
+        },
+        {
+          "name": "dnhydroseq",
+          "type": "REAL"
+        },
+        {
+          "name": "outlet_X",
+          "type": "REAL"
+        },
+        {
+          "name": "outlet_Y",
+          "type": "REAL"
+        },
+        {
+          "name": "hf_id",
+          "type": "REAL"
+        },
+        {
+          "name": "topo",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_link",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_reference",
+          "type": "TEXT"
+        },
+        {
+          "name": "hl_uri",
+          "type": "TEXT"
+        }
+      ]
+    }
+  },
+  "identifiers": [
+    {
+      "table": "divides",
+      "column": "divide_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95143
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "divides",
+      "column": "id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "null": 538,
+            "real": 94605
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "toid",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "divide_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "null": 295,
+            "real": 94605
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "terminalpa",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "mainstemlp",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "hydroseq",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "flowpaths",
+      "column": "dnhydroseq",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 94900
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "toid",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "divide_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "null": 295,
+            "real": 95449
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "hf_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "terminalpa",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "mainstemlp",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "hydroseq",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "network",
+      "column": "dnhydroseq",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 95744
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "hydrolocations",
+      "column": "flowpath_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "real": 6473
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "hydrolocations",
+      "column": "poi_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "integer": 6473
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    },
+    {
+      "table": "hydrolocations",
+      "column": "hl_id",
+      "observations": {
+        "16": {
+          "storage_class_counts": {
+            "integer": 6473
+          },
+          "fractional_numeric_count": 0
+        }
+      }
+    }
+  ],
+  "terminal_observations": [
+    {
+      "table": "flowpaths",
+      "vpu": "16",
+      "row_count": 94900,
+      "toid_zero_count": 2680,
+      "toid_null_count": 0,
+      "nonzero_toid_not_in_same_table_id_count": 0,
+      "dnhydroseq_zero_count": 2680,
+      "both_toid_and_dnhydroseq_zero_count": 2680
+    },
+    {
+      "table": "network",
+      "vpu": "16",
+      "row_count": 95744,
+      "toid_zero_count": 3103,
+      "toid_null_count": 0,
+      "nonzero_toid_not_in_same_table_id_count": 0
+    }
+  ],
+  "attribute_constraints": {
+    "numeric_value_policy": {
+      "scope": "numeric operand columns of these rules, independent of row applicability",
+      "sqlite_storage_classes": ["integer", "real"],
+      "require_finite": true,
+      "invalid_or_nonfinite": "report",
+      "nonfinite_intermediate": "report",
+      "null": "undetermined",
+      "null_reporting": "report_indeterminate",
+      "note": "SQLite may expose NaN as NULL; when indistinguishable, apply the undetermined NULL policy."
+    },
+    "sentinel_handling": {
+      "scope": "numeric operand columns of these rules, independent of row applicability",
+      "unrecognized_candidate": "report",
+      "field_defined_missing": "apply_null_policy",
+      "otherwise_apply_numeric_rules_when_applicable": true
+    },
+    "rules": [
+      {
+        "id": "divides.areasqkm_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "divides",
+        "column": "areasqkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpaths.lengthkm_positive",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpaths",
+        "column": "lengthkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      },
+      {
+        "id": "flowpaths.areasqkm_positive_with_divide",
+        "kind": "range",
+        "source": "CAM-1602 (user-supplied)",
+        "table": "flowpaths",
+        "column": "areasqkm",
+        "operator": "gt",
+        "value": 0,
+        "applies_when": {
+          "kind": "column_equals",
+          "column": "has_divide",
+          "value": 1,
+          "sqlite_boolean_storage_class": "integer",
+          "valid_values": [0, 1],
+          "false_policy": "not_applicable",
+          "null_or_nonboolean_policy": "report_indeterminate"
+        },
+        "null_policy": "undetermined",
+        "sentinel_policy": "report_unless_field_defined_missing"
+      }
+    ],
+    "sentinels": [
+      {
+        "value": -9998,
+        "source": "CAM-1602 (user-supplied)",
+        "meaning": "undetermined",
+        "applicable_fields": "undetermined",
+        "treatment": "report_unless_field_defined_missing"
+      }
+    ],
+    "unlisted_constraints": "undetermined",
+    "note": "These are CAM-1602 requested validation assumptions, not universal physical laws or guarantees that published data satisfy them. Sentinel meaning and NULL handling remain undetermined without field-specific definitions."
+  }
+}

@@ -56,13 +56,13 @@ def test_single_file_uses_explicit_metadata_instead_of_filename(gpkg, tmp_path):
     path = gpkg.rename(tmp_path / "my-build.gpkg")
     counts = tmp_path / "counts.yaml"
     counts.write_text(yaml.safe_dump({
-        "custom-model": {"reference": {"01": {"geopackage_layers": {"missing_layers": 2}}}}
+        "v2.2": {"reference": {"01": {"geopackage_layers": {"missing_layers": 2}}}}
     }))
 
-    result = run_command(path, "--data-model", "custom-model", "--type", "reference", "--vpu", "01", "--counts", counts)
+    result = run_command(path, "--data-model", "v2.2", "--type", "reference", "--vpu", "01", "--counts", counts)
 
     assert result.returncode == 0, result.stderr
-    assert "my-build.gpkg | custom-model | reference | 01" in result.stdout
+    assert "my-build.gpkg | v2.2 | reference | 01" in result.stdout
     assert "missing_layers | 0 | 2 | PASS | advisory" in result.stdout
 
 
@@ -144,9 +144,9 @@ def test_counts_are_selected_by_model_kind_vpu_and_metric(empty_gpkg, tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert "empty_layers | 1 | 1 | PASS | advisory" in result.stdout
-    other_model = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts, "--data-model", "other")
-    assert other_model.returncode == 0, other_model.stderr
-    assert "empty_layers | 1 | 0 | FAIL | advisory" in other_model.stdout
+    other_vpu = run_command(empty_gpkg, "--type", "reference", "--vpu", "01", "--counts", counts)
+    assert other_vpu.returncode == 0, other_vpu.stderr
+    assert "empty_layers | 1 | 0 | FAIL | advisory" in other_vpu.stdout
 
 
 def test_directory_checks_each_geopackage_and_reports_bad_names(gpkg, empty_gpkg, tmp_path):
@@ -376,7 +376,7 @@ def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
 
 def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: true\n")
+    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\n")
     failed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config)
     assert failed.returncode == 1, failed.stderr
     assert "empty_layers | 1 | 0 | FAIL | blocking" in failed.stdout
