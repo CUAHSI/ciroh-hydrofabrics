@@ -82,22 +82,26 @@ selects a specification by Data Model and output kind; it does not download a
 reference product. It reports per-layer counts for missing tables and
 registration, incorrect layer type, missing or extra columns, column order and
 declared types, and geometry registration, type, and CRS. Extra layers are
-allowed. Column order is checked only when the column sets agree; type checks
-cover columns present in both tables, excluding `geom`. Geometry checks skip
-empty layers and accept a specific type when the specification says `GEOMETRY`.
+allowed. Column order compares the relative order of columns present in both
+tables; missing or extra columns can still shift their physical positions. Type
+checks exclude `geom`. Geometry registration and CRS are checked even for empty
+layers. An empty layer may declare generic `GEOMETRY`; a specific type is also
+accepted whenever the specification says `GEOMETRY`. CRS checks compare the
+registered SRS IDs and authority/code, not the full spatial-reference definition.
 
 For the NextGen identifier columns covered by the former v2.2 suite, the check
-reports distinct prefixes not observed in the two source VPUs, or one violation
-if a non-null column has no prefixed values. It skips all-null columns and, as
-the old suite did, ignores unprefixed values if at least one prefix exists.
+reports the number of distinct prefixes not observed in the two source VPUs and
+the number of non-null values without a prefix. It skips all-null columns.
 **Observed prefixes are not an exhaustive vocabulary**: a new prefix may be
-legitimate. Review these advisory findings before enabling a blocking gate.
+legitimate, so `unobserved_id_prefixes` is a comparison with observations, not
+an authoritative allowlist. Review these advisory findings before enabling a
+blocking gate.
 Reference identifiers are numeric, so no prefix check applies. Network terminal
 conventions and attribute bounds are recorded in the specifications but not
 checked here; those checks are separate work.
 
 Metrics name their category and layer, for example `missing_columns.nexus` or
-`id_prefixes.nexus.id`. A dependent metric is omitted when its prerequisite is
+`unobserved_id_prefixes.nexus.id`. A dependent metric is omitted when its prerequisite is
 missing or it is inapplicable; the prerequisite's own metric reports the
 problem. Counts for a future ratchet are supplied per metric, e.g.
 `schema: {missing_columns.nexus: 1}` under the appropriate model, kind and VPU.

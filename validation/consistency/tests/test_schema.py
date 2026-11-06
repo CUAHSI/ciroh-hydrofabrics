@@ -75,6 +75,20 @@ def test_reports_column_order_and_declared_types(tmp_path):
     assert "schema | column_types.nexus | 2 | 0 | FAIL | advisory" in result.stdout
 
 
+def test_reports_reordered_columns_even_if_another_is_missing(tmp_path):
+    path = tmp_path / "build.gpkg"
+    gpd.GeoDataFrame(
+        {"type": ["terminal"], "id": ["nex-1"], "vpuid": ["01"], "poi_id": [1]},
+        geometry=[Point(0, 0)], crs="EPSG:5070",
+    ).to_file(path, layer="nexus", engine="pyogrio")
+
+    result = run_check(path)
+
+    assert result.returncode == 0, result.stderr
+    assert "schema | missing_columns.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+    assert "schema | column_order.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+
+
 def test_reports_wrong_geopackage_layer_type(tmp_path):
     path = tmp_path / "build.gpkg"
     gpd.GeoDataFrame({"id": ["nex-1"]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
@@ -100,6 +114,48 @@ def test_reports_geometry_type_and_crs_for_nonempty_layers(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "schema | geometry_type.nexus | 1 | 0 | FAIL | advisory" in result.stdout
     assert "schema | geometry_crs.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+
+
+def test_empty_layer_rejects_an_incompatible_concrete_geometry_type(tmp_path):
+    path = tmp_path / "build.gpkg"
+    gpd.GeoDataFrame({"id": []}, geometry=[], crs="EPSG:5070").to_file(
+        path, layer="nexus", engine="pyogrio"
+    )
+    with sqlite3.connect(path) as connection:
+        connection.execute("UPDATE gpkg_geometry_columns SET geometry_type_name = 'POLYGON' WHERE table_name = 'nexus'")
+
+    result = run_check(path)
+
+    assert result.returncode == 0, result.stderr
+    assert "schema | geometry_type.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+
+
+def test_reports_inconsistent_geopackage_contents_crs(tmp_path):
+    path = tmp_path / "build.gpkg"
+    gpd.GeoDataFrame({"id": ["nex-1"]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
+        path, layer="nexus", engine="pyogrio"
+    )
+    with sqlite3.connect(path) as connection:
+        connection.execute("UPDATE gpkg_contents SET srs_id = 4326 WHERE table_name = 'nexus'")
+
+    result = run_check(path)
+
+    assert result.returncode == 0, result.stderr
+    assert "schema | contents_crs.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+
+
+def test_reports_wrong_crs_authority_for_registered_srs(tmp_path):
+    path = tmp_path / "build.gpkg"
+    gpd.GeoDataFrame({"id": ["nex-1"]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
+        path, layer="nexus", engine="pyogrio"
+    )
+    with sqlite3.connect(path) as connection:
+        connection.execute("UPDATE gpkg_spatial_ref_sys SET organization = 'NONE' WHERE srs_id = 5070")
+
+    result = run_check(path)
+
+    assert result.returncode == 0, result.stderr
+    assert "schema | crs_authority.nexus | 1 | 0 | FAIL | advisory" in result.stdout
 
 
 def test_reports_missing_geometry_registration(tmp_path):
@@ -128,8 +184,20 @@ def test_reports_unexpected_identifier_prefixes(tmp_path):
     result = run_check(path)
 
     assert result.returncode == 0, result.stderr
-    assert "schema | id_prefixes.nexus.id | 1 | 0 | FAIL | advisory" in result.stdout
-    assert "schema | id_prefixes.nexus.toid | 0 | 0 | PASS | advisory" in result.stdout
+    assert "schema | unobserved_id_prefixes.nexus.id | 1 | 0 | FAIL | advisory" in result.stdout
+    assert "schema | unobserved_id_prefixes.nexus.toid | 0 | 0 | PASS | advisory" in result.stdout
+
+
+def test_reports_unprefixed_ids_even_when_other_ids_have_prefixes(tmp_path):
+    path = tmp_path / "build.gpkg"
+    gpd.GeoDataFrame(
+        {"id": ["nex-1", "malformed"]}, geometry=[Point(0, 0), Point(1, 1)], crs="EPSG:5070",
+    ).to_file(path, layer="nexus", engine="pyogrio")
+
+    result = run_check(path)
+
+    assert result.returncode == 0, result.stderr
+    assert "schema | unprefixed_ids.nexus.id | 1 | 0 | FAIL | advisory" in result.stdout
 
 
 def test_unsupported_model_reports_incomplete_check(tmp_path):
@@ -171,7 +239,7 @@ def test_generic_geometry_in_spec_accepts_specific_type(tmp_path):
     assert "schema | geometry_type.flowpaths | 0 | 0 | PASS | advisory" in result.stdout
 
 
-def test_empty_layer_skips_geometry_comparison(tmp_path):
+def test_empty_layer_accepts_generic_geometry_but_checks_crs(tmp_path):
     path = tmp_path / "build.gpkg"
     gpd.GeoDataFrame({"id": []}, geometry=[], crs="EPSG:4326").to_file(
         path, layer="nexus", engine="pyogrio"
@@ -180,9 +248,9 @@ def test_empty_layer_skips_geometry_comparison(tmp_path):
     result = run_check(path)
 
     assert result.returncode == 0, result.stderr
-    assert "schema | geometry_crs.nexus" not in result.stdout
-    assert "schema | geometry_type.nexus" not in result.stdout
-    assert "schema | id_prefixes.nexus.id" not in result.stdout
+    assert "schema | geometry_crs.nexus | 1 | 0 | FAIL | advisory" in result.stdout
+    assert "schema | geometry_type.nexus | 0 | 0 | PASS | advisory" in result.stdout
+    assert "schema | unobserved_id_prefixes.nexus.id" not in result.stdout
 
 
 def test_schema_counts_respect_blocking_configuration(tmp_path):
