@@ -16,6 +16,7 @@ from pathlib import Path
 import pyogrio
 import yaml
 
+from attributes.attribute_checks import attributes
 from geometry.geometry_checks import geometry
 from network.network_checks import network
 
@@ -134,7 +135,7 @@ def schema(path, model, kind):
         return metrics
 
 
-CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema, "network": network, "geometry": geometry}
+CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema, "network": network, "geometry": geometry, "attributes": attributes}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -204,6 +205,8 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
                 metrics, informational, errors = check(
                     path, model, kind, overlap_min_area_m2=config[name].get("overlap_min_area_m2", 100)
                 )
+            elif name == "attributes":
+                metrics, informational = check(path, model, kind)
             else:
                 metrics = check(path, model, kind)
             if not isinstance(metrics, dict) or (not metrics and not errors):

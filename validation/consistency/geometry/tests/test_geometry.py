@@ -137,6 +137,7 @@ def test_overlap_threshold_is_configurable_and_strict(tmp_path):
     config.write_text(
         "geopackage_layers:\n  blocking: false\nschema:\n  blocking: false\n"
         "network:\n  blocking: false\ngeometry:\n  blocking: false\n  overlap_min_area_m2: 200\n"
+        "attributes:\n  blocking: false\n"
     )
 
     result = run_check(path, "ngen", "--config", config)
@@ -162,6 +163,7 @@ def test_each_topology_metric_has_an_independent_limit(tmp_path, metric):
     config.write_text(
         "geopackage_layers:\n  blocking: false\nschema:\n  blocking: false\n"
         "network:\n  blocking: false\ngeometry:\n  blocking: true\n"
+        "attributes:\n  blocking: false\n"
     )
     limits = {
         "divide_overlaps.count": 1, "divide_overlaps.total_area_m2": 200,
@@ -188,6 +190,7 @@ def test_geometry_metrics_use_recorded_limits_and_blocking_but_area_info_does_no
     config.write_text(
         "geopackage_layers:\n  blocking: false\nschema:\n  blocking: false\n"
         "network:\n  blocking: false\ngeometry:\n  blocking: true\n"
+        "attributes:\n  blocking: false\n"
     )
     counts = tmp_path / "counts.yaml"
     counts.write_text(

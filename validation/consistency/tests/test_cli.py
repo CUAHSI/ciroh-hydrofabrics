@@ -350,6 +350,7 @@ def test_invalid_overlap_threshold_is_rejected(gpkg, tmp_path, threshold):
         "schema": {"blocking": False},
         "network": {"blocking": False},
         "geometry": {"blocking": False, "overlap_min_area_m2": threshold},
+        "attributes": {"blocking": False},
     }))
 
     result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--config", config)
@@ -393,7 +394,7 @@ def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
 
 def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\n")
+    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\nattributes:\n  blocking: false\n")
     failed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config)
     assert failed.returncode == 1, failed.stderr
     assert "empty_layers | 1 | 0 | FAIL | blocking" in failed.stdout

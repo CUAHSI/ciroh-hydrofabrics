@@ -57,8 +57,25 @@ used local files only. No network access was used.
   `right.scale`, of at most `max_absolute_difference`. The bounds, including
   `0 < n <= 1` and `So >= 0`, and the one-metre length tolerance are
   **CAM-1602 requested validation assumptions**, not universal physical laws
-  or guarantees that official data pass. Field mapping and applicability are
-  limited to cases supported by the local data and pipeline definitions.
+  or guarantees that official data pass. The NextGen `divide-attributes.mean.slope`
+  rule uses the physical range [0, 90] degrees: `ngen-workflow/R/vaa.r` derives
+  it from a slope raster in degrees. Its inclusive physical endpoints adapt
+  the strict (0, 90) plausibility limits in [OWP's validator](https://github.com/NOAA-OWP/hydrofabric-builds/blob/15d48484cfdeb68d32b42d8eb0d95a3cf59b67bd/src/hydrofabric_builds/schemas/validate_hydrofabric.py)
+  and [Lynker's bounds](https://github.com/lynker-spatial/hfutils/blob/e5319ac34024af03bc7eee5d4c41e9629514130c/inst/extdata/divide_attr_bounds.csv);
+  neither flat nor vertical slope is physically impossible. Field mapping and
+  applicability are limited to cases supported by the local data and pipeline definitions.
+  The NextGen `divide-attributes.mean.impervious` rule uses [0, 100] percent,
+  consistent with the [NOAA OWP v2.2 Data Model](https://github.com/NOAA-OWP/hydrofabric_v2.2/blob/4761e7bf000eec7763a64fd396c3788acaba1472/vignettes/hf_dm.Rmd#L219-L241).
+  The newer Lynker `imperv_mean` range is expressed as a fraction and must not
+  be copied directly to this percentage field. The `mean.slope_1km` NWM drainage
+  factor and the four layers each of `mean.smcmax_soil_layers_stag` and
+  `mean.smcwlt_soil_layers_stag` have inclusive [0, 1] envelopes. NOAA's
+  [model source](https://github.com/NOAA-OWP/cfe/blob/f9182dfb3d81c407c66c5b782114173893c30cf2/include/cfe.h#L49-L80)
+  identifies the drainage factor as dimensionless and the soil-moisture values
+  as volumetric fractions. The v2.2 Data Model labels `slope_1km` in degrees
+  despite describing it as [0, 1]; the source NetCDF metadata has not been
+  independently verified. These bounds are not claims of realistic values for
+  every soil or of agreement across soil layers.
 - `applies_when` is `all_rows`, `column_equals`, or `matched_rows`. For the
   `has_divide` condition, SQLite integer `1` means the area check applies and
   integer `0` means it does not. NULL or any nonboolean runtime value makes
@@ -80,8 +97,8 @@ used local files only. No network access was used.
   may convert NaN to NULL; when they cannot be distinguished, report an
   indeterminate NULL rather than treating it as a valid finite value.
 - `sentinel_handling` and each rule's `sentinel_policy` require reporting an
-  unrecognized sentinel candidate, including `-9998`, in a numeric operand
-  unless an authoritative field-specific definition identifies it as missing.
+  unrecognized sentinel candidate, including `-9998`, in each numeric-declared
+  model column unless an authoritative field-specific definition identifies it as missing.
   The candidate list is not exhaustive and does not establish a meaning for
   any value. A field-defined missing value follows the rule's NULL policy,
   which remains undetermined unless separately established; otherwise apply

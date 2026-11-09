@@ -259,7 +259,7 @@ def test_schema_counts_respect_blocking_configuration(tmp_path):
         path, layer="nexus", engine="pyogrio"
     )
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: true\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\n")
+    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: true\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\nattributes:\n  blocking: false\n")
     counts = tmp_path / "counts.yaml"
     counts.write_text('v2.2:\n  ngen:\n    "01":\n      schema:\n        missing_layer.divides: 1\n')
 
