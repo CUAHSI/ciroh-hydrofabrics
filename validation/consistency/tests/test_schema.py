@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 import geopandas as gpd
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, Point, box
 
 
 RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
@@ -215,7 +215,7 @@ def test_unsupported_model_reports_incomplete_check(tmp_path):
 
 def test_reference_build_uses_reference_layers(tmp_path):
     path = tmp_path / "build.gpkg"
-    gpd.GeoDataFrame({"divide_id": [1.0]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
+    gpd.GeoDataFrame({"divide_id": [1.0]}, geometry=[box(0, 0, 10, 10)], crs="EPSG:5070").to_file(
         path, layer="divides", engine="pyogrio"
     )
 
@@ -259,7 +259,7 @@ def test_schema_counts_respect_blocking_configuration(tmp_path):
         path, layer="nexus", engine="pyogrio"
     )
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: true\n")
+    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: true\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\n")
     counts = tmp_path / "counts.yaml"
     counts.write_text('v2.2:\n  ngen:\n    "01":\n      schema:\n        missing_layer.divides: 1\n')
 

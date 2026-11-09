@@ -17,7 +17,8 @@ RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
 
 
 @pytest.fixture
-def runner():
+def runner(monkeypatch):
+    monkeypatch.syspath_prepend(str(RUNNER.parent))
     spec = importlib.util.spec_from_file_location("consistency_check", RUNNER)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -37,7 +38,7 @@ def gpkg(tmp_path):
 @pytest.fixture
 def empty_gpkg(tmp_path):
     path = tmp_path / "reference-hydrofabric-vpu-16.gpkg"
-    gpd.GeoDataFrame({"id": []}, geometry=[], crs="EPSG:4326").to_file(
+    gpd.GeoDataFrame({"id": []}, geometry=[], crs="EPSG:5070").to_file(
         path, layer="divides", engine="pyogrio"
     )
     return path
@@ -341,6 +342,22 @@ def test_directory_continues_after_corrupt_geopackage(gpkg, tmp_path):
     assert "could not run" in result.stderr
 
 
+@pytest.mark.parametrize("threshold", [-1, float("inf"), float("nan"), "100", True, None, []])
+def test_invalid_overlap_threshold_is_rejected(gpkg, tmp_path, threshold):
+    config = tmp_path / "checks.yaml"
+    config.write_text(yaml.safe_dump({
+        "geopackage_layers": {"blocking": False},
+        "schema": {"blocking": False},
+        "network": {"blocking": False},
+        "geometry": {"blocking": False, "overlap_min_area_m2": threshold},
+    }))
+
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--config", config)
+
+    assert result.returncode == 2
+    assert "overlap_min_area_m2" in result.stderr
+
+
 def test_invalid_config_does_not_silently_disable_blocking(gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
     config.write_text('geopackage_layers:\n  blocking: "false"\n')
@@ -376,7 +393,7 @@ def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
 
 def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\n")
+    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\nnetwork:\n  blocking: false\ngeometry:\n  blocking: false\n")
     failed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config)
     assert failed.returncode == 1, failed.stderr
     assert "empty_layers | 1 | 0 | FAIL | blocking" in failed.stdout
