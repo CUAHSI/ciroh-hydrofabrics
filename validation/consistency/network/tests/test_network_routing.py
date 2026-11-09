@@ -7,15 +7,15 @@ from pathlib import Path
 
 import geopandas as gpd
 import pytest
-from shapely.geometry import Point
+from shapely.geometry import Point, box
 
 RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
 
 
 def write_layer(path, name, data):
-    gpd.GeoDataFrame(
-        data, geometry=[Point(index, 0) for index in range(len(next(iter(data.values()))))], crs="EPSG:5070"
-    ).to_file(path, layer=name, engine="pyogrio")
+    count = len(next(iter(data.values())))
+    geometry = [box(index, 0, index + 1, 1) if name == "divides" else Point(index, 0) for index in range(count)]
+    gpd.GeoDataFrame(data, geometry=geometry, crs="EPSG:5070").to_file(path, layer=name, engine="pyogrio")
 
 
 def run_check(path, kind):

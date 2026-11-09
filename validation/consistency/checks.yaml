@@ -5,3 +5,6 @@ schema:
   blocking: false
 network:
   blocking: false
+geometry:
+  blocking: false
+  overlap_min_area_m2: 100
