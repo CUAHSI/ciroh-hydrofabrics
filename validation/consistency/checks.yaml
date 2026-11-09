@@ -3,3 +3,5 @@ geopackage_layers:
   blocking: false
 schema:
   blocking: false
+network:
+  blocking: false

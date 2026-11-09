@@ -16,6 +16,8 @@ from pathlib import Path
 import pyogrio
 import yaml
 
+from network_checks import network
+
 
 HERE = Path(__file__).resolve().parent
 FILENAME = re.compile(r"(reference|ngen)-hydrofabric-vpu-([A-Za-z0-9]+)\.gpkg")
@@ -131,7 +133,7 @@ def schema(path, model, kind):
         return metrics
 
 
-CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema}
+CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema, "network": network}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):

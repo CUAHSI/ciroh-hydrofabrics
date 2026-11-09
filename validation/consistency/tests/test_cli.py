@@ -17,7 +17,8 @@ RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
 
 
 @pytest.fixture
-def runner():
+def runner(monkeypatch):
+    monkeypatch.syspath_prepend(str(RUNNER.parent))
     spec = importlib.util.spec_from_file_location("consistency_check", RUNNER)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -376,7 +377,7 @@ def test_invalid_recorded_count_is_an_error(empty_gpkg, tmp_path):
 
 def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\n")
+    config.write_text("geopackage_layers:\n  blocking: true\nschema:\n  blocking: false\nnetwork:\n  blocking: false\n")
     failed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config)
     assert failed.returncode == 1, failed.stderr
     assert "empty_layers | 1 | 0 | FAIL | blocking" in failed.stdout
