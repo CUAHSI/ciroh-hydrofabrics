@@ -28,7 +28,9 @@ The viewer's source lives in `subsetter/`. It has no build step: the [`deploy_pa
 Check one Build's GeoPackages locally or from a public HydroShare resource with
 `pixi run consistency-check <target>`. For a single local file, also provide
 `--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. Checks
-currently run in advisory mode; the runner and its limits are described in
+currently run in advisory mode. Geometry overlap reporting uses the configurable
+`geometry.overlap_min_area_m2` setting in `validation/consistency/checks.yaml`
+(default 100 m²). The runner and its limits are described in
 [Consistency Checks](validation/consistency/README.md).
 
 ## DVC Installation

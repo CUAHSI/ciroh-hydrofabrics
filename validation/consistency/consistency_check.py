@@ -16,6 +16,7 @@ from pathlib import Path
 import pyogrio
 import yaml
 
+from geometry.geometry_checks import geometry
 from network.network_checks import network
 
 
@@ -133,7 +134,7 @@ def schema(path, model, kind):
         return metrics
 
 
-CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema, "network": network}
+CHECKS = {"geopackage_layers": geopackage_layers, "schema": schema, "network": network, "geometry": geometry}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -198,8 +199,14 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             limits = mapping_at(recorded, [name])
             # Each check receives the selected model and output kind so future
             # Data Model checks can select the appropriate specification.
-            metrics = check(path, model, kind)
-            if not isinstance(metrics, dict) or not metrics:
+            informational, errors = {}, []
+            if name == "geometry":
+                metrics, informational, errors = check(
+                    path, model, kind, overlap_min_area_m2=config[name].get("overlap_min_area_m2", 100)
+                )
+            else:
+                metrics = check(path, model, kind)
+            if not isinstance(metrics, dict) or (not metrics and not errors):
                 raise ValueError("returned no named metrics")
             results = []
             for metric, value in metrics.items():
@@ -209,6 +216,9 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
                 if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                     raise ValueError(f"invalid value for {metric}: {value!r}")
                 results.append((metric, value, limit, value <= limit))
+            for metric, value in informational.items():
+                if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+                    raise ValueError(f"invalid informational value for {metric}: {value!r}")
         except Exception as exc:
             print(f"error: {label}: check {name} could not run: {exc}", file=sys.stderr)
             status = 2
@@ -217,6 +227,11 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             if blocking and not passed:
                 status = max(status, 1)
             print(f"{name} | {metric} | {value} | {limit} | {'PASS' if passed else 'FAIL'} | {'blocking' if blocking else 'advisory'}")
+        for metric, value in informational.items():
+            print(f"{name} | {metric} | {value} | - | INFO | {'blocking' if blocking else 'advisory'}")
+        for error in errors:
+            print(f"error: {label}: check {name}: {error}", file=sys.stderr)
+            status = 2
     return status
 
 
@@ -345,6 +360,10 @@ def main(argv=None):
         for name in CHECKS:
             if not isinstance(config.get(name), dict) or type(config[name].get("blocking")) is not bool:
                 raise ValueError(f"{args.config}: {name} must have a boolean blocking flag")
+        if "geometry" in CHECKS:
+            threshold = config["geometry"].get("overlap_min_area_m2", 100)
+            if type(threshold) not in (int, float) or not math.isfinite(threshold) or threshold < 0:
+                raise ValueError(f"{args.config}: geometry overlap_min_area_m2 must be a finite nonnegative number")
         metadata = (None, None)
         if urllib.parse.urlsplit(args.target).scheme:
             if args.type is not None or args.vpu is not None:

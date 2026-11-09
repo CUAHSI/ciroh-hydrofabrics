@@ -36,9 +36,11 @@ are not supported.
 The report lists each file and its Data Model, output kind and VPU, followed by
 each check's metric, value, recorded count, PASS/FAIL, and advisory/blocking
 mode. The default Data Model is `v2.2`; use `--data-model` to select another.
-A metric passes when its value is no greater than the recorded count. Checks
-measure the Build itself; comparing those measurements to recorded counts is a
-separate review policy, not a feature-by-feature comparison with a baseline.
+A ratcheted metric passes when its value is no greater than the recorded limit.
+Informational values show `INFO` and `-` instead of a recorded limit; they never
+influence the gate. Checks measure the Build itself; comparing those measurements
+to recorded limits is a separate review policy, not a feature-by-feature
+comparison with a baseline.
 
 `counts.yaml` stores recorded limits under Data Model, output kind (`reference`
 or `ngen`), VPU, check name, and metric name. Quote VPU keys so YAML preserves
@@ -62,7 +64,7 @@ legitimate. Additional checks and official counts are tracked separately.
 `checks.yaml` sets each check's `blocking` flag; all checks start advisory. Edit
 it in a reviewed change to enable a gate. A missing or malformed flag is an error,
 not an implicit advisory setting. A custom configuration must include a flag for
-each registered check, including `schema` and `network`. Optional `--config` and `--counts`
+each registered check, including `schema`, `network`, and `geometry`. Optional `--config` and `--counts`
 paths allow alternative files, for example when testing a proposed change. The report names
 the configuration and counts files actually used; CI must use the checked-in
 files rather than untrusted alternatives.
@@ -193,14 +195,67 @@ limits default to zero. Do not enable blocking until maintainers review the
 conventions, indeterminate counts, legitimate orphan subsets, and official
 limits for the relevant Data Models and VPUs.
 
+## v2.2 geometry check
+
+The `geometry` check is advisory by default and covers every spatial layer in the
+GeoPackage, including extra layers, for both output kinds. It reports per-layer
+`null_geometries`, `empty_geometries`, `invalid_geometries`, and
+`duplicate_geometries` counts. Null and empty geometries are separate from
+invalid nonempty geometries. Duplicates count extra rows of topologically equal
+valid geometries in the same layer, independent of vertex order and redundant
+vertices. Topological equality is not well-defined for invalid geometries; for
+those, only exact normalized coordinate duplicates, including reversed geometry,
+are counted, so other equivalent invalid shapes may be missed. Nulls are excluded
+and all empty geometries are considered equal. Equality is 2D and does not
+preserve flowpath direction. Findings are observations, not necessarily defects.
+Attribute-only tables are excluded; if there are no spatial layers,
+`no_applicable_checks` is 1.
+
+For divides, three independently ratcheted `divide_overlaps` metrics report
+`count`, `total_area_m2`, and `largest_area_m2`. An overlap is the intersection
+of one unordered pair of divides, including containment and equal polygons;
+the area of all disconnected components for that pair is combined. Only pairs
+strictly larger than the configured threshold count. An area covered by three
+or more divides contributes to multiple pairwise intersections, so total area
+is not the unique overlapped area.
+
+Set `geometry.overlap_min_area_m2` in `checks.yaml` to a finite nonnegative
+number; it defaults to 100 if omitted and the effective value is reported as
+`overlap_min_area_m2` with `INFO`. The threshold is in square metres and must be
+held consistent when comparing Builds with recorded limits. Changing it
+changes the meaning of all three overlap metrics, so review and regenerate the
+corresponding recorded limits before using the ratchet.
+
+The independently ratcheted `divide_gaps` metrics have the same three suffixes.
+They describe uncovered components of interior holes in the union of divides,
+subtracting islands, and include only components strictly larger than 100 m².
+The outer VPU edge and gaps connected to it are not checked without a boundary
+layer. Lakes and other intended exclusions may appear as interior gaps.
+`divide_union_area_m2` reports the union's area as `INFO`; it is not ratcheted.
+
+Area calculations require the registered v2.2 EPSG:5070 CRS and an equivalent
+CRS definition; they do not reproject coordinates. Invalid divides are repaired
+in memory for topology calculations, and polygonal components are retained if
+repair also produces lines. The invalid count still describes the original
+geometries; the input GeoPackage is not modified. A null, empty, nonpolygonal,
+or unrecoverable divide, an unsuitable CRS, or a failed geometry operation makes
+topology incomplete: the command exits 2 and does not report partial topology
+values. Other available geometry findings are still reported. If the divides
+layer is absent, topology metrics are omitted and the schema check reports the
+missing layer; a nonspatial divides table instead makes topology incomplete. The
+geometry check loads each spatial layer into memory and the
+divide union may be expensive for large Builds.
+
 ## Adding checks
 
 Register a callable in `CHECKS` in `consistency_check.py` and give it a boolean
-`blocking` entry in `checks.yaml`. It receives a local GeoPackage `Path`, the
-selected Data Model name, and the output kind; it returns a nonempty mapping of
-stable metric names to nonnegative finite numbers. Counts can be supplied for
-each metric independently. Checks inspect one Build; the runner owns comparison
-to recorded limits and gating.
+`blocking` entry in `checks.yaml`. Ordinarily it receives a local GeoPackage
+`Path`, the selected Data Model name, and the output kind; it returns a nonempty
+mapping of stable metric names to nonnegative finite numbers. The `geometry`
+check additionally receives its overlap threshold and returns ratcheted metrics,
+informational values, and incomplete-check errors separately. Limits can be
+supplied for each ratcheted metric independently. Checks inspect one Build; the
+runner owns comparison to recorded limits and gating.
 
 Run the focused tests, which generate small temporary GeoPackages:
 

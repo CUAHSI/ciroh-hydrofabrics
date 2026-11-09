@@ -8,7 +8,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 import pytest
-from shapely.geometry import Point
+from shapely.geometry import Point, box
 
 RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
 
@@ -63,9 +63,9 @@ def test_network_duplicate_rows_use_all_data_columns_with_nulls(tmp_path):
 
 
 def write_layer(path, name, data):
-    gpd.GeoDataFrame(
-        data, geometry=[Point(i, 0) for i in range(len(next(iter(data.values()))))], crs="EPSG:5070",
-    ).to_file(path, layer=name, engine="pyogrio")
+    count = len(next(iter(data.values())))
+    geometry = [box(i, 0, i + 1, 1) if name == "divides" else Point(i, 0) for i in range(count)]
+    gpd.GeoDataFrame(data, geometry=geometry, crs="EPSG:5070").to_file(path, layer=name, engine="pyogrio")
 
 
 def test_relationship_orphans_include_nulls_and_flags_are_informational(tmp_path):
@@ -268,7 +268,8 @@ def test_reciprocal_empty_tables_report_zero(tmp_path):
 
     result = run_check(path)
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 2
+    assert "divides is not a spatial layer" in result.stderr
     assert "network | reciprocal_divide_flowpath_mismatches | 0 | 0 | PASS | advisory" in result.stdout
     assert "network | reciprocal_divide_flowpath_ambiguous | 0 | 0 | PASS | advisory" in result.stdout
     assert "network | divides_without_referencing_flowpaths | 0 | 0 | PASS | advisory" in result.stdout
@@ -340,7 +341,8 @@ def test_relationship_metric_is_omitted_when_a_key_column_is_missing(
 
     result = run_check(path)
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 2
+    assert "divides is not a spatial layer" in result.stderr
     assert f"network | {metric} |" not in result.stdout
     if missing_table in {"divides", "flowpaths"}:
         assert "network | reciprocal_divide_flowpath_mismatches |" not in result.stdout
@@ -410,7 +412,8 @@ def test_empty_source_reports_zero_orphans_and_zero_flag_subset(tmp_path):
 
     result = run_check(path)
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 2
+    assert "divides is not a spatial layer" in result.stderr
     assert "network | divides_without_flowpaths | 0 | 0 | PASS | advisory" in result.stdout
     assert "network | divides_without_flowpaths.has_flowline_0 | 0 | 0 | PASS | advisory" in result.stdout
 
