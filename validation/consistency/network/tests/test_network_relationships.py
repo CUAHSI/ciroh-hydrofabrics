@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from shapely.geometry import Point
 
-RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
+RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
 
 
 def run_check(path, kind="ngen"):

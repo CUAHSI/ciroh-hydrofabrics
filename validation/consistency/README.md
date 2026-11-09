@@ -205,5 +205,5 @@ to recorded limits and gating.
 Run the focused tests, which generate small temporary GeoPackages:
 
 ```sh
-pixi run -e consistency python -m pytest validation/consistency/tests
+pixi run -e consistency python -m pytest validation/consistency
 ```

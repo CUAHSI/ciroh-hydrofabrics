@@ -16,7 +16,7 @@ from pathlib import Path
 import pyogrio
 import yaml
 
-from network_checks import network
+from network.network_checks import network
 
 
 HERE = Path(__file__).resolve().parent

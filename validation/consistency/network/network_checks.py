@@ -3,9 +3,7 @@
 import sqlite3
 from contextlib import closing
 
-import network_hydroseq
-import network_relationships
-import network_routing
+from . import network_hydroseq, network_relationships, network_routing
 
 
 PRIMARY_IDS = {

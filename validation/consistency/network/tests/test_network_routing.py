@@ -9,7 +9,7 @@ import geopandas as gpd
 import pytest
 from shapely.geometry import Point
 
-RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
+RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
 
 
 def write_layer(path, name, data):
