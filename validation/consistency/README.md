@@ -77,6 +77,19 @@ when testing a proposed change. The report names the configuration and counts
 files actually used; CI must use the checked-in files rather than untrusted
 alternatives.
 
+Use `--record` to write the measured ratcheted metrics to the selected counts
+file (creating it if necessary). Only metrics actually measured are updated;
+other entries are preserved, and informational values are not recorded. YAML
+comments and formatting are not preserved when the file is rewritten. The
+report and exit status still compare against the **previous** limits, so a
+complete run can write counts and exit `1` when a blocking check exceeds its
+old limit. If any file, download, listing, or check is incomplete, no counts
+are written for the batch. Duplicate Data Model, output kind, and VPU identities
+in a batch are rejected. Recording can increase limits as well as lower them;
+review the diff against the contribution ratchet policy before committing.
+Use the same check configuration, including the geometry overlap threshold,
+when recording limits and checking Builds against them.
+
 Exit status is `0` for a completed run with no blocking failures (including
 advisory failures), `1` for one or more blocking metric failures, and `2` for an
 invalid target, configuration, download, or incomplete check. An execution

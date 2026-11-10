@@ -3,9 +3,11 @@
 import argparse
 import json
 import math
+import os
 import re
 import shutil
 import sqlite3
+import stat
 import sys
 import tempfile
 import urllib.parse
@@ -184,13 +186,18 @@ def mapping_at(mapping, keys):
     return mapping
 
 
-def check_file(path, label, model, config, counts, kind=None, vpu=None):
+def check_file(path, label, model, config, counts, kind=None, vpu=None, measurements=None):
     if kind is None or vpu is None:
         match = FILENAME.fullmatch(path.name)
         if not match:
             raise ValueError(f"unrecognized GeoPackage filename: {label}")
         kind, vpu = match.groups()
     recorded = mapping_at(counts, [model, kind, vpu])
+    if measurements is not None:
+        identity = (model, kind, vpu)
+        if identity in measurements:
+            raise ValueError(f"duplicate GeoPackage identity for {model} | {kind} | {vpu}: {label}")
+        measurements[identity] = {}
     print(f"{label} | {model} | {kind} | {vpu}")
     print("check | metric | value | recorded count | result | mode")
     status = 0
@@ -226,6 +233,8 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             print(f"error: {label}: check {name} could not run: {exc}", file=sys.stderr)
             status = 2
             continue
+        if measurements is not None:
+            measurements[identity][name] = dict(metrics)
         for metric, value, limit, passed in results:
             if blocking and not passed:
                 status = max(status, 1)
@@ -236,6 +245,39 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             print(f"error: {label}: check {name}: {error}", file=sys.stderr)
             status = 2
     return status
+
+
+def write_counts(path, counts, measurements):
+    """Merge measured limits and atomically replace the counts file."""
+    for (model, kind, vpu), checks in measurements.items():
+        # YAML aliases may share mappings across identities or checks. Copy each
+        # updated path so recording one entry cannot mutate an unrelated one.
+        counts[model] = dict(counts.get(model, {}))
+        kinds = counts[model]
+        kinds[kind] = dict(kinds.get(kind, {}))
+        vpus = kinds[kind]
+        vpus[vpu] = dict(vpus.get(vpu, {}))
+        recorded = vpus[vpu]
+        for check, metrics in checks.items():
+            recorded[check] = {**recorded.get(check, {}), **metrics}
+
+    # Follow a counts-file symlink rather than replacing the link itself. The
+    # temporary file must share a directory with the destination for atomic rename.
+    destination = path.resolve()
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=destination.parent,
+            prefix=f".{destination.name}.", suffix=".tmp", delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            if destination.exists():
+                os.fchmod(stream.fileno(), stat.S_IMODE(destination.stat().st_mode))
+            yaml.safe_dump(counts, stream, sort_keys=True, allow_unicode=True)
+        os.replace(temporary, destination)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def https_url(url, hosts):
@@ -353,10 +395,11 @@ def main(argv=None):
     parser.add_argument("--vpu", help="VPU for a single GeoPackage")
     parser.add_argument("--counts", type=Path, default=HERE / "counts.yaml")
     parser.add_argument("--config", type=Path, default=HERE / "checks.yaml")
+    parser.add_argument("--record", action="store_true", help="record measured limits in the counts file")
     args = parser.parse_args(argv)
 
     try:
-        counts = load_yaml(args.counts)
+        counts = {} if args.record and not args.counts.exists() else load_yaml(args.counts)
         validate_vpu_keys(counts)
         config = load_yaml(args.config)
         print(f"Configuration: {args.config} | Recorded counts: {args.counts}")
@@ -391,15 +434,23 @@ def main(argv=None):
                 raise ValueError(f"target does not exist: {target}")
             paths = ((path, str(path)) for path in local)
         status = 0
+        measurements = {} if args.record else None
         for path, label in paths:
             if path is None:
                 status = 2
                 continue
             try:
-                status = max(status, check_file(path, label, args.data_model, config, counts, *metadata))
+                status = max(status, check_file(
+                    path, label, args.data_model, config, counts, *metadata, measurements=measurements
+                ))
             except (OSError, RuntimeError, ValueError) as exc:
                 print(f"error: {exc}", file=sys.stderr)
                 status = 2
+        # A blocking failure is a complete measurement; status 2 means at
+        # least one file or check was incomplete, so nothing can be recorded.
+        if measurements is not None and status != 2:
+            write_counts(args.counts, counts, measurements)
+            print(f"Recorded counts: {args.counts}")
         return status
     except (OSError, RuntimeError, ValueError, yaml.YAMLError) as exc:
         print(f"error: {exc}", file=sys.stderr)
