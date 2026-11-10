@@ -13,7 +13,17 @@ For a single local GeoPackage, the filename is unrestricted; supply `--type`
 letters and digits (for example `01`, `03S`, or `16`). The default Data Model is
 `v2.2`. Other Data Models require a checked-in schema specification; selecting an
 unsupported model makes the schema check incomplete and the command exits with
-status 2.
+status 2. If a GeoPackage contains multiple VPUs, the runner checks only rows
+belonging to the selected VPU in every layer; it does not calculate CONUS-wide
+counts under a single VPU key. Unlabelled network rows are assigned through
+their unique divide ID. If layer rows cannot be assigned unambiguously, the
+run is incomplete and `--record` leaves the counts file unchanged. The selected
+rows are copied into a temporary GeoPackage under `.scratch/` and removed after
+the checks; allow space for one VPU. Cross-VPU links are checked within the
+selected subgraph and may appear unresolved. A filtered CONUS file is not
+necessarily identical to a published per-VPU product; record official baselines
+from the published per-VPU files. Files with no `vpuid` fields retain the
+existing single-VPU-file assumption.
 
 A directory is searched recursively for GeoPackages. For directories and
 HydroShare resources, each GeoPackage must be named
@@ -76,6 +86,30 @@ Optional `--config` and `--counts` paths allow alternative files, for example
 when testing a proposed change. The report names the configuration and counts
 files actually used; CI must use the checked-in files rather than untrusted
 alternatives.
+
+Use `--record` to write the measured ratcheted metrics to the selected counts
+file (creating it if necessary). Only metrics actually measured are updated;
+other entries are preserved, and informational values are not recorded. YAML
+comments and formatting are not preserved when the file is rewritten. The
+report and exit status still compare against the **previous** limits, so a
+complete run can write counts and exit `1` when a blocking check exceeds its
+old limit. If any file, download, listing, or check is incomplete, no counts
+are written for the batch. Duplicate Data Model, output kind, and VPU identities
+in a batch are rejected. Recording can increase limits as well as lower them;
+review the diff against the contribution ratchet policy before committing.
+Use the same check configuration, including the geometry overlap threshold,
+when recording limits and checking Builds against them.
+
+Multiple `--record` processes can check files concurrently and write to the same
+counts file. Each reloads and merges the latest counts under an exclusive lock;
+if runs record the same metric, the last completed write wins. Reports compare
+against the limits read at the start of each run, which may have changed by the
+time the counts are written. A persistent `.<counts-filename>.consistency-check.lock`
+file alongside the counts file coordinates cooperating recorders; do not remove
+it while any recorder is running or waiting. All writers must use this version of
+the runner, have access to the lock file, and use a filesystem that supports
+advisory locks and atomic renames. Linux NFS requires write access to the lock
+file for an exclusive lock.
 
 Exit status is `0` for a completed run with no blocking failures (including
 advisory failures), `1` for one or more blocking metric failures, and `2` for an

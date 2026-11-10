@@ -1,16 +1,19 @@
 """Run consistency checks against hydrofabric GeoPackages."""
 
 import argparse
+import fcntl
 import json
 import math
+import os
 import re
 import shutil
 import sqlite3
+import stat
 import sys
 import tempfile
 import urllib.parse
 import urllib.request
-from contextlib import closing
+from contextlib import closing, contextmanager
 from pathlib import Path
 
 import pyogrio
@@ -174,6 +177,23 @@ def validate_vpu_keys(counts):
                 raise ValueError(f"VPU keys in {model}.{kind} must be quoted strings")
 
 
+def load_counts(path, *, allow_missing=False):
+    try:
+        counts = load_yaml(path)
+    except FileNotFoundError:
+        if not allow_missing:
+            raise
+        counts = {}
+    validate_vpu_keys(counts)
+    return counts
+
+
+def validate_count(metric, value):
+    if (type(value) not in (int, float) or value < 0 or
+            (type(value) is float and not math.isfinite(value))):
+        raise ValueError(f"invalid recorded count for {metric}: {value!r}")
+
+
 def mapping_at(mapping, keys):
     for key in keys:
         if not isinstance(mapping, dict):
@@ -184,16 +204,119 @@ def mapping_at(mapping, keys):
     return mapping
 
 
-def check_file(path, label, model, config, counts, kind=None, vpu=None):
+@contextmanager
+def vpu_input(path, vpu):
+    """Present just one VPU to every check when the input contains multiple VPUs."""
+    with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as source:
+        layers = [row[0] for row in source.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' "
+            "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'gpkg_%' "
+            "AND name NOT LIKE 'rtree_%'"
+        )]
+        tagged = [name for name in layers if any(
+            row[1] == "vpuid" for row in source.execute(f"PRAGMA table_info({quote_identifier(name)})")
+        )]
+        other_vpu = any(source.execute(
+            f"SELECT 1 FROM {quote_identifier(name)} WHERE vpuid IS NOT NULL AND vpuid != ? LIMIT 1",
+            (vpu,),
+        ).fetchone() for name in tagged)
+        untagged_rows = [name for name in tagged if source.execute(
+            f"SELECT 1 FROM {quote_identifier(name)} WHERE vpuid IS NULL LIMIT 1"
+        ).fetchone()]
+        if not other_vpu and not untagged_rows:
+            yield path
+            return
+        if len(tagged) != len(layers):
+            raise ValueError(f"cannot isolate VPU {vpu}: some layers have no vpuid column")
+        if not any(source.execute(
+            f"SELECT 1 FROM {quote_identifier(name)} WHERE vpuid = ? LIMIT 1", (vpu,)
+        ).fetchone() for name in tagged):
+            raise ValueError(f"VPU {vpu} has no features in {path}")
+        if set(untagged_rows) - {"network"}:
+            raise ValueError(f"cannot isolate VPU {vpu}: some features have no vpuid")
+        if "network" in untagged_rows:
+            # The CONUS network has no-flowline rows without vpuid. They belong
+            # to the VPU of their divide, which must be unambiguous.
+            if "divides" not in tagged or not any(
+                row[1] == "divide_id" for row in source.execute('PRAGMA table_info("network")')
+            ):
+                raise ValueError(f"cannot isolate VPU {vpu}: network rows have no VPU or divide")
+            ambiguous = source.execute(
+                'WITH owners AS (SELECT divide_id, MIN(vpuid) lo, MAX(vpuid) hi '
+                'FROM divides WHERE divide_id IS NOT NULL GROUP BY divide_id) '
+                'SELECT 1 FROM network n LEFT JOIN owners o ON n.divide_id = o.divide_id '
+                'WHERE n.vpuid IS NULL AND (o.divide_id IS NULL OR o.lo IS NULL OR o.lo != o.hi) LIMIT 1'
+            ).fetchone()
+            if ambiguous:
+                raise ValueError(f"cannot isolate VPU {vpu}: network rows have ambiguous divides")
+
+    # Keep the original declarations, registrations and feature IDs so schema,
+    # network, geometry and attribute checks all see the same selected rows.
+    scratch = HERE.parents[1] / ".scratch"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="consistency-check-vpu-", dir=scratch) as directory:
+        selected = Path(directory) / path.name
+        with closing(sqlite3.connect(selected, uri=True)) as connection:
+            connection.execute("ATTACH DATABASE ? AS source", (path.resolve().as_uri() + "?mode=ro",))
+            # Keep GeoPackage identification, but do not claim the selected VPU
+            # occupies the source's CONUS-wide spatial extent.
+            for pragma in ("application_id", "user_version"):
+                value = connection.execute(f"PRAGMA source.{pragma}").fetchone()[0]
+                connection.execute(f"PRAGMA {pragma} = {value}")
+            tables = list(connection.execute(
+                "SELECT name, sql FROM source.sqlite_master WHERE type = 'table' "
+                "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'rtree_%' "
+                "AND name != 'gpkg_ogr_contents'"
+            ))
+            for name, create_sql in tables:
+                connection.execute(create_sql)
+                table = quote_identifier(name)
+                if name == "gpkg_extensions":
+                    connection.execute(
+                        f"INSERT INTO {table} SELECT * FROM source.{table} "
+                        "WHERE extension_name != 'gpkg_rtree_index'"
+                    )
+                elif name.startswith("gpkg_"):
+                    connection.execute(f"INSERT INTO {table} SELECT * FROM source.{table}")
+                elif name == "network" and "network" in untagged_rows:
+                    connection.execute(
+                        f"INSERT INTO {table} SELECT * FROM source.{table} "
+                        'WHERE vpuid = ? OR (vpuid IS NULL AND divide_id IN '
+                        '(SELECT divide_id FROM source."divides" WHERE vpuid = ?))', (vpu, vpu),
+                    )
+                else:
+                    connection.execute(
+                        f"INSERT INTO {table} SELECT * FROM source.{table} WHERE vpuid = ?", (vpu,)
+                    )
+            connection.execute(
+                "UPDATE gpkg_contents SET min_x = NULL, min_y = NULL, max_x = NULL, max_y = NULL "
+                "WHERE data_type = 'features'"
+            )
+            connection.commit()
+        yield selected
+
+
+def check_file(path, label, model, config, counts, kind=None, vpu=None, measurements=None):
     if kind is None or vpu is None:
         match = FILENAME.fullmatch(path.name)
         if not match:
             raise ValueError(f"unrecognized GeoPackage filename: {label}")
         kind, vpu = match.groups()
     recorded = mapping_at(counts, [model, kind, vpu])
+    if measurements is not None:
+        identity = (model, kind, vpu)
+        if identity in measurements:
+            raise ValueError(f"duplicate GeoPackage identity for {model} | {kind} | {vpu}: {label}")
+        measurements[identity] = {}
+    with vpu_input(path, vpu) as checked_path:
+        return check_selected_file(checked_path, label, model, kind, vpu, config, recorded, measurements)
+
+
+def check_selected_file(path, label, model, kind, vpu, config, recorded, measurements):
     print(f"{label} | {model} | {kind} | {vpu}")
     print("check | metric | value | recorded count | result | mode")
     status = 0
+    identity = (model, kind, vpu)
     for name, check in CHECKS.items():
         blocking = config[name]["blocking"]
         try:
@@ -214,8 +337,7 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             results = []
             for metric, value in metrics.items():
                 limit = limits.get(metric, 0)
-                if type(limit) not in (int, float) or not math.isfinite(limit) or limit < 0:
-                    raise ValueError(f"invalid recorded count for {metric}: {limit!r}")
+                validate_count(metric, limit)
                 if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
                     raise ValueError(f"invalid value for {metric}: {value!r}")
                 results.append((metric, value, limit, value <= limit))
@@ -226,6 +348,8 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             print(f"error: {label}: check {name} could not run: {exc}", file=sys.stderr)
             status = 2
             continue
+        if measurements is not None:
+            measurements[identity][name] = dict(metrics)
         for metric, value, limit, passed in results:
             if blocking and not passed:
                 status = max(status, 1)
@@ -236,6 +360,92 @@ def check_file(path, label, model, config, counts, kind=None, vpu=None):
             print(f"error: {label}: check {name}: {error}", file=sys.stderr)
             status = 2
     return status
+
+
+def write_counts(path, measurements):
+    """Merge measurements into the latest counts while holding a shared-file lock."""
+    destination = path.resolve()
+    lock_path = destination.with_name(f".{destination.name}.consistency-check.lock")
+    # The lock has a stable inode across atomic replacements; never remove it
+    # while recorders may be active or waiting for the lock. Prefer a writable
+    # descriptor for NFS, but allow shared read-only locks on local filesystems.
+    try:
+        lock = lock_path.open("a", encoding="utf-8")
+    except PermissionError:
+        lock = lock_path.open("r", encoding="utf-8")
+    with lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        counts = load_counts(destination, allow_missing=True)
+        for (model, kind, vpu), checks in measurements.items():
+            recorded = mapping_at(counts, [model, kind, vpu])
+            for check, metrics in checks.items():
+                limits = mapping_at(recorded, [check])
+                for metric in metrics:
+                    validate_count(metric, limits.get(metric, 0))
+        merge_counts(counts, measurements)
+        replace_counts(destination, counts)
+
+
+def merge_counts(counts, measurements):
+    """Merge only measured values, preserving other entries and YAML aliases."""
+    for (model, kind, vpu), checks in measurements.items():
+        # YAML aliases may share mappings across identities or checks. Copy each
+        # updated path so recording one entry cannot mutate an unrelated one.
+        counts[model] = dict(counts.get(model, {}))
+        kinds = counts[model]
+        kinds[kind] = dict(kinds.get(kind, {}))
+        vpus = kinds[kind]
+        vpus[vpu] = dict(vpus.get(vpu, {}))
+        recorded = vpus[vpu]
+        for check, metrics in checks.items():
+            recorded[check] = {**recorded.get(check, {}), **metrics}
+
+
+
+class QuotedVPU(str):
+    """Mark VPU keys for consistent quoting in recorded counts."""
+
+
+class CountsDumper(yaml.SafeDumper):
+    """Dump counts using safe YAML types and quoted VPU keys."""
+
+
+def represent_vpu(dumper, value):
+    return dumper.represent_scalar("tag:yaml.org,2002:str", value, style="'")
+
+
+CountsDumper.add_representer(QuotedVPU, represent_vpu)
+
+
+def quote_vpu_keys(counts):
+    # Only VPU keys need a fixed style; keep PyYAML's defaults for the rest.
+    return {
+        model: {
+            kind: {QuotedVPU(vpu): checks for vpu, checks in vpus.items()}
+            for kind, vpus in kinds.items()
+        }
+        for model, kinds in counts.items()
+    }
+
+
+def replace_counts(destination, counts):
+    """Atomically replace counts after successful serialization."""
+    # The temporary file must share a directory with the destination for atomic rename.
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=destination.parent,
+            prefix=f".{destination.name}.", suffix=".tmp", delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            if destination.exists():
+                os.fchmod(stream.fileno(), stat.S_IMODE(destination.stat().st_mode))
+            yaml.dump(quote_vpu_keys(counts), stream, Dumper=CountsDumper,
+                      sort_keys=True, allow_unicode=True)
+        os.replace(temporary, destination)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def https_url(url, hosts):
@@ -353,11 +563,12 @@ def main(argv=None):
     parser.add_argument("--vpu", help="VPU for a single GeoPackage")
     parser.add_argument("--counts", type=Path, default=HERE / "counts.yaml")
     parser.add_argument("--config", type=Path, default=HERE / "checks.yaml")
+    parser.add_argument("--record", action="store_true", help="record measured limits in the counts file")
     args = parser.parse_args(argv)
 
     try:
-        counts = load_yaml(args.counts)
-        validate_vpu_keys(counts)
+        counts_path = args.counts.resolve()
+        counts = load_counts(counts_path, allow_missing=args.record)
         config = load_yaml(args.config)
         print(f"Configuration: {args.config} | Recorded counts: {args.counts}")
         for name in CHECKS:
@@ -391,17 +602,25 @@ def main(argv=None):
                 raise ValueError(f"target does not exist: {target}")
             paths = ((path, str(path)) for path in local)
         status = 0
+        measurements = {} if args.record else None
         for path, label in paths:
             if path is None:
                 status = 2
                 continue
             try:
-                status = max(status, check_file(path, label, args.data_model, config, counts, *metadata))
-            except (OSError, RuntimeError, ValueError) as exc:
-                print(f"error: {exc}", file=sys.stderr)
+                status = max(status, check_file(
+                    path, label, args.data_model, config, counts, *metadata, measurements=measurements
+                ))
+            except (OSError, RuntimeError, ValueError, sqlite3.Error) as exc:
+                print(f"error: {label}: checks could not run: {exc}", file=sys.stderr)
                 status = 2
+        # A blocking failure is a complete measurement; status 2 means at
+        # least one file or check was incomplete, so nothing can be recorded.
+        if measurements is not None and status != 2:
+            write_counts(counts_path, measurements)
+            print(f"Recorded counts: {args.counts}")
         return status
-    except (OSError, RuntimeError, ValueError, yaml.YAMLError) as exc:
+    except (OSError, RuntimeError, ValueError, sqlite3.Error, yaml.YAMLError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

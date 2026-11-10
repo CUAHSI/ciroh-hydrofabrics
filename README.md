@@ -27,8 +27,9 @@ The viewer's source lives in `subsetter/`. It has no build step: the [`deploy_pa
 
 Check one Build's GeoPackages locally or from a public HydroShare resource with
 `pixi run consistency-check <target>`. For a single local file, also provide
-`--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. Checks
-currently run in advisory mode. The v2.2 attribute check applies rules from the
+`--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. For a
+multi-VPU GeoPackage, the checks select only that VPU's rows before recording
+counts. Checks currently run in advisory mode. The v2.2 attribute check applies rules from the
 [v2.2 specifications](validation/consistency/models/v2.2/README.md) and reports
 violations, invalid numeric values, sentinel candidates, and indeterminate or
 unchecked cases. Its bounds are validation assumptions, not universal physical
