@@ -224,6 +224,9 @@ validation/hf-comparison/.cache/
 validation/hf-comparison/reports/
 validation/hf-comparison/examples/*.png
 
+# Stable lock files for concurrent consistency-check recordings.
+**/.*.consistency-check.lock
+
 # Local agent scratch space (handoffs, local tickets, Jira backups).
 # Never committed; see AGENTS.md.
 .scratch/
