@@ -8,3 +8,5 @@ network:
 geometry:
   blocking: false
   overlap_min_area_m2: 100
+attributes:
+  blocking: false

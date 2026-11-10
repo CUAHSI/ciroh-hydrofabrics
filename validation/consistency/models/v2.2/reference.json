@@ -610,7 +610,7 @@
       "note": "SQLite may expose NaN as NULL; when indistinguishable, apply the undetermined NULL policy."
     },
     "sentinel_handling": {
-      "scope": "numeric operand columns of these rules, independent of row applicability",
+      "scope": "all numeric-declared Data Model columns, independent of row applicability",
       "unrecognized_candidate": "report",
       "field_defined_missing": "apply_null_policy",
       "otherwise_apply_numeric_rules_when_applicable": true

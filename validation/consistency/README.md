@@ -64,10 +64,18 @@ legitimate. Additional checks and official counts are tracked separately.
 `checks.yaml` sets each check's `blocking` flag; all checks start advisory. Edit
 it in a reviewed change to enable a gate. A missing or malformed flag is an error,
 not an implicit advisory setting. A custom configuration must include a flag for
-each registered check, including `schema`, `network`, and `geometry`. Optional `--config` and `--counts`
-paths allow alternative files, for example when testing a proposed change. The report names
-the configuration and counts files actually used; CI must use the checked-in
-files rather than untrusted alternatives.
+each registered check, including `schema`, `network`, `geometry`, and
+`attributes`. When migrating an older custom config, add:
+
+```yaml
+attributes:
+  blocking: false
+```
+
+Optional `--config` and `--counts` paths allow alternative files, for example
+when testing a proposed change. The report names the configuration and counts
+files actually used; CI must use the checked-in files rather than untrusted
+alternatives.
 
 Exit status is `0` for a completed run with no blocking failures (including
 advisory failures), `1` for one or more blocking metric failures, and `2` for an
@@ -99,8 +107,8 @@ legitimate, so `unobserved_id_prefixes` is a comparison with observations, not
 an authoritative allowlist. Review these advisory findings before enabling a
 blocking gate.
 Reference identifiers are numeric, so no prefix check applies. Network terminal
-conventions are checked separately, as described below. Attribute bounds are
-recorded in the specifications but are not yet checked.
+conventions and specified attribute rules are checked separately, as described
+below.
 
 Metrics name their category and layer, for example `missing_columns.nexus` or
 `unobserved_id_prefixes.nexus.id`. A dependent metric is omitted when its prerequisite is
@@ -195,6 +203,104 @@ limits default to zero. Do not enable blocking until maintainers review the
 conventions, indeterminate counts, legitimate orphan subsets, and official
 limits for the relevant Data Models and VPUs.
 
+## v2.2 attribute check
+
+The `attributes` check reads the selected output kind's rules from the
+[v2.2 specifications](models/v2.2/README.md):
+[`ngen.json`](models/v2.2/ngen.json) or
+[`reference.json`](models/v2.2/reference.json). It inspects the GeoPackage
+read-only, without downloading a reference product, and is advisory by default.
+The rules are CAM-1602 validation assumptions, not universal physical laws or
+promises that official products satisfy them; in particular, do not interpret
+bounds as physical limits merely because they describe a distribution. The
+current check does not compare attribute distributions with a reference product.
+See the [implementation](attributes/attribute_checks.py) and the specifications
+for the current rules and their provenance.
+
+The attribute checker selects a trusted `models/<version>/<kind>.json` file by
+identifier rather than hardcoding v2.2. A compatible new model can define its own
+columns, bounds, and supported rules using specification format 1.0. The checker
+validates metadata, column types, rule references and semantics before inspecting
+input data; an unsupported rule or policy is an error, not a silently skipped
+check. The current evaluator supports range and interval rules, integer-boolean
+conditions, and scaled comparisons with a single text join key. Other versions
+or policies require additional implementation and tests. The schema, network,
+geometry, and CLI checks are still v2.2-specific, so adding a model specification
+alone does not enable an end-to-end CLI run for that model.
+
+For both output kinds, the specified rules check positive divide area and
+flowpath length, and positive flowpath area when `has_divide` is SQLite integer
+`1`. Integer `0` makes the area rule inapplicable; NULL or a nonboolean value
+makes applicability indeterminate. NextGen also checks `mean.impervious` in
+[0, 100] percent, terrain `mean.slope` in [0, 90] degrees, the NWM drainage
+factor `mean.slope_1km` and all eight volumetric soil moisture columns in [0, 1],
+and `Length_m > 0`, `So >= 0`, `0 < n <= 1`, and `0 <= MusX <= 0.5` in both
+flowpath attribute tables. Their
+`Length_m` values are compared with `flowpaths.lengthkm` converted to metres,
+with an absolute difference of at most 1 metre for uniquely matched IDs. A
+small allowance of four machine epsilons scaled to the larger operand, capped
+at 1e-9 metre and one-billionth of the tolerance, avoids roundoff at the
+inclusive boundary. A zero tolerance has no allowance. Each attribute table is
+compared separately with `flowpaths`.
+
+Ratcheted counts include:
+
+- `violations.<rule>`: finite numeric values outside an applicable rule, or
+  uniquely matched length pairs outside the tolerance.
+- `invalid_numeric.<table>.<column>`: non-NULL operand values that are not
+  finite SQLite `integer` or `real` values. Numeric text is not coerced.
+- `sentinel.<table>.<column>`: numeric-storage occurrences of the specification's
+  sentinel candidates in present numeric-declared Data Model columns, currently
+  including `-9998`. Values stored as text are not identified as sentinels. The
+  list is not exhaustive, and the
+  meaning and field scope of `-9998` are undetermined. No field-defined missing
+  codes are currently known; candidates are reported and still evaluated by
+  applicable numeric rules, so a value can also count as a violation.
+- `nonfinite_calculation.<rule>`: uniquely matched length pairs whose scaled
+  difference is nonfinite, reported separately from tolerance violations.
+
+Operand diagnostics cover present numeric-rule columns independently of row
+applicability. NULL operands are counted as `indeterminate_null.<table>.<column>`
+`INFO`, not violations; SQLite may expose NaN as NULL. Nonfinite and nonnumeric
+operands are reported as `invalid_numeric` rather than range violations. For
+conditional rules, `indeterminate_applicability.<rule>` counts rows with NULL or
+nonboolean flags as `INFO`, independently of the operand diagnostics. These
+counts are not proof that the affected rows are valid or invalid.
+
+Length comparisons use only non-NULL text IDs occurring once on each side and
+finite numeric operands. IDs are matched by exact text bytes, independently of
+SQLite affinity or collation; non-text IDs are indeterminate rather than coerced.
+For these rules, `left` is the attribute table and `right` is `flowpaths`. `indeterminate_duplicate_keys.<rule>` counts distinct key values duplicated on
+either side, including unmatched keys, rather than choosing a row or counting a
+Cartesian join. `unmatched_left_rows.<rule>` and `unmatched_right_rows.<rule>` count rows
+with non-NULL IDs missing on the other side; `null_join_key_left_rows.<rule>`
+and `null_join_key_right_rows.<rule>` count rows with NULL IDs. The corresponding
+`invalid_join_key_left_rows` and `invalid_join_key_right_rows` count non-text IDs.
+`compared_pairs.<rule>` counts pairs compared, excluding nonfinite calculations
+and precision-indeterminate pairs. `indeterminate_operands.<rule>` counts unique
+matched pairs with NULL or invalid operands, and `indeterminate_precision.<rule>`
+counts finite pairs that cannot be compared reliably without losing precision.
+These are `INFO`, not length violations; the correct handling of duplicates and
+unmatched IDs remains undetermined.
+
+A rule missing a required table, operand, join key, or applicability flag is
+reported as `not_evaluated.<rule>` with `INFO`; consult the `schema` check for
+missing prerequisites. If no rule can be evaluated, `no_applicable_checks` is a
+ratcheted count of 1. A rule can be evaluated when its prerequisites exist even
+if no rows can actually be compared, so a zero violation count alone does not
+establish coverage. `not_checked.<table>.<column>` is an `INFO` inventory of
+columns in the specification without a range or interval rule, even when the
+table or column is absent from the input. It does not mean the column is present,
+that no other check uses it, or that its values are valid; unspecified constraints
+remain undetermined.
+
+Attribute limits are recorded per metric under `attributes` in `counts.yaml`;
+missing limits default to zero. A nonzero ratcheted count may therefore report
+`FAIL` even while advisory; it affects the exit status only when the check is
+blocking. `INFO` values do not affect the gate, including when the check is
+blocking. Review the assumptions, indeterminate cases, and product-specific
+counts before enabling blocking.
+
 ## v2.2 geometry check
 
 The `geometry` check is advisory by default and covers every spatial layer in the
@@ -253,9 +359,10 @@ Register a callable in `CHECKS` in `consistency_check.py` and give it a boolean
 `Path`, the selected Data Model name, and the output kind; it returns a nonempty
 mapping of stable metric names to nonnegative finite numbers. The `geometry`
 check additionally receives its overlap threshold and returns ratcheted metrics,
-informational values, and incomplete-check errors separately. Limits can be
-supplied for each ratcheted metric independently. Checks inspect one Build; the
-runner owns comparison to recorded limits and gating.
+informational values, and incomplete-check errors separately. The `attributes`
+check returns ratcheted metrics and informational values separately. Limits can
+be supplied for each ratcheted metric independently. Checks inspect one Build;
+the runner owns comparison to recorded limits and gating.
 
 Run the focused tests, which generate small temporary GeoPackages:
 

@@ -54,7 +54,7 @@ def test_network_metrics_use_recorded_limits_and_blocking_configuration(tmp_path
         geometry=[Point(0, 0), Point(1, 0), Point(2, 0)], crs="EPSG:5070",
     ).to_file(path, layer="nexus", engine="pyogrio")
     config = tmp_path / "checks.yaml"
-    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: false\nnetwork:\n  blocking: true\ngeometry:\n  blocking: false\n")
+    config.write_text("geopackage_layers:\n  blocking: false\nschema:\n  blocking: false\nnetwork:\n  blocking: true\ngeometry:\n  blocking: false\nattributes:\n  blocking: false\n")
     counts = tmp_path / "counts.yaml"
     counts.write_text('v2.2:\n  ngen:\n    "01":\n      network:\n        duplicate_primary_ids.nexus: 1\n')
 
