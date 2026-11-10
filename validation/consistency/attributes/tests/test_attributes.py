@@ -14,6 +14,23 @@ RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
 
 
 def run_check(path, kind="ngen", *extra):
+    """Run the consistency-check CLI for VPU 01 and capture its output.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        GeoPackage passed to the CLI.
+    kind : str, optional
+        Product type passed via ``--type``; defaults to ``ngen``.
+    *extra : object
+        Additional CLI arguments, converted to strings.
+
+    Returns
+    -------
+    subprocess.CompletedProcess
+        Process result with text stdout and stderr; nonzero exit codes do not
+        raise an exception.
+    """
     return subprocess.run(
         [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01", *map(str, extra)],
         capture_output=True, text=True, check=False,
@@ -21,6 +38,25 @@ def run_check(path, kind="ngen", *extra):
 
 
 def metric(result, name):
+    """Extract the single attributes metric row with the requested name.
+
+    Parameters
+    ----------
+    result : subprocess.CompletedProcess
+        CLI result whose stdout contains pipe-delimited metric rows.
+    name : str
+        Name of the attributes metric to find.
+
+    Returns
+    -------
+    list of str
+        The matching row split on ``" | "``.
+
+    Raises
+    ------
+    AssertionError
+        If stdout contains anything other than one matching row.
+    """
     lines = [line.split(" | ") for line in result.stdout.splitlines()
              if line.startswith(f"attributes | {name} | ")]
     assert len(lines) == 1, (name, result.stdout, result.stderr)
@@ -28,6 +64,15 @@ def metric(result, name):
 
 
 def create_gpkg(path):
+    """Create a GeoPackage with a single-point nexus layer.
+
+    The layer contains the ID ``one`` and uses the EPSG:5070 CRS.
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        Destination GeoPackage path.
+    """
     gpd.GeoDataFrame({"id": ["one"]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
         path, layer="nexus", engine="pyogrio"
     )
@@ -35,6 +80,19 @@ def create_gpkg(path):
 
 @pytest.mark.parametrize("kind", ["ngen", "reference"])
 def test_positive_divide_area_is_reported_for_both_products(tmp_path, kind):
+    """Report divide-area violations for both supported product types.
+
+    For each product, the divides have areas 1, 0, and -1 square kilometers.
+    Assert exit code 0 and a violation metric of 2 against a limit of 0,
+    with status ``FAIL`` and severity ``advisory``.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    kind : str
+        Parametrized product type: ``ngen`` or ``reference``.
+    """
     path = tmp_path / "build.gpkg"
     gpd.GeoDataFrame(
         {"areasqkm": [1.0, 0.0, -1.0]},
@@ -49,6 +107,20 @@ def test_positive_divide_area_is_reported_for_both_products(tmp_path, kind):
 
 @pytest.mark.parametrize("kind", ["ngen", "reference"])
 def test_flowpath_area_applies_only_to_valid_has_divide_flags(tmp_path, kind):
+    """Report flowpath area violations and indeterminate applicability.
+
+    For each product, test zero areas with ``has_divide`` values 1, 0,
+    null, and 2, plus a positive area with flag 1. Assert exit code 0,
+    one area violation, and two indeterminate applicability cases reported
+    with limit ``-`` and status ``INFO``.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    kind : str
+        Parametrized product type: ``ngen`` or ``reference``.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -66,6 +138,19 @@ def test_flowpath_area_applies_only_to_valid_has_divide_flags(tmp_path, kind):
 
 
 def test_numeric_diagnostics_and_hydraulic_boundaries(tmp_path):
+    """Report numeric diagnostics and hydraulic range violations.
+
+    Exercise zero, sentinel, null, nonnumeric, and infinite ``So`` values,
+    along with boundary and out-of-range ``n`` and ``MusX`` values. Assert
+    exit code 0; one ``So`` nonnegative violation, one sentinel, two invalid
+    numeric values, and one indeterminate null with limit ``-`` and status
+    ``INFO``; three ``n`` range violations; and two ``MusX`` range violations.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -88,6 +173,16 @@ def test_numeric_diagnostics_and_hydraulic_boundaries(tmp_path):
 
 
 def test_terrain_slope_uses_physical_degree_bounds(tmp_path):
+    """Report two slope violations for values around 0 and 90 degrees.
+
+    The input slopes are -0.1, 0, 90, and 90.1. Assert exit code 0 and
+    a range-violation count of 2.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -101,6 +196,16 @@ def test_terrain_slope_uses_physical_degree_bounds(tmp_path):
 
 
 def test_impervious_surface_is_checked_as_a_percentage(tmp_path):
+    """Report two impervious-surface violations around percentage bounds.
+
+    The input values are -0.1, 0, 50, 100, and 100.1. Assert exit code 0
+    and a range-violation count of 2.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -121,6 +226,19 @@ def test_impervious_surface_is_checked_as_a_percentage(tmp_path):
     "mean.smcwlt_soil_layers_stag=3", "mean.smcwlt_soil_layers_stag=4",
 ])
 def test_drainage_factor_and_volumetric_soil_moisture_are_bounded(tmp_path, column):
+    """Report range violations for drainage and soil-moisture columns.
+
+    For each parametrized column, supply -0.1, 0, 1, and 1.1. Assert exit
+    code 0 and a range-violation count of 2 for that column.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    column : str
+        ``mean.slope_1km``, or a ``mean.smcmax`` or ``mean.smcwlt`` soil
+        layer column with ``soil_layers_stag`` equal to 1, 2, 3, or 4.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -134,6 +252,16 @@ def test_drainage_factor_and_volumetric_soil_moisture_are_bounded(tmp_path, colu
 
 
 def test_sentinel_is_reported_in_an_unbounded_numeric_model_column(tmp_path):
+    """Report a sentinel and a not-checked status for mean elevation.
+
+    With elevation values -9998 and 2.0, assert exit code 0, a sentinel
+    count of 1, and status ``INFO`` for the not-checked metric.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -148,6 +276,19 @@ def test_sentinel_is_reported_in_an_unbounded_numeric_model_column(tmp_path):
 
 
 def test_length_comparison_reports_only_unambiguous_pairs(tmp_path):
+    """Report length mismatches and join or calculation diagnostics.
+
+    Include exact, near-tolerance, and mismatched lengths; duplicate keys on
+    each side; unmatched and null keys; and an overflowing calculation.
+    Assert exit code 0, one violation, two indeterminate duplicate keys, one
+    unmatched row and one null-key row on each side (all with limit ``-``
+    and status ``INFO``), and one nonfinite calculation.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -178,6 +319,17 @@ def test_length_comparison_reports_only_unambiguous_pairs(tmp_path):
 
 
 def test_unmatched_duplicate_keys_are_reported_as_indeterminate(tmp_path):
+    """Report duplicate keys that have no matching key on the other side.
+
+    Each length table contains two rows with a different duplicate key.
+    Assert exit code 0, two indeterminate duplicate keys, and two unmatched
+    rows on each side.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -196,6 +348,16 @@ def test_unmatched_duplicate_keys_are_reported_as_indeterminate(tmp_path):
 
 
 def test_length_comparison_handles_minimum_sqlite_integer(tmp_path):
+    """Report a mismatch involving the minimum signed SQLite integer.
+
+    Compare a zero flowpath length against an attribute length of ``-2**63``.
+    Assert exit code 0 and one length-consistency violation.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -211,6 +373,17 @@ def test_length_comparison_handles_minimum_sqlite_integer(tmp_path):
 
 
 def test_length_report_distinguishes_compared_and_indeterminate_pairs(tmp_path):
+    """Distinguish comparable lengths from null and nonnumeric operands.
+
+    Three matched IDs have a valid, null, or nonnumeric attribute length.
+    Assert exit code 0, one compared pair, and two indeterminate operands;
+    both metrics have limit ``-`` and status ``INFO``.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -228,6 +401,19 @@ def test_length_report_distinguishes_compared_and_indeterminate_pairs(tmp_path):
 
 
 def test_length_join_uses_exact_text_ids_and_reports_other_types(tmp_path):
+    """Report join diagnostics for numeric, padded, and differently cased IDs.
+
+    Compare numeric ID 1 and text ID ``A`` in flowpaths against text IDs
+    ``1``, ``01``, and ``a`` in a NOCASE attribute column. Assert exit code
+    0, zero violations, one invalid right-side join key with limit ``-``
+    and status ``INFO``, three unmatched left rows, and one unmatched right
+    row.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -249,6 +435,16 @@ def test_length_join_uses_exact_text_ids_and_reports_other_types(tmp_path):
 
 
 def test_length_tolerance_does_not_hide_large_absolute_mismatches(tmp_path):
+    """Report a large-length pair whose absolute difference exceeds tolerance.
+
+    Compare ``1e13`` kilometers to ``10000000000000002.0`` meters. Assert
+    exit code 0 and one length-consistency violation.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -264,6 +460,17 @@ def test_length_tolerance_does_not_hide_large_absolute_mismatches(tmp_path):
 
 
 def test_length_tolerance_accounts_for_float_roundoff_at_the_boundary(tmp_path):
+    """Report one violation for lengths at and just beyond the tolerance.
+
+    Compare two flowpath lengths of 2.007 km against attribute lengths of
+    2006 and 2005.999 m. Assert exit code 0 and one length-consistency
+    violation.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -280,6 +487,20 @@ def test_length_tolerance_accounts_for_float_roundoff_at_the_boundary(tmp_path):
 
 @pytest.mark.parametrize("kind", ["ngen", "reference"])
 def test_columns_without_bounds_are_listed_as_not_checked(tmp_path, kind):
+    """Report the unbounded flowpaths ID column for both product types.
+
+    With a GeoPackage containing only the nexus layer, assert for each
+    product that the CLI exits 0 and reports ``not_checked.flowpaths.id``
+    with value 1, limit ``-``, and status ``INFO``. Also assert that no
+    ``not_checked.flowpaths.lengthkm`` row appears in stdout.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    kind : str
+        Parametrized product type: ``ngen`` or ``reference``.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
 
@@ -291,6 +512,18 @@ def test_columns_without_bounds_are_listed_as_not_checked(tmp_path, kind):
 
 
 def test_attribute_blocking_uses_recorded_limits_and_checks_ml_table(tmp_path):
+    """Apply blocking limits to a negative ML flowpath slope.
+
+    Run with attributes blocking enabled, first without recorded counts and
+    then with a recorded limit of 1. Assert that the first run exits 1 and
+    reports value 1, limit 0, ``FAIL``, and ``blocking``; the second exits 0
+    and reports value 1, limit 1, ``PASS``, and ``blocking``.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage and YAML files.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:
@@ -317,6 +550,18 @@ def test_attribute_blocking_uses_recorded_limits_and_checks_ml_table(tmp_path):
 
 
 def test_missing_prerequisites_are_not_mistaken_for_a_pass(tmp_path):
+    """Report an unevaluated flowpath area check when its flag is missing.
+
+    A reference GeoPackage has a flowpaths area column but no ``has_divide``
+    column. Assert exit code 0, a no-applicable-checks value of 1, a
+    not-evaluated value of 1 with limit ``-`` and status ``INFO``, and no
+    area-violation row in stdout.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Temporary directory for the GeoPackage.
+    """
     path = tmp_path / "build.gpkg"
     create_gpkg(path)
     with sqlite3.connect(path) as db:

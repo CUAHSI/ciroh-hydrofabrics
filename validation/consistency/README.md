@@ -217,6 +217,17 @@ current check does not compare attribute distributions with a reference product.
 See the [implementation](attributes/attribute_checks.py) and the specifications
 for the current rules and their provenance.
 
+The attribute checker selects a trusted `models/<version>/<kind>.json` file by
+identifier rather than hardcoding v2.2. A compatible new model can define its own
+columns, bounds, and supported rules using specification format 1.0. The checker
+validates metadata, column types, rule references and semantics before inspecting
+input data; an unsupported rule or policy is an error, not a silently skipped
+check. The current evaluator supports range and interval rules, integer-boolean
+conditions, and scaled comparisons with a single text join key. Other versions
+or policies require additional implementation and tests. The schema, network,
+geometry, and CLI checks are still v2.2-specific, so adding a model specification
+alone does not enable an end-to-end CLI run for that model.
+
 For both output kinds, the specified rules check positive divide area and
 flowpath length, and positive flowpath area when `has_divide` is SQLite integer
 `1`. Integer `0` makes the area rule inapplicable; NULL or a nonboolean value
@@ -227,8 +238,9 @@ and `Length_m > 0`, `So >= 0`, `0 < n <= 1`, and `0 <= MusX <= 0.5` in both
 flowpath attribute tables. Their
 `Length_m` values are compared with `flowpaths.lengthkm` converted to metres,
 with an absolute difference of at most 1 metre for uniquely matched IDs. A
-small allowance of four machine epsilons scaled to the larger operand and capped
-at 1e-9 metre avoids roundoff at the inclusive boundary. Each attribute table is
+small allowance of four machine epsilons scaled to the larger operand, capped
+at 1e-9 metre and one-billionth of the tolerance, avoids roundoff at the
+inclusive boundary. A zero tolerance has no allowance. Each attribute table is
 compared separately with `flowpaths`.
 
 Ratcheted counts include:
@@ -264,10 +276,12 @@ Cartesian join. `unmatched_left_rows.<rule>` and `unmatched_right_rows.<rule>` c
 with non-NULL IDs missing on the other side; `null_join_key_left_rows.<rule>`
 and `null_join_key_right_rows.<rule>` count rows with NULL IDs. The corresponding
 `invalid_join_key_left_rows` and `invalid_join_key_right_rows` count non-text IDs.
-`compared_pairs.<rule>` counts pairs compared, excluding nonfinite calculations,
-and `indeterminate_operands.<rule>` counts unique matched pairs with NULL or
-invalid operands. These are `INFO`, not length violations; the correct handling
-of duplicates and unmatched IDs remains undetermined.
+`compared_pairs.<rule>` counts pairs compared, excluding nonfinite calculations
+and precision-indeterminate pairs. `indeterminate_operands.<rule>` counts unique
+matched pairs with NULL or invalid operands, and `indeterminate_precision.<rule>`
+counts finite pairs that cannot be compared reliably without losing precision.
+These are `INFO`, not length violations; the correct handling of duplicates and
+unmatched IDs remains undetermined.
 
 A rule missing a required table, operand, join key, or applicability flag is
 reported as `not_evaluated.<rule>` with `INFO`; consult the `schema` check for
