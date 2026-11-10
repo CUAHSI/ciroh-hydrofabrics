@@ -402,6 +402,32 @@ def merge_counts(counts, measurements):
 
 
 
+class QuotedVPU(str):
+    """Mark VPU keys for consistent quoting in recorded counts."""
+
+
+class CountsDumper(yaml.SafeDumper):
+    """Dump counts using safe YAML types and quoted VPU keys."""
+
+
+def represent_vpu(dumper, value):
+    return dumper.represent_scalar("tag:yaml.org,2002:str", value, style="'")
+
+
+CountsDumper.add_representer(QuotedVPU, represent_vpu)
+
+
+def quote_vpu_keys(counts):
+    # Only VPU keys need a fixed style; keep PyYAML's defaults for the rest.
+    return {
+        model: {
+            kind: {QuotedVPU(vpu): checks for vpu, checks in vpus.items()}
+            for kind, vpus in kinds.items()
+        }
+        for model, kinds in counts.items()
+    }
+
+
 def replace_counts(destination, counts):
     """Atomically replace counts after successful serialization."""
     # The temporary file must share a directory with the destination for atomic rename.
@@ -414,7 +440,8 @@ def replace_counts(destination, counts):
             temporary = Path(stream.name)
             if destination.exists():
                 os.fchmod(stream.fileno(), stat.S_IMODE(destination.stat().st_mode))
-            yaml.safe_dump(counts, stream, sort_keys=True, allow_unicode=True)
+            yaml.dump(quote_vpu_keys(counts), stream, Dumper=CountsDumper,
+                      sort_keys=True, allow_unicode=True)
         os.replace(temporary, destination)
     finally:
         if temporary is not None:

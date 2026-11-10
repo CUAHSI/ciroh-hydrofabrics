@@ -526,6 +526,8 @@ v2.1: *model
     result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--counts", counts, "--record")
 
     assert result.returncode == 0, result.stderr
+    assert "    '03S':" in counts.read_text()
+    assert "    '16':" in counts.read_text()
     data = yaml.safe_load(counts.read_text())
     selected = data["v2.2"]["ngen"]["03S"]
     assert selected["geopackage_layers"]["empty_layers"] == 0
