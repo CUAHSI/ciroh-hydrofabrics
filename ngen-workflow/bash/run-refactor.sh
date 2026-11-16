@@ -17,7 +17,7 @@ simplify_tolerance_m="$8"
 
 mkdir -p "$(dirname "$out_file")"
 
-Rscript R/refactor.R \
+Rscript R/refactor.r \
   --fac_file "$fac_file" \
   --fdr_file "$fdr_file" \
   --nextgen_geopackage "$gpkg_file" \

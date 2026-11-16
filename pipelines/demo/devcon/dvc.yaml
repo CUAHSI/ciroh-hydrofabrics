@@ -52,7 +52,7 @@ stages:
       - refactor.simplify_tolerance_meters
     deps:
       - ../../../ngen-workflow/bash/run-refactor.sh
-      - ../../../ngen-workflow/R/refactor.Rmd
+      - ../../../ngen-workflow/R/refactor.r
       - ../../../ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
       - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FAC_vrt/fac.vrt
       - ../../../ngen-workflow/output/${output_folder}/NHDSnapshot/FDR_vrt/fdr.vrt
@@ -119,7 +119,7 @@ stages:
       /ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/dem${vpuid}.vrt
     deps:
       - ../../../ngen-workflow/bash/run-vaa.sh
-      - ../../../ngen-workflow/R/vaa.Rmd
+      - ../../../ngen-workflow/R/vaa.r
       - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
       - ../../../ngen-workflow/data/superconus/gridded/soil/
       - ../../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
