@@ -1,10 +1,16 @@
 """Behavioral tests for the consistency-check command."""
 
+import contextlib
+import fcntl
 import importlib.util
 import io
 import json
+import multiprocessing
 import subprocess
 import sys
+import threading
+import time
+import traceback
 from pathlib import Path
 
 import geopandas as gpd
@@ -65,6 +71,35 @@ def test_single_file_uses_explicit_metadata_instead_of_filename(gpkg, tmp_path):
     assert result.returncode == 0, result.stderr
     assert "my-build.gpkg | v2.2 | reference | 01" in result.stdout
     assert "missing_layers | 0 | 2 | PASS | advisory" in result.stdout
+
+
+def test_record_checks_only_selected_vpu_in_a_multi_vpu_file(tmp_path):
+    path = tmp_path / "conus_reference.gpkg"
+    counts = tmp_path / "counts.yaml"
+    gpd.GeoDataFrame(
+        {"id": [1, 2], "vpuid": ["11", "16"]},
+        geometry=[Point(0, 0), Point(0, 0)], crs="EPSG:5070",
+    ).to_file(path, layer="flowpaths", engine="pyogrio")
+
+    result = run_command(path, "--type", "reference", "--vpu", "16", "--record", "--counts", counts)
+
+    assert result.returncode == 0, result.stderr
+    recorded = yaml.safe_load(counts.read_text())["v2.2"]["reference"]["16"]
+    assert recorded["geometry"]["duplicate_geometries.flowpaths"] == 0
+    assert "duplicate_geometries.flowpaths | 0 |" in result.stdout
+    before = counts.read_bytes()
+    missing = run_command(path, "--type", "reference", "--vpu", "99", "--record", "--counts", counts)
+    assert missing.returncode == 2
+    assert counts.read_bytes() == before
+
+    unassigned_path = tmp_path / "unassigned.gpkg"
+    gpd.GeoDataFrame(
+        {"id": [1, 2], "vpuid": [None, "16"]},
+        geometry=[Point(0, 0), Point(0, 0)], crs="EPSG:5070",
+    ).to_file(unassigned_path, layer="flowpaths", engine="pyogrio")
+    unassigned = run_command(unassigned_path, "--type", "reference", "--vpu", "16", "--record", "--counts", counts)
+    assert unassigned.returncode == 2
+    assert counts.read_bytes() == before
 
 
 def test_single_file_explicit_metadata_takes_precedence_over_filename(gpkg, tmp_path):
@@ -406,3 +441,516 @@ def test_blocking_flag_only_fails_on_excess(empty_gpkg, tmp_path):
     passed = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--config", config, "--counts", counts)
     assert passed.returncode == 0, passed.stderr
     assert "empty_layers | 1 | 1 | PASS | blocking" in passed.stdout
+
+
+def test_record_creates_counts_even_when_a_blocking_metric_fails(empty_gpkg, tmp_path):
+    counts = tmp_path / "new-counts.yaml"
+    config = tmp_path / "checks.yaml"
+    config.write_text(yaml.safe_dump({
+        name: {"blocking": name == "geopackage_layers"}
+        for name in ("geopackage_layers", "schema", "network", "geometry", "attributes")
+    }))
+    args = (empty_gpkg, "--type", "reference", "--vpu", "01", "--config", config, "--counts", counts)
+
+    recorded = run_command(*args, "--record")
+
+    assert recorded.returncode == 1, recorded.stderr
+    assert "empty_layers | 1 | 0 | FAIL | blocking" in recorded.stdout
+    data = yaml.safe_load(counts.read_text())
+    assert data["v2.2"]["reference"]["01"]["geopackage_layers"] == {
+        "missing_layers": 0, "empty_layers": 1,
+    }
+    assert set(data["v2.2"]["reference"]) == {"01"}
+
+    before = counts.read_bytes()
+    checked = run_command(*args)
+    assert checked.returncode == 0, checked.stderr
+    assert "empty_layers | 1 | 1 | PASS | blocking" in checked.stdout
+    assert counts.read_bytes() == before
+
+
+def test_record_merges_measured_metrics_but_not_informational_values(runner, gpkg, tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(runner, "CHECKS", {
+        "network": lambda path, model, kind: {"lower": 2, "higher": 4, "fraction": 1.5},
+        "geometry": lambda path, model, kind, **kwargs: (
+            {"invalid": 3}, {"geometry_info": 9.5}, []
+        ),
+        "attributes": lambda path, model, kind: ({"missing": 1}, {"attribute_info": 7}),
+    })
+    config = tmp_path / "checks.yaml"
+    config.write_text(yaml.safe_dump({name: {"blocking": False} for name in runner.CHECKS}))
+    counts = tmp_path / "counts.yaml"
+    original = {
+        "v2.1": {"reference": {"01": {"other": {"old": 11}}}},
+        "v2.2": {
+            "ngen": {"01": {"other": {"old": 12}}},
+            "reference": {
+                "02": {"other": {"old": 13}},
+                "01": {
+                    "network": {"lower": 8, "higher": 1, "unmeasured": 14},
+                    "geometry": {"invalid": 5, "unmeasured": 15},
+                    "other": {"old": 16},
+                },
+            },
+        },
+    }
+    counts.write_text(yaml.safe_dump(original))
+
+    status = runner.main([str(gpkg), "--data-model", "v2.2", "--type", "reference", "--vpu", "01",
+                          "--config", str(config), "--counts", str(counts), "--record"])
+    output = capsys.readouterr()
+
+    assert status == 0, output.err
+    assert "geometry | geometry_info | 9.5 | - | INFO" in output.out
+    assert "attributes | attribute_info | 7 | - | INFO" in output.out
+    original["v2.2"]["reference"]["01"]["network"].update(lower=2, higher=4, fraction=1.5)
+    original["v2.2"]["reference"]["01"]["geometry"]["invalid"] = 3
+    original["v2.2"]["reference"]["01"]["attributes"] = {"missing": 1}
+    assert yaml.safe_load(counts.read_text()) == original
+
+
+def test_record_preserves_other_entries_sharing_yaml_aliases(gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text('''\
+v2.2: &model
+  ngen: &kind
+    "03S": &vpu
+      geopackage_layers: &check
+        empty_layers: 4
+      other: *check
+    "16": *vpu
+  reference: *kind
+v2.1: *model
+''')
+
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--counts", counts, "--record")
+
+    assert result.returncode == 0, result.stderr
+    assert "    '03S':" in counts.read_text()
+    assert "    '16':" in counts.read_text()
+    data = yaml.safe_load(counts.read_text())
+    selected = data["v2.2"]["ngen"]["03S"]
+    assert selected["geopackage_layers"]["empty_layers"] == 0
+    assert selected["other"]["empty_layers"] == 4
+    assert data["v2.2"]["ngen"]["16"]["geopackage_layers"]["empty_layers"] == 4
+    assert data["v2.2"]["reference"]["03S"]["geopackage_layers"]["empty_layers"] == 4
+    assert data["v2.1"]["ngen"]["03S"]["geopackage_layers"]["empty_layers"] == 4
+
+
+def _record_in_process(path, kind, vpu, counts, start, measured, result):
+    """Run the real entry point, pausing both recorders after measurement."""
+    output, errors = io.StringIO(), io.StringIO()
+    try:
+        sys.path.insert(0, str(RUNNER.parent))
+        spec = importlib.util.spec_from_file_location("consistency_check", RUNNER)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        check_file = module.check_file
+
+        def synchronized_check(*args, **kwargs):
+            status = check_file(*args, **kwargs)
+            try:
+                measured.wait(timeout=5)
+            except threading.BrokenBarrierError:
+                # A recorder may legitimately serialize the entire operation.
+                pass
+            return status
+
+        module.check_file = synchronized_check
+        start.wait(timeout=20)
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            status = module.main([
+                str(path), "--type", kind, "--vpu", vpu, "--record", "--counts", str(counts)
+            ])
+        recorded = any(line.startswith("Recorded counts:") for line in output.getvalue().splitlines())
+        result.send((status, recorded, errors.getvalue()))
+    except BaseException:
+        result.send((None, False, traceback.format_exc()))
+    finally:
+        result.close()
+
+
+def _run_parallel_records(inputs):
+    ctx = multiprocessing.get_context("spawn")
+    start = ctx.Barrier(len(inputs))
+    measured = ctx.Barrier(len(inputs))
+    processes, receivers = [], []
+    try:
+        for path, kind, vpu, counts in inputs:
+            receiver, sender = ctx.Pipe(duplex=False)
+            process = ctx.Process(target=_record_in_process, args=(path, kind, vpu, counts, start, measured, sender))
+            process.start()
+            sender.close()
+            processes.append(process)
+            receivers.append(receiver)
+        for process in processes:
+            process.join(timeout=30)
+        assert all(not process.is_alive() for process in processes), "recorders timed out"
+        assert all(process.exitcode == 0 for process in processes), "recorder process crashed"
+        assert all(receiver.poll(1) for receiver in receivers), "recorder did not report a result"
+        return [receiver.recv() for receiver in receivers]
+    finally:
+        for process in processes:
+            if process.is_alive():
+                process.terminate()
+                process.join(timeout=5)
+        for receiver in receivers:
+            receiver.close()
+
+
+@pytest.mark.parametrize("counts_state", ["existing", "missing", "symlink"])
+def test_parallel_records_preserve_both_identities(gpkg, empty_gpkg, tmp_path, counts_state):
+    counts = tmp_path / "counts.yaml"
+    unrelated = {"geopackage_layers": {"empty_layers": 7}}
+    if counts_state != "missing":
+        counts.write_text(yaml.safe_dump({"v2.2": {"reference": {"99": unrelated}}}))
+    second_counts = counts
+    if counts_state == "symlink":
+        second_counts = tmp_path / "counts-link.yaml"
+        second_counts.symlink_to(counts.name)
+
+    results = _run_parallel_records([
+        (gpkg, "ngen", "03S", counts),
+        (empty_gpkg, "reference", "16", second_counts),
+    ])
+
+    for status, recorded, error in results:
+        assert status == 0, error
+        assert recorded
+    data = yaml.safe_load(counts.read_text())["v2.2"]
+    assert data["ngen"]["03S"]["geopackage_layers"]["empty_layers"] == 0
+    assert data["reference"]["16"]["geopackage_layers"]["empty_layers"] == 1
+    if counts_state != "missing":
+        assert data["reference"]["99"] == unrelated
+    if counts_state == "symlink":
+        assert second_counts.is_symlink()
+
+
+def test_record_waits_for_counts_lock_after_check(gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text("{}\n")
+    lock_path = tmp_path / ".counts.yaml.consistency-check.lock"
+    checked = tmp_path / "checked"
+    script = '''
+import importlib.util
+import pathlib
+import sys
+
+runner = pathlib.Path(sys.argv[1])
+sys.path.insert(0, str(runner.parent))
+spec = importlib.util.spec_from_file_location("consistency_check", runner)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+check_file = module.check_file
+
+def signal_after_check(*args, **kwargs):
+    status = check_file(*args, **kwargs)
+    pathlib.Path(sys.argv[4]).touch()
+    return status
+
+module.check_file = signal_after_check
+sys.exit(module.main([sys.argv[2], "--type", "ngen", "--vpu", "03S", "--counts", sys.argv[3], "--record"]))
+'''
+    with lock_path.open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        process = subprocess.Popen(
+            [sys.executable, "-c", script, str(RUNNER), str(gpkg), str(counts), str(checked)],
+            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+        )
+        try:
+            deadline = time.monotonic() + 15
+            while not checked.exists() and process.poll() is None and time.monotonic() < deadline:
+                time.sleep(0.01)
+            assert checked.exists(), "recorder did not finish its checks"
+            with pytest.raises(subprocess.TimeoutExpired):
+                process.wait(timeout=1)
+            fcntl.flock(lock, fcntl.LOCK_UN)
+            _, stderr = process.communicate(timeout=10)
+            assert process.returncode == 0, stderr
+            assert yaml.safe_load(counts.read_text())["v2.2"]["ngen"]["03S"]
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.communicate()
+
+
+def test_record_uses_read_only_existing_lock(gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text("{}\n")
+    lock_path = tmp_path / ".counts.yaml.consistency-check.lock"
+    lock_path.touch()
+    lock_path.chmod(0o444)
+
+    result = run_command(gpkg, "--type", "ngen", "--vpu", "03S", "--counts", counts, "--record")
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(counts.read_text())["v2.2"]["ngen"]["03S"]
+
+
+def test_parallel_record_with_error_does_not_write_partial_counts(gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    unrelated = {"geopackage_layers": {"empty_layers": 7}}
+    counts.write_text(yaml.safe_dump({"v2.2": {"reference": {"99": unrelated}}}))
+    broken = tmp_path / "broken.gpkg"
+    broken.write_text("not a geopackage")
+
+    success, failure = _run_parallel_records([
+        (gpkg, "ngen", "03S", counts),
+        (broken, "reference", "16", counts),
+    ])
+
+    assert success[0] == 0 and success[1], success[2]
+    assert failure[0] == 2 and not failure[1], failure[2]
+    data = yaml.safe_load(counts.read_text())["v2.2"]
+    assert data["ngen"]["03S"]["geopackage_layers"]["empty_layers"] == 0
+    assert data["reference"] == {"99": unrelated}
+
+
+def test_record_directory_writes_each_input_identity(gpkg, empty_gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+
+    result = run_command(tmp_path, "--counts", counts, "--record")
+
+    assert result.returncode == 0, result.stderr
+    data = yaml.safe_load(counts.read_text())["v2.2"]
+    assert data["ngen"]["03S"]["geopackage_layers"]["empty_layers"] == 0
+    assert data["reference"]["16"]["geopackage_layers"]["empty_layers"] == 1
+    assert gpkg.name in result.stdout and empty_gpkg.name in result.stdout
+
+
+@pytest.mark.parametrize("bad_name", ["reference-hydrofabric-vpu-16.gpkg", "unexpected.gpkg"])
+def test_record_directory_error_leaves_existing_counts_unchanged(gpkg, tmp_path, bad_name):
+    bad = tmp_path / bad_name
+    bad.write_text("not a geopackage")
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geopackage_layers:\n        empty_layers: 4\n'
+    counts.write_bytes(original)
+
+    result = run_command(tmp_path, "--counts", counts, "--record")
+
+    assert result.returncode == 2
+    assert gpkg.name in result.stdout and bad.name in result.stderr
+    assert counts.read_bytes() == original
+
+
+def test_record_partial_geometry_in_batch_does_not_write(runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys):
+    def geometry(path, model, kind, **kwargs):
+        errors = ["overlap calculation incomplete"] if path.name == empty_gpkg.name else []
+        return {"invalid": 1}, {"area": 42}, errors
+
+    monkeypatch.setattr(runner, "CHECKS", {"geometry": geometry})
+    config = tmp_path / "checks.yaml"
+    config.write_text("geometry:\n  blocking: false\n")
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geometry:\n        invalid: 4\n'
+    counts.write_bytes(original)
+
+    status = runner.main([str(tmp_path), "--config", str(config), "--counts", str(counts), "--record"])
+    output = capsys.readouterr()
+
+    assert status == 2
+    assert gpkg.name in output.out and empty_gpkg.name in output.out
+    assert "overlap calculation incomplete" in output.err
+    assert counts.read_bytes() == original
+
+
+@pytest.mark.parametrize("value", [-1, float("nan"), float("inf"), True, "1", None])
+@pytest.mark.parametrize("informational", [False, True], ids=["ratcheted", "informational"])
+def test_record_invalid_values_leave_existing_counts_unchanged(
+    runner, gpkg, tmp_path, monkeypatch, capsys, value, informational
+):
+    def geometry(path, model, kind, **kwargs):
+        return ({"invalid": 1}, {"area": value}, []) if informational else ({"invalid": value}, {}, [])
+
+    monkeypatch.setattr(runner, "CHECKS", {"geometry": geometry})
+    config = tmp_path / "checks.yaml"
+    config.write_text("geometry:\n  blocking: false\n")
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geometry:\n        invalid: 4\n'
+    counts.write_bytes(original)
+
+    status = runner.main([str(gpkg), "--type", "ngen", "--vpu", "03S", "--config", str(config),
+                          "--counts", str(counts), "--record"])
+    output = capsys.readouterr()
+
+    assert status == 2
+    assert "invalid" in output.err.lower()
+    assert counts.read_bytes() == original
+
+
+def test_record_invalid_existing_count_does_not_overwrite_it(empty_gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  reference:\n    "16":\n      geopackage_layers:\n        empty_layers: -1\n'
+    counts.write_bytes(original)
+
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts, "--record")
+
+    assert result.returncode == 2
+    assert "invalid recorded count" in result.stderr
+    assert counts.read_bytes() == original
+
+
+@pytest.mark.parametrize("replacement", [
+    'v2.2: [invalid',
+    'v2.2:\n  ngen:\n    "03S":\n      geopackage_layers:\n        empty_layers: -1\n',
+])
+def test_record_rejects_invalid_counts_changed_during_check(runner, gpkg, tmp_path, monkeypatch, capsys, replacement):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text("{}\n")
+    check_file = runner.check_file
+
+    def change_counts(*args, **kwargs):
+        status = check_file(*args, **kwargs)
+        counts.write_text(replacement)
+        return status
+
+    monkeypatch.setattr(runner, "check_file", change_counts)
+    status = runner.main([str(gpkg), "--type", "ngen", "--vpu", "03S", "--counts", str(counts), "--record"])
+
+    output = capsys.readouterr()
+    assert status == 2
+    assert "error:" in output.err
+    assert not any(line.startswith("Recorded counts:") for line in output.out.splitlines())
+    assert counts.read_text() == replacement
+
+
+def test_record_accepts_large_integer_limit(empty_gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text(yaml.safe_dump({
+        "v2.2": {"reference": {"16": {"geopackage_layers": {"empty_layers": 10**400}}}}
+    }))
+
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", counts, "--record")
+
+    assert result.returncode == 0, result.stderr
+    assert yaml.safe_load(counts.read_text())["v2.2"]["reference"]["16"]["geopackage_layers"]["empty_layers"] == 1
+
+
+def test_record_duplicate_directory_identities_fails_without_writing(gpkg, tmp_path):
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    (nested / gpkg.name).write_bytes(gpkg.read_bytes())
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geopackage_layers:\n        empty_layers: 4\n'
+    counts.write_bytes(original)
+
+    recorded = run_command(tmp_path, "--counts", counts, "--record")
+    assert recorded.returncode == 2
+    assert "duplicate" in recorded.stderr.lower()
+    assert counts.read_bytes() == original
+
+    checked = run_command(tmp_path, "--counts", counts)
+    assert checked.returncode == 0, checked.stderr
+    assert checked.stdout.count("| v2.2 | ngen | 03S") == 2
+    assert counts.read_bytes() == original
+
+
+@pytest.mark.parametrize("duplicate", [False, True], ids=["distinct", "duplicate"])
+def test_record_hydroshare_batch_respects_input_identities(
+    runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys, duplicate
+):
+    resource = "a" * 32
+    listing = f"https://www.hydroshare.org/hsapi/resource/{resource}/files/"
+    base = f"https://www.hydroshare.org/resource/{resource}/data/contents/"
+    second = gpkg if duplicate else empty_gpkg
+    urls = [base + gpkg.name, base + "nested/" + second.name]
+    files = {urls[0]: gpkg.read_bytes(), urls[1]: second.read_bytes()}
+
+    class FakeOpener:
+        def open(self, url, timeout):
+            if url == listing:
+                return io.BytesIO(json.dumps({"count": 2, "next": None, "results": [
+                    {"file_name": gpkg.name, "url": urls[0], "size": gpkg.stat().st_size},
+                    {"file_name": second.name, "url": urls[1], "size": second.stat().st_size},
+                ]}).encode())
+            return io.BytesIO(files[url])
+
+    monkeypatch.setattr(runner.urllib.request, "build_opener", lambda *args: FakeOpener())
+    work = tmp_path / "remote-work"
+    work.mkdir()
+    monkeypatch.setattr(runner.tempfile, "tempdir", str(work))
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geopackage_layers:\n        empty_layers: 4\n'
+    counts.write_bytes(original)
+
+    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/", "--counts", str(counts), "--record"])
+    output = capsys.readouterr()
+
+    if duplicate:
+        assert status == 2
+        assert "duplicate" in output.err.lower()
+        assert counts.read_bytes() == original
+    else:
+        assert status == 0, output.err
+        data = yaml.safe_load(counts.read_text())["v2.2"]
+        assert data["ngen"]["03S"]["geopackage_layers"]["empty_layers"] == 0
+        assert data["reference"]["16"]["geopackage_layers"]["empty_layers"] == 1
+    assert not list(work.iterdir())
+
+
+def test_record_late_hydroshare_listing_error_does_not_write(runner, gpkg, tmp_path, monkeypatch, capsys):
+    resource = "a" * 32
+    listing = f"https://www.hydroshare.org/hsapi/resource/{resource}/files/"
+    file_url = f"https://www.hydroshare.org/resource/{resource}/data/contents/{gpkg.name}"
+    requested = []
+
+    class FakeOpener:
+        def open(self, url, timeout):
+            requested.append(url)
+            if url == listing:
+                return io.BytesIO(json.dumps({"count": 2, "next": listing + "?page=2", "results": [{
+                    "file_name": gpkg.name, "url": file_url, "size": gpkg.stat().st_size,
+                }]}).encode())
+            if url == file_url:
+                return io.BytesIO(gpkg.read_bytes())
+            assert url == listing + "?page=2"
+            raise OSError("listing failed")
+
+    monkeypatch.setattr(runner.urllib.request, "build_opener", lambda *args: FakeOpener())
+    work = tmp_path / "remote-work"
+    work.mkdir()
+    monkeypatch.setattr(runner.tempfile, "tempdir", str(work))
+    counts = tmp_path / "counts.yaml"
+    original = b'v2.2:\n  ngen:\n    "03S":\n      geopackage_layers:\n        empty_layers: 4\n'
+    counts.write_bytes(original)
+
+    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/", "--counts", str(counts), "--record"])
+    output = capsys.readouterr()
+
+    assert status == 2
+    assert gpkg.name in output.out and "listing failed" in output.err
+    assert requested == [listing, file_url, listing + "?page=2"]
+    assert counts.read_bytes() == original
+    assert not list(work.iterdir())
+
+
+def test_record_preserves_permissions_and_follows_counts_symlink(empty_gpkg, tmp_path):
+    counts = tmp_path / "counts.yaml"
+    counts.write_text("{}\n")
+    counts.chmod(0o640)
+    link = tmp_path / "counts-link.yaml"
+    link.symlink_to(counts.name)
+
+    result = run_command(empty_gpkg, "--type", "reference", "--vpu", "16", "--counts", link, "--record")
+
+    assert result.returncode == 0, result.stderr
+    assert link.is_symlink()
+    assert counts.stat().st_mode & 0o777 == 0o640
+    assert yaml.safe_load(counts.read_text())["v2.2"]["reference"]["16"]["geopackage_layers"]["empty_layers"] == 1
+
+
+def test_record_write_failure_preserves_existing_file(runner, gpkg, tmp_path, monkeypatch, capsys):
+    counts = tmp_path / "counts.yaml"
+    original = b"{}\n"
+    counts.write_bytes(original)
+
+    def fail_replace(source, destination):
+        raise OSError("replacement failed")
+
+    monkeypatch.setattr(runner.os, "replace", fail_replace)
+    status = runner.main([str(gpkg), "--type", "ngen", "--vpu", "03S", "--counts", str(counts), "--record"])
+
+    assert status == 2
+    assert "replacement failed" in capsys.readouterr().err
+    assert counts.read_bytes() == original
+    assert not list(tmp_path.glob(".counts.yaml.*.tmp"))
