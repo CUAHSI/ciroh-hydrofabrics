@@ -17,6 +17,16 @@ import typer
 
 app = typer.Typer()
 
+# v2.2 layers use "id"/"toid"; v2.3 layers use "flowpath_id"/"flowpath_toid".
+COLUMN_ALIASES = {"flowpath_id": "id", "flowpath_toid": "toid"}
+
+
+def resolve_column(gdf: gpd.GeoDataFrame, col: str) -> str:
+    """Return the name of `col` in gdf, falling back to its alias if absent."""
+    if col in gdf.columns:
+        return col
+    return COLUMN_ALIASES.get(col, col)
+
 
 def apply_flowpath_topology_fixes(
     gdf: gpd.GeoDataFrame, corrections: pd.DataFrame
@@ -36,24 +46,20 @@ def apply_flowpath_topology_fixes(
     # This is expected to be the identifier used to match rows in the gdf
     lookup_col = corrections.columns[0]
 
-    # the corrections CSV uses "flowpath_"-prefixed names for the join key and
-    # the corrected downstream id, but the gdf itself just uses "id"/"toid"
-    # for those same concepts. Map between the two so corrections are applied
-    # to the columns that actually exist on the gdf.
-    csv_to_gdf_column = {"flowpath_id": "id", "flowpath_toid": "toid"}
+    gdf_lookup_col = resolve_column(gdf, lookup_col)
 
     for idx, row in corrections.iterrows():
         fpid = row[lookup_col]
 
         # get the row in the gdf corresponding to this flowpath_id
-        match = gdf[gdf[csv_to_gdf_column.get(lookup_col, lookup_col)] == fpid]
+        match = gdf[gdf[gdf_lookup_col] == fpid]
 
         # loop over the columns in the corrections dataset,
         # skipping the first one (the identifier). Apply
         # changes to the gdf where the value in the corrections
         # dataset is not NaN.
         for col in corrections.columns[1:]:
-            gdf_col = csv_to_gdf_column.get(col, col)
+            gdf_col = resolve_column(gdf, col)
 
             # some error handling for missing columns and matches
             if (gdf_col not in gdf.columns) or (len(match) == 0) or (len(match) > 1):
