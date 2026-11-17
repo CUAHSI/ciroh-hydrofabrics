@@ -18,6 +18,8 @@ import pytest
 import yaml
 from shapely.geometry import Point
 
+from check_runner import run_consistency_check as run_command
+
 
 RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
 
@@ -49,14 +51,6 @@ def empty_gpkg(tmp_path):
     )
     return path
 
-
-def run_command(*args):
-    return subprocess.run(
-        [sys.executable, str(RUNNER), *map(str, args)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
 
 
 def test_single_file_uses_explicit_metadata_instead_of_filename(gpkg, tmp_path):
@@ -199,7 +193,8 @@ def test_directory_checks_each_geopackage_and_reports_bad_names(gpkg, empty_gpkg
     assert "notes.txt" not in result.stderr
 
 
-def test_hydroshare_checks_paginated_files_one_at_a_time(runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys):
+def test_hydroshare_checks_paginated_files_one_at_a_time(
+        runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys, no_recorded_counts):
     resource = "a" * 32
     base = f"https://www.hydroshare.org/resource/{resource}/data/contents/"
     listing = f"https://www.hydroshare.org/hsapi/resource/{resource}/files/"
@@ -231,7 +226,7 @@ def test_hydroshare_checks_paginated_files_one_at_a_time(runner, gpkg, empty_gpk
     (tmp_path / "remote-work").mkdir()
     monkeypatch.setattr(runner.urllib.request, "build_opener", lambda *args: FakeOpener())
     monkeypatch.setattr(runner.tempfile, "tempdir", str(tmp_path / "remote-work"))
-    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/"])
+    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/", "--counts", str(no_recorded_counts)])
     captured = capsys.readouterr()
     assert status == 0, captured.err
     assert gpkg.name in captured.out
@@ -240,7 +235,8 @@ def test_hydroshare_checks_paginated_files_one_at_a_time(runner, gpkg, empty_gpk
     assert not list((tmp_path / "remote-work").iterdir())
 
 
-def test_hydroshare_continues_after_download_error(runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys):
+def test_hydroshare_continues_after_download_error(
+        runner, gpkg, empty_gpkg, tmp_path, monkeypatch, capsys, no_recorded_counts):
     resource = "a" * 32
     base = f"https://www.hydroshare.org/resource/{resource}/data/contents/"
     listing = f"https://www.hydroshare.org/hsapi/resource/{resource}/files/"
@@ -260,7 +256,7 @@ def test_hydroshare_continues_after_download_error(runner, gpkg, empty_gpkg, tmp
 
     monkeypatch.setattr(runner.urllib.request, "build_opener", lambda *args: FakeOpener())
     monkeypatch.setattr(runner.tempfile, "tempdir", str(work))
-    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/"])
+    status = runner.main([f"https://www.hydroshare.org/resource/{resource}/", "--counts", str(no_recorded_counts)])
     captured = capsys.readouterr()
     assert status == 2
     assert empty_gpkg.name in captured.err
