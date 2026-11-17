@@ -1399,7 +1399,7 @@
         "target_layers": ["flowpaths", "divides", "flowpath-attributes", "flowpath-attributes-ml"],
         "outlet_types": {"tnx-": "terminal", "cnx-": "coastal", "inx-": "internal"},
         "nexus_id_prefixes": ["nex-"],
-        "note": "Observed v2.2 convention, not an exhaustive specification. See the model README."
+        "note": "Observed v2.2 convention, not an exhaustive specification. See docs/consistency-checks/data-model-v2.2.md."
       }
     },
     "geometry": {

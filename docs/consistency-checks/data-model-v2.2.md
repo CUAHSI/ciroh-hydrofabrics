@@ -1,7 +1,10 @@
 # v2.2 Data Model specifications
 
-- `ngen.json`: NextGen output, based on the official VPU 03S and 16 GeoPackages.
-- `reference.json`: Reference output, based on the official VPU 16 GeoPackage.
+- [`ngen.json`](../../validation/consistency/models/v2.2/ngen.json): NextGen output, based on the official VPU 03S and 16 GeoPackages.
+- [`reference.json`](../../validation/consistency/models/v2.2/reference.json): Reference output, based on the official VPU 16 GeoPackage.
+
+This page documents the evidence behind those specifications. The checks that
+use them are described in the [index](README.md).
 
 These are data specifications, not a check implementation. Each file has
 `format_version: "1.0"`, `data_model_version: "v2.2"`, and `output_kind`
@@ -49,7 +52,7 @@ used local files only. No network access was used.
   thresholds. For v2.2 these are the conventions the checks previously
   hardcoded; they are observations, not an exhaustive specification. A new Data
   Model declares its own; see
-  [Data Model specifications](../../README.md#data-model-specifications-and-adding-a-model).
+  [Adding a Data Model](running-and-recording.md#adding-a-data-model).
 - `terminal_observations` records the queries' results, not mandatory or
   exhaustive terminal rules. NextGen groups rows where `toid = "wb-0"` by
   `id` prefix and `type`. Reference counts `toid = 0`, nulls, and nonzero
@@ -63,7 +66,7 @@ used local files only. No network access was used.
   flags; `scaled_difference` requests an absolute difference, after applying
   `right.scale`, of at most `max_absolute_difference`. The bounds, including
   `0 < n <= 1` and `So >= 0`, and the one-metre length tolerance are
-  **CAM-1602 requested validation assumptions**, not universal physical laws
+  **CAM-1602 requested assumptions**, not universal physical laws
   or guarantees that official data pass. The NextGen `divide-attributes.mean.slope`
   rule uses the physical range [0, 90] degrees: `ngen-workflow/R/vaa.r` derives
   it from a slope raster in degrees. Its inclusive physical endpoints adapt
@@ -209,4 +212,4 @@ registered numeric-declared columns found no `-9998` values in these
 three files; this does not establish that it never occurs elsewhere. Additional
 VPUs and authoritative field documentation are needed before turning observed
 prefixes, terminal values, NULL handling, or sentinel handling into universal
-validation rules.
+rules.

@@ -29,18 +29,23 @@ Check one Build's GeoPackages locally or from a public HydroShare resource with
 `pixi run consistency-check <target>`. For a single local file, also provide
 `--type ngen|reference --vpu <VPU>`; its filename can be arbitrary. For a
 multi-VPU GeoPackage, the checks select only that VPU's rows before recording
-counts. Checks currently run in advisory mode. The v2.2 attribute check applies rules from the
-[v2.2 specifications](validation/consistency/models/v2.2/README.md) and reports
-violations, invalid numeric values, sentinel candidates, and indeterminate or
-unchecked cases. Its bounds are validation assumptions, not universal physical
-limits. Missing rule prerequisites are reported separately and should be reviewed
-with the schema results.
+counts. Five checks (`geopackage_layers`, `schema`, `network`, `geometry` and
+`attributes`) report counts that are compared with limits recorded from the
+official products. They currently run in advisory mode: a FAIL is shown to the
+reviewer but does not fail the run.
 
-Geometry overlap reporting uses the configurable `geometry.overlap_min_area_m2`
-setting in `validation/consistency/checks.yaml` (default 100 m²). Older custom
-check configurations must add an `attributes.blocking` boolean, for example
-`false` to keep the check advisory. See [Consistency Checks](validation/consistency/README.md)
-for the attribute metrics, migration example, runner, and limits.
+The documentation in [`docs/consistency-checks/`](docs/consistency-checks/README.md)
+covers how to read a report ([reading a report](docs/consistency-checks/reading-a-report.md)),
+each check's metrics with pass and fail conditions and worked examples
+([`geopackage_layers`](docs/consistency-checks/geopackage-layers.md),
+[`schema`](docs/consistency-checks/schema.md),
+[`network`](docs/consistency-checks/network.md),
+[`geometry`](docs/consistency-checks/geometry.md),
+[`attributes`](docs/consistency-checks/attributes.md)), and the thresholds and
+conventions they use. Running, recording counts, and adding a Data Model or a
+check are in [Running and recording](docs/consistency-checks/running-and-recording.md).
+The v2.2 specifications are described in
+[the v2.2 Data Model](docs/consistency-checks/data-model-v2.2.md).
 
 ## DVC Installation
 
