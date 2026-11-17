@@ -8,7 +8,7 @@ GeoPackage read-only and does not download or compare with a reference product.
 The rules are declared in the specification,
 [`ngen.json`](../../validation/consistency/models/v2.2/ngen.json) or
 [`reference.json`](../../validation/consistency/models/v2.2/reference.json), and
-are **validation assumptions requested in CAM-1602**, not universal physical
+are **assumptions requested in CAM-1602**, not universal physical
 laws or promises that the official products satisfy them. They do not compare
 attribute distributions. A rule is applied to the output kinds that declare it.
 
@@ -72,7 +72,7 @@ values agree across soil layers.
 | --- | --- |
 | `violations.<rule ID>` | Rows whose finite numeric value is outside an applicable rule. For `length_consistency`, the uniquely matched `id` pairs outside the tolerance. |
 | `invalid_numeric.<table>.<column>` | Non-NULL operand values of a rule column that are not finite SQLite `integer` or `real` values: text, infinities, and detectable NaN. Numeric text is not converted. These are separate from violations. |
-| `sentinel.<table>.<column>` | Occurrences of a sentinel candidate (`-9998`) in a present numeric-declared Data Model column, stored as a number. Text values are not recognized. A sentinel is **also** evaluated by any rule that applies to the column, so one value can count as a violation too. The column does not have to have a rule. |
+| `sentinel.<table>.<column>` | Occurrences of a sentinel candidate (`-9998`) in a present Data Model column declared numeric or BOOLEAN, stored as a number. Text values are not recognized. A sentinel is **also** evaluated by any rule that applies to the column, so one value can count as a violation too. The column does not have to have a rule. |
 | `nonfinite_calculation.<rule ID>` | Uniquely matched length pairs whose scaled difference is not finite; reported apart from tolerance violations. |
 | `no_applicable_checks` | `1` if **no** rule could be evaluated; `0` is not printed. |
 

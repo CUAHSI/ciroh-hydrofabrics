@@ -4,7 +4,7 @@ A **Consistency Check** is an automated check that a Build is internally sound:
 its network, geometry and attributes agree with one another and with the Data
 Model the Build declares. Each check measures **one GeoPackage** and reports
 counts. It does not compare the Build with another hydrofabric; that is the
-job of Alignment Checks, which are documented separately.
+job of Alignment Checks, which these pages do not cover.
 
 The measured counts are compared with limits recorded from the official
 products, so a Build may carry the official products' errors forward but may not
@@ -40,8 +40,13 @@ These are the numbers and naming conventions the checks depend on. **Data Model
 specific (v2.2)** means the value comes from the v2.2 specification in
 [`validation/consistency/models/v2.2/`](../../validation/consistency/models/v2.2/)
 (the `ngen.json` and `reference.json` files) and another Data Model may declare a different one.
-**Generic** means it is fixed in the implementation and applies to every Data
-Model.
+That includes the 100 m² area thresholds, the 1 m length tolerance and the
+terminal identifiers, because the checker reads them from the specification
+rather than from code. **Generic** means it is fixed in the implementation and
+applies to every Data Model.
+
+This table is a summary. Each check page has the full list with the rationale,
+and is the place to look first if the two ever differ.
 
 | Item | Value | Scope | Source |
 | --- | --- | --- | --- |
@@ -50,14 +55,18 @@ Model.
 | Divide gap threshold | 100 m², strictly greater | Data Model specific (v2.2) | `checks.geometry.gap_min_area_m2`; no override |
 | Topology layer and CRS | `divides`, EPSG:5070 | Data Model specific (v2.2) | `checks.geometry.topology_layer` and the layer's registration |
 | Length tolerance | 1 m absolute, comparing `Length_m` with `lengthkm * 1000` | Data Model specific (v2.2) | `length_consistency` rules, CAM-1602 |
-| Attribute bounds | `0 < n <= 1`, `So >= 0`, `0 <= MusX <= 0.5`, and the others on the [attributes page](attributes.md) | Data Model specific (v2.2) | CAM-1602 validation assumptions, and the sources cited per rule |
+| Attribute bounds | `0 < n <= 1`, `So >= 0`, `0 <= MusX <= 0.5`, and the others on the [attributes page](attributes.md) | Data Model specific (v2.2) | CAM-1602 assumptions, and the sources cited per rule |
 | Sentinel candidate | `-9998` (meaning undetermined) | Data Model specific (v2.2) | `sentinel_handling` in the specification |
 | Terminal `toid` | `wb-0` for `ngen`, `0` for `reference` | Data Model specific (v2.2) | `checks.network.routing.terminal_id` |
 | Nexus outlet prefixes | `tnx-` terminal, `cnx-` coastal, `inx-` internal | Data Model specific (v2.2) | `checks.network.routing.outlet_types` |
 | Reference network link label | `topo = fl-fl` | Data Model specific (v2.2) | `checks.network.routing.link_label` |
 | Identifier prefix separator | `-` | Data Model specific (v2.2) | `checks.schema.id_prefix_separator` |
 | `hydroseq` order | Upstream `hydroseq` greater than downstream | Generic | [`network_hydroseq.py`](../../validation/consistency/network/network_hydroseq.py) |
-| Roundoff allowance for the length tolerance | at most 1e-9 m, and four machine epsilons of the larger value | Generic | [`attribute_checks.py`](../../validation/consistency/attributes/attribute_checks.py) |
+| Roundoff allowance for the length tolerance | A tiny allowance so the inclusive boundary is stable; see the [attributes page](attributes.md#thresholds-and-conventions) | Generic | [`attribute_checks.py`](../../validation/consistency/attributes/attribute_checks.py) |
+
+The 100 m² thresholds are recorded in the specification files, but those files
+and the sources behind them do not state why 100 m² was chosen. Treat the value
+as a project convention, not a derived quantity.
 
 ## What is in scope
 

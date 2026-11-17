@@ -42,8 +42,10 @@ another product is the recorded count, which is a number copied from one.
 | `INFO` | The metric is context, not a count that can be limited. | Never affects the gate, even when the check is blocking. |
 
 PASS does not mean the data are correct. A metric with a nonzero recorded
-count passes at that value, and also at any lower one (a real NextGen VPU 03S
-report has `hydroseq_order_indeterminate.network | 33 | 260 | PASS`). The
+count passes at that value, and also at any lower one (a local run on a NextGen
+VPU 03S file printed
+`hydroseq_order_indeterminate.network | 33 | 260 | PASS`, where 260 is the
+recorded limit and 33 is what that file measured). The
 report does not flag an improvement: when a Build lowers a count, the
 contributor updates `counts.yaml` (see
 [Running and recording](running-and-recording.md#recording-counts)).
@@ -98,10 +100,12 @@ The exit status is `1`. After recording `dangling_toid.flowpaths: 1` in
 | `2` | The run could not complete: an invalid target, configuration, Data Model or download, or a check that could not finish. **An incomplete run is neither a pass nor a fail.** |
 
 Status `2` takes precedence over `1`. An incomplete check prints
-`error: <file>: check <name>: <reason>` to standard error and none of that
-check's metrics are reported, with one exception: when divide topology cannot
-be calculated, the `geometry` check still prints its other metrics and omits
-the `divide_overlaps.*`, `divide_gaps.*` and `divide_union_area_m2` values.
+`error: <file>: check <name> could not run: <reason>` to standard error and none
+of that check's metrics are reported. There is one exception: when divide
+topology cannot be calculated, the `geometry` check still prints its other
+metrics, omits the `divide_overlaps.*`, `divide_gaps.*` and
+`divide_union_area_m2` values, and reports the cause as
+`error: <file>: check geometry: <reason>`.
 The runner continues with the other files in a batch. Nothing is recorded by
 `--record` for a batch with an incomplete file.
 
@@ -159,7 +163,9 @@ does not change, produces PASS. The ADR leaves that case to Alignment Checks
    change the pipeline, look for the intended effect.
 5. **Decide.** Fix the cause, or explain in the review why the higher value is
    expected. Raising a recorded count needs the same review as any other change
-   to the ratchet, because recording can raise limits as well as lower them.
+   to the ratchet. The recording tool can raise limits as well as lower them;
+   ADR 0001 expects counts to only fall, and that policy is enforced in review,
+   not by the tool.
 
 ## Known legitimate causes
 
@@ -174,11 +180,13 @@ not drift.
 | `network`: `duplicate_primary_ids.divides` (Reference) | A few Reference VPUs repeat divide IDs. |
 | `geometry`: `divide_overlaps.*`, `divide_gaps.*`, `duplicate_geometries.nexus` | Official divides overlap, leave interior gaps and share nexus points. ADR 0001 cites overlaps of up to 11.7 km² in VPU 16. |
 | `network`: `divides_without_flowpaths` and its `.has_flowline_0` subset, `flowpaths_without_divides` and its `.has_divide_0` subset | Some official features are intentionally without a flowline or a divide, such as coastal and no-flowline divides. These are orphan features. |
-| `network`: `hydroseq_order_*` (NextGen) | The official NextGen products contain flowpath edges whose sequence is not ordered as the check expects. |
-| `network`: `hydroseq_order_indeterminate.network`, `dnhydroseq_indeterminate.network` (Reference) | Reference network rows whose topology label is not `fl-fl` cannot be compared, so they are indeterminate. |
+| `network`: `hydroseq_order_*` (NextGen and Reference) | The official products contain flowpath edges whose sequence is not ordered as the check expects, or that cannot be compared. |
+| `network`: `hydroseq_order_indeterminate.network`, `dnhydroseq_indeterminate.network` (Reference; the first is also nonzero for NextGen) | Network rows whose topology label is not `fl-fl` cannot be compared, so they are indeterminate. |
 | `network`: `indeterminate_null_toid.network` (Reference) | Reference network rows with a NULL `toid`. |
+| `network`: `duplicate_primary_ids.flowpaths`, `duplicate_network_rows`, `reciprocal_divide_flowpath_ambiguous` and the `*_ambiguous` metrics (Reference) | A few Reference VPUs repeat flowpath IDs or network rows, which makes the matching ambiguous. |
 | `network`: `dangling_toid.*`, `cycle_nodes.*` | A few official VPUs have links that do not resolve within the VPU, or cycles. |
 | `schema`: `column_order.*`, `extra_columns.network`, `missing_layer.hydrolocations` (Reference) | The official Reference GeoPackages differ from the observed specification in every recorded VPU. |
+| `schema`: `layer_type.hydrolocations`, `contents_crs.hydrolocations`, `missing_columns.hydrolocations`, `missing_geometry_registration.hydrolocations` (NextGen) | The recorded counts treat `hydrolocations` as a non-feature table in all 21 VPUs, while the specification describes a POINT layer. The cause is not yet explained; see the note on [`schema`](schema.md). |
 | `schema`: `unobserved_id_prefixes.network.toid` (NextGen) | Observed prefixes are not an allowlist; see [`schema`](schema.md). |
 | `attributes`: `violations.divide-attributes.mean.impervious_range` (NextGen) | Some official divides have impervious values outside [0, 100]. |
 

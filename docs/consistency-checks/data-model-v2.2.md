@@ -66,7 +66,7 @@ used local files only. No network access was used.
   flags; `scaled_difference` requests an absolute difference, after applying
   `right.scale`, of at most `max_absolute_difference`. The bounds, including
   `0 < n <= 1` and `So >= 0`, and the one-metre length tolerance are
-  **CAM-1602 requested validation assumptions**, not universal physical laws
+  **CAM-1602 requested assumptions**, not universal physical laws
   or guarantees that official data pass. The NextGen `divide-attributes.mean.slope`
   rule uses the physical range [0, 90] degrees: `ngen-workflow/R/vaa.r` derives
   it from a slope raster in degrees. Its inclusive physical endpoints adapt
@@ -212,4 +212,4 @@ registered numeric-declared columns found no `-9998` values in these
 three files; this does not establish that it never occurs elsewhere. Additional
 VPUs and authoritative field documentation are needed before turning observed
 prefixes, terminal values, NULL handling, or sentinel handling into universal
-validation rules.
+rules.
