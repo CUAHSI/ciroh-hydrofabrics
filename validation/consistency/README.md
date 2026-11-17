@@ -9,11 +9,14 @@ pixi run consistency-check https://www.hydroshare.org/resource/RESOURCE_ID/
 ```
 
 For a single local GeoPackage, the filename is unrestricted; supply `--type`
-(`ngen` or `reference`) and `--vpu`. The VPU is case-sensitive and may contain
+(an output kind the Data Model specifies, such as `ngen` or `reference` for
+v2.2) and `--vpu`. The VPU is case-sensitive and may contain
 letters and digits (for example `01`, `03S`, or `16`). The default Data Model is
-`v2.2`. Other Data Models require a checked-in schema specification; selecting an
-unsupported model makes the schema check incomplete and the command exits with
-status 2. If a GeoPackage contains multiple VPUs, the runner checks only rows
+`v2.2`. A Data Model is the directory `models/<name>/` with one specification
+per output kind (see [Data Model specifications](#data-model-specifications-and-adding-a-model)).
+An unknown Data Model, an output kind it does not specify, or a specification
+that is missing, incompatible or declares unsupported semantics stops the command
+with status 2 before any file is read; there is no fallback to v2.2. If a GeoPackage contains multiple VPUs, the runner checks only rows
 belonging to the selected VPU in every layer; it does not calculate CONUS-wide
 counts under a single VPU key. Unlabelled network rows are assigned through
 their unique divide ID. If layer rows cannot be assigned unambiguously, the
@@ -26,9 +29,10 @@ from the published per-VPU files. Files with no `vpuid` fields retain the
 existing single-VPU-file assumption.
 
 A directory is searched recursively for GeoPackages. For directories and
-HydroShare resources, each GeoPackage must be named
-`reference-hydrofabric-vpu-<VPU>.gpkg` or `ngen-hydrofabric-vpu-<VPU>.gpkg`
-so its type and VPU can be inferred separately. Other files are ignored. The
+HydroShare resource, each GeoPackage must be named
+`<kind>-hydrofabric-vpu-<VPU>.gpkg`, where `<kind>` is one of the selected Data
+Model's output kinds (for v2.2, `reference` or `ngen`), so its type and VPU can
+be inferred separately. Other files are ignored. The
 `--type` and `--vpu` flags apply only to a single file and are rejected for batch
 inputs.
 
@@ -52,8 +56,8 @@ influence the gate. Checks measure the Build itself; comparing those measurement
 to recorded limits is a separate review policy, not a feature-by-feature
 comparison with a baseline.
 
-`counts.yaml` stores recorded limits under Data Model, output kind (`reference`
-or `ngen`), VPU, check name, and metric name. Quote VPU keys so YAML preserves
+`counts.yaml` stores recorded limits under Data Model, output kind (a kind of the
+model, such as `reference` or `ngen`), VPU, check name, and metric name. Quote VPU keys so YAML preserves
 leading zeroes and treats all VPUs as strings. For example:
 
 ```yaml
@@ -117,9 +121,10 @@ invalid target, configuration, download, or incomplete check. An execution
 error takes precedence over a blocking failure. The runner continues with other
 files when an individual filename, download, or check fails.
 
-## v2.2 schema check
+## Schema check
 
-The checked-in [v2.2 specifications](models/v2.2/README.md) describe the
+The checked-in Data Model specifications (for v2.2, see the
+[v2.2 specifications](models/v2.2/README.md)) describe the
 NextGen and Reference GeoPackage structures, source provenance, observed ID
 and terminal conventions, and available attribute rules. The `schema` check
 selects a specification by Data Model and output kind; it does not download a
@@ -150,9 +155,12 @@ missing or it is inapplicable; the prerequisite's own metric reports the
 problem. Counts for a future ratchet are supplied per metric, e.g.
 `schema: {missing_columns.nexus: 1}` under the appropriate model, kind and VPU.
 
-## v2.2 network check
+## Network check
 
-The `network` check reports counts for the selected output kind. It is advisory
+The `network` check reports counts for the selected output kind. The conventions
+below (keys, relationships, terminal values and routing style) are v2.2's; other
+Data Models declare their own in the `checks.network` section of their
+specifications. It is advisory
 by default. It requires no reference download, and reads attributes without
 loading geometries into memory. Metrics whose required tables or columns are
 missing are omitted; the `schema` check reports missing prerequisites. If no
@@ -237,10 +245,10 @@ limits default to zero. Do not enable blocking until maintainers review the
 conventions, indeterminate counts, legitimate orphan subsets, and official
 limits for the relevant Data Models and VPUs.
 
-## v2.2 attribute check
+## Attribute check
 
-The `attributes` check reads the selected output kind's rules from the
-[v2.2 specifications](models/v2.2/README.md):
+The `attributes` check reads the selected output kind's rules from the Data
+Model's specifications; for v2.2, the [v2.2 specifications](models/v2.2/README.md):
 [`ngen.json`](models/v2.2/ngen.json) or
 [`reference.json`](models/v2.2/reference.json). It inspects the GeoPackage
 read-only, without downloading a reference product, and is advisory by default.
@@ -258,9 +266,7 @@ validates metadata, column types, rule references and semantics before inspectin
 input data; an unsupported rule or policy is an error, not a silently skipped
 check. The current evaluator supports range and interval rules, integer-boolean
 conditions, and scaled comparisons with a single text join key. Other versions
-or policies require additional implementation and tests. The schema, network,
-geometry, and CLI checks are still v2.2-specific, so adding a model specification
-alone does not enable an end-to-end CLI run for that model.
+or policies require additional implementation and tests.
 
 For both output kinds, the specified rules check positive divide area and
 flowpath length, and positive flowpath area when `has_divide` is SQLite integer
@@ -335,7 +341,7 @@ blocking. `INFO` values do not affect the gate, including when the check is
 blocking. Review the assumptions, indeterminate cases, and product-specific
 counts before enabling blocking.
 
-## v2.2 geometry check
+## Geometry check
 
 The `geometry` check is advisory by default and covers every spatial layer in the
 GeoPackage, including extra layers, for both output kinds. It reports per-layer
@@ -359,8 +365,9 @@ strictly larger than the configured threshold count. An area covered by three
 or more divides contributes to multiple pairwise intersections, so total area
 is not the unique overlapped area.
 
-Set `geometry.overlap_min_area_m2` in `checks.yaml` to a finite nonnegative
-number; it defaults to 100 if omitted and the effective value is reported as
+The overlap threshold defaults to the Data Model's `checks.geometry.overlap_min_area_m2`
+(100 for v2.2). Set `geometry.overlap_min_area_m2` in `checks.yaml` to a finite
+nonnegative number to override it for a run; the effective value is reported as
 `overlap_min_area_m2` with `INFO`. The threshold is in square metres and must be
 held consistent when comparing Builds with recorded limits. Changing it
 changes the meaning of all three overlap metrics, so review and regenerate the
@@ -368,13 +375,16 @@ corresponding recorded limits before using the ratchet.
 
 The independently ratcheted `divide_gaps` metrics have the same three suffixes.
 They describe uncovered components of interior holes in the union of divides,
-subtracting islands, and include only components strictly larger than 100 m².
+subtracting islands, and include only components strictly larger than the Data
+Model's `checks.geometry.gap_min_area_m2` (100 m² for v2.2).
 The outer VPU edge and gaps connected to it are not checked without a boundary
 layer. Lakes and other intended exclusions may appear as interior gaps.
 `divide_union_area_m2` reports the union's area as `INFO`; it is not ratcheted.
 
-Area calculations require the registered v2.2 EPSG:5070 CRS and an equivalent
-CRS definition; they do not reproject coordinates. Invalid divides are repaired
+Area calculations require the CRS the Data Model registers for its topology layer
+(EPSG:5070 for v2.2) and an equivalent CRS definition. Areas are calculated in the CRS's units, so a Data Model should
+register a projected CRS in metres; the check does not verify the units or
+reproject coordinates. Invalid divides are repaired
 in memory for topology calculations, and polygonal components are retained if
 repair also produces lines. The invalid count still describes the original
 geometries; the input GeoPackage is not modified. A null, empty, nonpolygonal,
@@ -386,13 +396,80 @@ missing layer; a nonspatial divides table instead makes topology incomplete. The
 geometry check loads each spatial layer into memory and the
 divide union may be expensive for large Builds.
 
+## Data Model specifications and adding a model
+
+A Data Model is the directory `models/<name>/` containing one JSON specification
+per output kind, `models/<name>/<kind>.json`. The directory name and file names
+are the Data Model and output kind identifiers (letters, digits, `.`, `_` and
+`-`, starting with a letter or digit); `--data-model` selects the directory and `--type` or the batch filename
+selects the file. Symlinks and duplicate JSON keys are rejected. Each file must
+contain `format_version: "1.0"`, `data_model_version` equal to the directory name
+and `output_kind` equal to the file name. All four checks load the same file
+through `data_model.py`, which also validates the whole model up front, before any
+GeoPackage is opened. Errors name the Data Model and output kind and exit with
+status 2; none falls back to v2.2.
+
+Besides the `tables`, `identifiers` and `attribute_constraints` described in the
+[v2.2 specifications](models/v2.2/README.md), each file has a top-level `checks`
+section. Its values are the model's conventions, not claims about every product.
+
+- `checks.schema.id_prefix_separator`: the text separating an identifier prefix
+  from its suffix (`-` for v2.2).
+- `checks.network.primary_ids`: layer to the column whose repeated non-null values
+  are counted as `duplicate_primary_ids.<layer>`.
+- `checks.network.relationships`: a list of `name`, `source`, `source_key`,
+  `target`, `target_key` and an optional `flag`. Each reports the rows of `source`
+  whose key is missing from `target` as the metric `<name>`, plus
+  `<name>.<flag>_0` for those whose `flag` column is 0.
+- `checks.network.reciprocal_links`: `null`, or two `[table, id column, reference
+  column]` entries whose reference columns point at each other's ID column.
+- `checks.network.routing`: `style` is `direct` or `via_nexus`. Both take a
+  `terminal_id`, the value of `toid` that marks a terminal. `direct` takes
+  `layers` (each resolves `toid` within itself) and the `topo` label
+  (`link_label`) of network rows that link flowpaths; other nonterminal labels are
+  reported as indeterminate. `via_nexus` takes `target_layers` (resolve to the `nexus` layer),
+  `outlet_types` (a nexus ID prefix to a type name) and `nexus_id_prefixes`.
+- `checks.geometry`: the `topology_layer`, and the default `overlap_min_area_m2`
+  and `gap_min_area_m2` thresholds. The expected CRS is the registration of that
+  layer in `tables`.
+
+To add a model:
+
+1. Create `models/<name>/` with a `<kind>.json` for each output kind, using
+   `format_version` 1.0 and the metadata above. Copying and editing
+   [`models/v2.2/ngen.json`](models/v2.2/ngen.json) is the easiest start.
+2. Declare the layers and columns in `tables`, the identifiers to check, the
+   `attribute_constraints.rules`, and the `checks` section.
+3. Run `pixi run consistency-check <file> --type <kind> --vpu <VPU> --data-model <name>`.
+   A malformed or unsupported declaration is reported before any check runs.
+4. Optionally record limits under `<name>` in `counts.yaml`.
+
+The tests in `tests/test_second_model.py` build such a model, `v9.9`, from the
+v2.2 specifications in a temporary directory and run it end to end for both
+output kinds, so they serve as a worked example.
+
+The following are implementation extensions, not yet declared in the
+specification; a model that differs needs code changes and tests:
+
+- Routing and hydroseq checks use layers named `flowpaths`, `nexus`, `network`
+  and `divides` and the columns `id`, `toid`, `hydroseq`, `dnhydroseq` and `topo`.
+- The two reciprocal metrics are always named `reciprocal_divide_flowpath_*`.
+- The VPU selection assumes a `vpuid` column and treats the `network` and
+  `divides` layers specially.
+- Batch filenames always have the form `<kind>-hydrofabric-vpu-<VPU>.gpkg`.
+- The hydroseq and cycle algorithms are fixed; only the routing style is selectable.
+- Attribute rules are limited to range, interval and scaled-difference kinds.
+
 ## Adding checks
 
 Register a callable in `CHECKS` in `consistency_check.py` and give it a boolean
 `blocking` entry in `checks.yaml`. Ordinarily it receives a local GeoPackage
 `Path`, the selected Data Model name, and the output kind; it returns a nonempty
-mapping of stable metric names to nonnegative finite numbers. The `geometry`
-check additionally receives its overlap threshold and returns ratcheted metrics,
+mapping of stable metric names to nonnegative finite numbers. A check should
+read its model-specific conventions through `data_model.py` (`load_spec` and the
+`*_semantics` functions) rather than hardcoding them. The `geometry`
+check additionally receives an optional overlap-threshold override (`None` means
+use the model's default) and returns ratcheted metrics,
 informational values, and incomplete-check errors separately. The `attributes`
 check returns ratcheted metrics and informational values separately. Limits can
 be supplied for each ratcheted metric independently. Checks inspect one Build;

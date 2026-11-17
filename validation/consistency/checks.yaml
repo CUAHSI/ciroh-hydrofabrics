@@ -7,6 +7,7 @@ network:
   blocking: false
 geometry:
   blocking: false
-  overlap_min_area_m2: 100
+  # The minimum overlap area comes from the Data Model specification. Set
+  # overlap_min_area_m2 here only to override it for every model in this run.
 attributes:
   blocking: false

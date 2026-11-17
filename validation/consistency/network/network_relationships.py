@@ -22,8 +22,11 @@ def orphan_counts(connection, source, source_key, target, target_key, flag=None)
     ).fetchone()
 
 
-def reciprocal_counts(connection):
+def reciprocal_counts(connection, links):
     """Count directed links from each layer with mismatched or ambiguous back-references.
+
+    ``links`` holds two ``(table, id column, reference column)`` entries; each
+    table's reference column points at the other table's ID column.
 
     Source and target IDs must be non-null and present. A duplicated target ID
     is ambiguous immediately; otherwise a null or missing back-reference is
@@ -33,7 +36,7 @@ def reciprocal_counts(connection):
     """
     ambiguous = object()
     references = {}
-    tables = (("divides", "divide_id", "id"), ("flowpaths", "id", "divide_id"))
+    tables = tuple(tuple(link) for link in links)
     for table, identifier_column, reference_column in tables:
         index = {}
         for identifier, reference in connection.execute(
@@ -46,9 +49,9 @@ def reciprocal_counts(connection):
 
     mismatches = ambiguities = 0
     # Inspect both directions: a shared target can make only one side disagree.
-    for table, identifier_column, reference_column in tables:
+    for position, (table, identifier_column, reference_column) in enumerate(tables):
         source_index = references[table]
-        target_index = references["flowpaths" if table == "divides" else "divides"]
+        target_index = references[tables[1 - position][0]]
         for identifier, reference in connection.execute(
             f"SELECT {quote(identifier_column)}, {quote(reference_column)} FROM {quote(table)}"
         ):
@@ -66,8 +69,13 @@ def reciprocal_counts(connection):
     return mismatches, ambiguities
 
 
-def metrics(connection, kind, columns):
-    """Return relationship counts for the structured CLI report."""
+def metrics(connection, columns, semantics):
+    """Return relationship counts for the structured CLI report.
+
+    ``semantics`` is the Data Model's network section; its relationships name
+    each metric, the layers and keys it compares and an optional flag column
+    whose zero rows are counted separately.
+    """
     result = {}
     network_columns = {name for name in columns.get("network", set()) if name.lower() != "fid"}
     if network_columns:
@@ -77,33 +85,22 @@ def metrics(connection, kind, columns):
             f"SELECT COALESCE(SUM(n - 1), 0) FROM "
             f"(SELECT COUNT(*) AS n FROM {quote('network')} GROUP BY {fields})"
         ).fetchone()[0]
-    relationships = [
-        ("divides_without_flowpaths", "divides", "id", "flowpaths", "id"),
-        ("divides_without_referencing_flowpaths", "divides", "divide_id", "flowpaths", "divide_id"),
-        ("flowpaths_without_divides", "flowpaths", "divide_id", "divides", "divide_id"),
-    ]
-    if kind == "ngen":
-        relationships.extend([
-            ("divides_without_attributes", "divides", "divide_id", "divide-attributes", "divide_id"),
-            ("hydrolocations_without_nexus", "hydrolocations", "nex_id", "nexus", "id"),
-        ])
-    flags = {
-        "divides_without_flowpaths": "has_flowline",
-        "divides_without_referencing_flowpaths": "has_flowline",
-        "flowpaths_without_divides": "has_divide",
-        "divides_without_attributes": "has_flowline",
-    }
-    for name, source, source_key, target, target_key in relationships:
+    for relationship in semantics["relationships"]:
+        name, source, target = relationship["name"], relationship["source"], relationship["target"]
+        source_key, target_key = relationship["source_key"], relationship["target_key"]
         if source_key in columns.get(source, set()) and target_key in columns.get(target, set()):
-            flag = flags.get(name)
+            flag = relationship.get("flag")
             if flag not in columns[source]:
                 flag = None
             counts = orphan_counts(connection, source, source_key, target, target_key, flag)
             result[name] = counts[0]
             if flag is not None:
                 result[f"{name}.{flag}_0"] = counts[1]
-    if all({"id", "divide_id"} <= columns.get(table, set()) for table in ("divides", "flowpaths")):
-        mismatches, ambiguities = reciprocal_counts(connection)
+    links = semantics["reciprocal_links"]
+    if links is not None and all(
+        {identifier, reference} <= columns.get(table, set()) for table, identifier, reference in links
+    ):
+        mismatches, ambiguities = reciprocal_counts(connection, links)
         result["reciprocal_divide_flowpath_mismatches"] = mismatches
         result["reciprocal_divide_flowpath_ambiguous"] = ambiguities
     return result

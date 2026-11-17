@@ -5,10 +5,11 @@ flowpath-layer IDs and conflicting network values make resolution ambiguous;
 other unresolved links or unusable comparison values are indeterminate.
 Ambiguity takes precedence if an edge has both problems. Repeated network
 rows with the same valid target value can be resolved without selecting a row.
-Reference network rows labeled fl-fl have a supported downstream flowpath
-meaning; other nonterminal topology labels are indeterminate. NextGen network
-checks follow network nexus rows to network flowpath rows; nexus rows themselves
-have no comparable flowpath hydrosequence. A separate comparison checks each
+Directly routed networks have a supported downstream flowpath meaning for rows
+carrying the routing ``link_label``; other nonterminal topology labels are
+indeterminate. Nexus-routed network checks follow network nexus rows to network
+flowpath rows; nexus rows themselves have no comparable flowpath hydrosequence.
+The terminal ID and link label come from the Data Model's routing convention. A separate comparison checks each
 network flowpath row's sequence against its flowpath layer value, including
 terminal flowpaths.
 """
@@ -28,27 +29,29 @@ def _missing_id(value):
     return value is None or (isinstance(value, str) and not value.strip())
 
 
-def metrics(connection, kind, columns):
+def metrics(connection, columns, semantics):
     """Return applicable violation, indeterminate, and ambiguity counts."""
+    routing = semantics["routing"]
+    direct = routing["style"] == "direct"
     flowpath_columns = columns.get("flowpaths", set())
     network_columns = columns.get("network", set())
-    if kind not in {"reference", "ngen"} or "id" not in flowpath_columns:
+    if "id" not in flowpath_columns:
         return {}
 
     has_flowpath_sequence = "hydroseq" in flowpath_columns
     nexus_columns = columns.get("nexus", set())
     has_nexus = {"id", "toid"} <= nexus_columns
-    check_flowpaths = has_flowpath_sequence and "toid" in flowpath_columns and (kind == "reference" or has_nexus)
+    check_flowpaths = has_flowpath_sequence and "toid" in flowpath_columns and (direct or has_nexus)
     check_network = (
-        kind == "reference"
+        direct
         and has_flowpath_sequence
         and {"id", "toid", "topo"} <= network_columns
         and bool({"hydroseq", "dnhydroseq"} & network_columns)
     ) or (
-        kind == "ngen" and "id" in nexus_columns and {"id", "toid", "hydroseq"} <= network_columns
+        not direct and "id" in nexus_columns and {"id", "toid", "hydroseq"} <= network_columns
     )
     check_network_sequences = (
-        kind == "ngen" and has_flowpath_sequence and "id" in nexus_columns
+        not direct and has_flowpath_sequence and "id" in nexus_columns
         and {"id", "hydroseq"} <= network_columns
     )
     if not check_flowpaths and not check_network and not check_network_sequences:
@@ -63,7 +66,7 @@ def metrics(connection, kind, columns):
             flowpaths[identifier] = _AMBIGUOUS if identifier in flowpaths else sequence
 
     nexuses = {}
-    if kind == "ngen":
+    if not direct:
         fields = "id, toid" if has_nexus else "id, NULL"
         for identifier, downstream_id in connection.execute(f'SELECT {fields} FROM "nexus"'):
             if not _missing_id(identifier):
@@ -71,19 +74,21 @@ def metrics(connection, kind, columns):
 
     result = {}
     if check_flowpaths:
-        result.update(_flowpath_metrics(connection, kind, flowpath_columns, flowpaths, nexuses))
+        result.update(_flowpath_metrics(connection, routing, flowpath_columns, flowpaths, nexuses))
     if check_network:
-        if kind == "reference":
-            result.update(_reference_network_metrics(connection, network_columns, flowpaths))
+        if direct:
+            result.update(_reference_network_metrics(connection, routing, network_columns, flowpaths))
         else:
-            result.update(_nextgen_network_metrics(connection, flowpaths, nexuses))
+            result.update(_nextgen_network_metrics(connection, routing, flowpaths, nexuses))
     if check_network_sequences:
         result.update(_nextgen_network_sequence_metrics(connection, flowpaths, nexuses))
     return result
 
 
-def _flowpath_metrics(connection, kind, flowpath_columns, flowpaths, nexuses):
-    has_downstream_sequence = kind == "reference" and "dnhydroseq" in flowpath_columns
+def _flowpath_metrics(connection, routing, flowpath_columns, flowpaths, nexuses):
+    direct = routing["style"] == "direct"
+    terminal = routing["terminal_id"]
+    has_downstream_sequence = direct and "dnhydroseq" in flowpath_columns
     result = {
         "hydroseq_order_violations.flowpaths": 0,
         "hydroseq_order_indeterminate.flowpaths": 0,
@@ -99,13 +104,13 @@ def _flowpath_metrics(connection, kind, flowpath_columns, flowpaths, nexuses):
     fields = "id, toid, hydroseq, dnhydroseq" if has_downstream_sequence else "id, toid, hydroseq"
     for row in connection.execute(f'SELECT {fields} FROM "flowpaths"'):
         identifier, downstream_id, sequence = row[:3]
-        if kind == "ngen":
+        if not direct:
             # Flowpaths lead to nexus; a uniquely resolved nexus can lead to a
-            # downstream flowpath or to wb-0 (including coastal/internal outlets).
+            # downstream flowpath or to the terminal ID (including coastal/internal outlets).
             downstream_id = nexuses.get(downstream_id)
-            if downstream_id == "wb-0":
+            if downstream_id == terminal:
                 continue
-        elif downstream_id == 0:
+        elif downstream_id == terminal:
             continue
         downstream = flowpaths.get(downstream_id)
         ambiguous = (
@@ -132,7 +137,7 @@ def _flowpath_metrics(connection, kind, flowpath_columns, flowpaths, nexuses):
     return result
 
 
-def _nextgen_network_metrics(connection, flowpaths, nexuses):
+def _nextgen_network_metrics(connection, routing, flowpaths, nexuses):
     result = {
         "hydroseq_order_violations.network": 0,
         "hydroseq_order_indeterminate.network": 0,
@@ -178,7 +183,7 @@ def _nextgen_network_metrics(connection, flowpaths, nexuses):
         if nexus_id in nexuses and nexus_id in flowpaths:
             result["hydroseq_order_ambiguous.network"] += 1
             continue
-        if downstream_id == "wb-0":
+        if downstream_id == routing["terminal_id"]:
             continue
         downstream = network_sequences.get(downstream_id)
         if (
@@ -220,7 +225,7 @@ def _nextgen_network_sequence_metrics(connection, flowpaths, nexuses):
     return result
 
 
-def _reference_network_metrics(connection, network_columns, flowpaths):
+def _reference_network_metrics(connection, routing, network_columns, flowpaths):
     has_sequence = "hydroseq" in network_columns
     has_downstream_sequence = "dnhydroseq" in network_columns
     result = {}
@@ -243,9 +248,9 @@ def _reference_network_metrics(connection, network_columns, flowpaths):
     for identifier, downstream_id, sequence, topology, downstream_sequence in connection.execute(
         f'SELECT {", ".join(fields)} FROM "network"'
     ):
-        if downstream_id == 0:
+        if downstream_id == routing["terminal_id"]:
             continue
-        if topology != "fl-fl":
+        if topology != routing["link_label"]:
             if has_sequence:
                 result["hydroseq_order_indeterminate.network"] += 1
             if has_downstream_sequence:

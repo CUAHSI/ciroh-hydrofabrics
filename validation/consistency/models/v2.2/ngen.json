@@ -1370,6 +1370,44 @@
       }
     }
   ],
+  "checks": {
+    "schema": {
+      "id_prefix_separator": "-"
+    },
+    "network": {
+      "primary_ids": {
+        "divides": "divide_id",
+        "flowpaths": "id",
+        "nexus": "id",
+        "lakes": "lake_id",
+        "pois": "poi_id",
+        "divide-attributes": "divide_id",
+        "flowpath-attributes": "id",
+        "flowpath-attributes-ml": "id"
+      },
+      "relationships": [
+        {"name": "divides_without_flowpaths", "source": "divides", "source_key": "id", "target": "flowpaths", "target_key": "id", "flag": "has_flowline"},
+        {"name": "divides_without_referencing_flowpaths", "source": "divides", "source_key": "divide_id", "target": "flowpaths", "target_key": "divide_id", "flag": "has_flowline"},
+        {"name": "flowpaths_without_divides", "source": "flowpaths", "source_key": "divide_id", "target": "divides", "target_key": "divide_id", "flag": "has_divide"},
+        {"name": "divides_without_attributes", "source": "divides", "source_key": "divide_id", "target": "divide-attributes", "target_key": "divide_id", "flag": "has_flowline"},
+        {"name": "hydrolocations_without_nexus", "source": "hydrolocations", "source_key": "nex_id", "target": "nexus", "target_key": "id"}
+      ],
+      "reciprocal_links": [["divides", "divide_id", "id"], ["flowpaths", "id", "divide_id"]],
+      "routing": {
+        "style": "via_nexus",
+        "terminal_id": "wb-0",
+        "target_layers": ["flowpaths", "divides", "flowpath-attributes", "flowpath-attributes-ml"],
+        "outlet_types": {"tnx-": "terminal", "cnx-": "coastal", "inx-": "internal"},
+        "nexus_id_prefixes": ["nex-"],
+        "note": "Observed v2.2 convention, not an exhaustive specification. See the model README."
+      }
+    },
+    "geometry": {
+      "topology_layer": "divides",
+      "overlap_min_area_m2": 100,
+      "gap_min_area_m2": 100
+    }
+  },
   "terminal_observations": [
     {
       "table": "nexus",

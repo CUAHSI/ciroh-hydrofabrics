@@ -3,6 +3,7 @@
 import importlib.util
 import json
 import sqlite3
+import sys
 from pathlib import Path
 
 import pytest
@@ -32,7 +33,7 @@ def checker(monkeypatch, tmp_path):
     assert module_spec is not None and module_spec.loader is not None
     module = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(module)
-    monkeypatch.setattr(module, "MODELS", tmp_path)
+    monkeypatch.setattr(sys.modules["data_model"], "MODELS", tmp_path)
     return module
 
 

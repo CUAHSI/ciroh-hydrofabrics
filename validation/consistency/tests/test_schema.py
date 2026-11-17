@@ -200,7 +200,7 @@ def test_reports_unprefixed_ids_even_when_other_ids_have_prefixes(tmp_path):
     assert "schema | unprefixed_ids.nexus.id | 1 | 0 | FAIL | advisory" in result.stdout
 
 
-def test_unsupported_model_reports_incomplete_check(tmp_path):
+def test_unsupported_model_is_rejected_before_any_check_runs(tmp_path):
     path = tmp_path / "build.gpkg"
     gpd.GeoDataFrame({"id": ["nex-1"]}, geometry=[Point(0, 0)], crs="EPSG:5070").to_file(
         path, layer="nexus", engine="pyogrio"
@@ -209,8 +209,8 @@ def test_unsupported_model_reports_incomplete_check(tmp_path):
     result = run_check(path, "ngen", "--data-model", "other")
 
     assert result.returncode == 2
-    assert "no schema specification" in result.stderr
-    assert "geopackage_layers" in result.stdout
+    assert "no Data Model 'other'; available: v2.2" in result.stderr
+    assert result.stdout == ""
 
 
 def test_reference_build_uses_reference_layers(tmp_path):

@@ -1,4 +1,4 @@
-"""Geometry Consistency Checks for v2.2 GeoPackages."""
+"""Geometry Consistency Checks for GeoPackages of a selected Data Model."""
 
 import math
 import sqlite3
@@ -9,6 +9,8 @@ import shapely
 from pyproj import CRS
 from shapely import STRtree
 from shapely.geometry import MultiPolygon, Polygon
+
+import data_model
 
 
 def _invalid_duplicates(geometries):
@@ -66,18 +68,23 @@ def _layer_metrics(layer, geometries):
     }
 
 
-def _correct_divides_crs(path, crs):
-    """Require the v2.2 CRS registration and an equivalent CRS definition."""
+def _correct_divides_crs(path, crs, layer, expected_crs):
+    """Require the Data Model's CRS registration and an equivalent CRS definition.
+
+    ``expected_crs`` holds the ``authority``, ``code`` and ``srs_id`` the Data
+    Model registers for the topology ``layer``.
+    """
+    authority, code, srs_id = expected_crs["authority"], expected_crs["code"], expected_crs["srs_id"]
     with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
         registration = connection.execute(
             "SELECT c.srs_id, g.srs_id, s.organization, s.organization_coordsys_id, s.definition "
             "FROM gpkg_contents c JOIN gpkg_geometry_columns g ON c.table_name = g.table_name "
             "JOIN gpkg_spatial_ref_sys s ON g.srs_id = s.srs_id WHERE c.table_name = ?",
-            ("divides",),
+            (layer,),
         ).fetchone()
-    if registration is None or registration[:4] != (5070, 5070, "EPSG", 5070) or crs is None or not isinstance(registration[4], str):
+    if registration is None or registration[:4] != (srs_id, srs_id, authority, code) or crs is None or not isinstance(registration[4], str):
         return False
-    expected = CRS.from_epsg(5070)
+    expected = CRS.from_authority(authority, code)
     return CRS.from_user_input(crs).equals(expected) and CRS.from_wkt(registration[4]).equals(expected)
 
 
@@ -101,7 +108,7 @@ def _repair_divide(geometry):
     return shapely.union_all(polygons)
 
 
-def _topology(divides, threshold):
+def _topology(divides, threshold, gap_threshold):
     """Measure unordered overlaps and bounded uncovered holes in the union."""
     tree = STRtree(divides)
     overlap_count, overlap_total, overlap_max = 0, 0.0, 0.0
@@ -136,7 +143,7 @@ def _topology(divides, threshold):
             if islands:
                 hole = hole.difference(shapely.union_all(islands))
             components = shapely.get_parts(hole)
-            gap_areas.extend(part.area for part in components if isinstance(part, Polygon) and part.area > 100)
+            gap_areas.extend(part.area for part in components if isinstance(part, Polygon) and part.area > gap_threshold)
     return {
         "divide_overlaps.count": overlap_count,
         "divide_overlaps.total_area_m2": float(overlap_total),
@@ -147,17 +154,24 @@ def _topology(divides, threshold):
     }, {"divide_union_area_m2": float(union.area)}
 
 
-def geometry(path, model, kind, *, overlap_min_area_m2=100):
-    """Return geometry metrics, informational values and incomplete-check errors."""
-    if model != "v2.2" or kind not in {"ngen", "reference"}:
-        raise ValueError(f"no geometry checks for Data Model {model!r}, output kind {kind!r}")
+def geometry(path, model, kind, *, overlap_min_area_m2=None):
+    """Return geometry metrics, informational values and incomplete-check errors.
+
+    ``overlap_min_area_m2`` overrides the Data Model's default minimum overlap
+    area for this run.
+    """
+    spec = data_model.load_spec(model, kind, "geometry")
+    semantics = data_model.geometry_semantics(spec)
+    layer_name, crs = semantics["topology_layer"], semantics["crs"]
+    if overlap_min_area_m2 is None:
+        overlap_min_area_m2 = semantics["overlap_min_area_m2"]
     if type(overlap_min_area_m2) not in (int, float) or not math.isfinite(overlap_min_area_m2) or overlap_min_area_m2 < 0:
         raise ValueError("overlap_min_area_m2 must be a finite nonnegative number")
     metrics, informational, errors = {}, {"overlap_min_area_m2": float(overlap_min_area_m2)}, []
     layers = pyogrio.list_layers(path)
     spatial_layers = [name for name, geometry_type in layers if geometry_type is not None]
-    if any(name == "divides" and geometry_type is None for name, geometry_type in layers):
-        errors.append("divides topology incomplete: divides is not a spatial layer")
+    if any(name == layer_name and geometry_type is None for name, geometry_type in layers):
+        errors.append(f"{layer_name} topology incomplete: {layer_name} is not a spatial layer")
     for layer in spatial_layers:
         try:
             frame = pyogrio.read_dataframe(path, layer=layer, columns=[])
@@ -170,30 +184,30 @@ def geometry(path, model, kind, *, overlap_min_area_m2=100):
             metrics[f"duplicate_geometries.{layer}"] = _duplicates(geometries)
         except shapely.GEOSException as exc:
             errors.append(f"duplicate geometry checks incomplete for layer {layer!r}: {exc}")
-        if layer != "divides":
+        if layer != layer_name:
             continue
         try:
-            correct_crs = _correct_divides_crs(path, frame.crs)
+            correct_crs = _correct_divides_crs(path, frame.crs, layer_name, crs)
         except (sqlite3.Error, ValueError, RuntimeError) as exc:
-            errors.append(f"divides topology incomplete: could not verify CRS: {exc}")
+            errors.append(f"{layer_name} topology incomplete: could not verify CRS: {exc}")
             continue
         if not correct_crs:
-            errors.append("divides topology requires the registered v2.2 EPSG:5070 CRS")
+            errors.append(f"{layer_name} topology requires the registered {model} {crs['authority']}:{crs['code']} CRS")
             continue
         if any(geometry is None or geometry.is_empty for geometry in geometries):
-            errors.append("divides topology incomplete: null or empty divide geometry")
+            errors.append(f"{layer_name} topology incomplete: null or empty divide geometry")
             continue
         try:
             repaired = [_repair_divide(item) for item in geometries]
             if any(item.is_empty or item.geom_type not in {"Polygon", "MultiPolygon"} for item in repaired):
-                errors.append("divides topology incomplete: unusable divide geometry after repair")
+                errors.append(f"{layer_name} topology incomplete: unusable divide geometry after repair")
                 continue
-            topology, values = _topology(repaired, overlap_min_area_m2)
+            topology, values = _topology(repaired, overlap_min_area_m2, semantics["gap_min_area_m2"])
             if not all(math.isfinite(value) for value in (*topology.values(), *values.values())):
-                errors.append("divides topology incomplete: non-finite area")
+                errors.append(f"{layer_name} topology incomplete: non-finite area")
                 continue
         except (ValueError, shapely.GEOSException) as exc:
-            errors.append(f"divides topology incomplete: geometry operation failed: {exc}")
+            errors.append(f"{layer_name} topology incomplete: geometry operation failed: {exc}")
             continue
         metrics.update(topology)
         informational.update(values)

@@ -19,16 +19,22 @@ from pathlib import Path
 import pyogrio
 import yaml
 
+import data_model
 from attributes.attribute_checks import attributes
 from geometry.geometry_checks import geometry
 from network.network_checks import network
 
 
 HERE = Path(__file__).resolve().parent
-FILENAME = re.compile(r"(reference|ngen)-hydrofabric-vpu-([A-Za-z0-9]+)\.gpkg")
 RESOURCE_PATH = re.compile(r"/resource/([0-9a-f]{32})/?")
 HOSTS = {"www.hydroshare.org", "hydroshare.org"}
 STORAGE_BUCKETS = {"hydroshare-403701-prod-cloud-native-ciroh", "hydroshare-403701-prod-cloud-native-resource"}
+
+
+def filename_pattern(kinds):
+    """Match the name of a GeoPackage of any of the given output kinds."""
+    alternatives = "|".join(re.escape(kind) for kind in kinds)
+    return re.compile(rf"({alternatives})-hydrofabric-vpu-([A-Za-z0-9]+)\.gpkg")
 
 
 def geopackage_layers(path, model, kind):
@@ -93,8 +99,12 @@ def schema_layer(connection, name, expected, contents):
     return metrics, actual_names
 
 
-def schema_identifiers(connection, identifiers, columns_by_table):
-    """Report unprefixed IDs and prefixes absent from the source observations."""
+def schema_identifiers(connection, identifiers, columns_by_table, separator):
+    """Report unprefixed IDs and prefixes absent from the source observations.
+
+    The prefix of an ID is the text before the first ``separator``, which the
+    Data Model declares.
+    """
     metrics = {}
     for identifier in identifiers:
         name, column = identifier["table"], identifier["column"]
@@ -106,24 +116,22 @@ def schema_identifiers(connection, identifiers, columns_by_table):
         # Query distinct prefixes over the entire column, not a feature sample.
         prefixes = {
             row[0] for row in connection.execute(
-                f"SELECT DISTINCT substr({column_sql}, 1, instr({column_sql}, '-') - 1) "
-                f"FROM {table_sql} WHERE instr({column_sql}, '-') > 1"
+                f"SELECT DISTINCT substr({column_sql}, 1, instr({column_sql}, ?) - 1) "
+                f"FROM {table_sql} WHERE instr({column_sql}, ?) > 1", (separator, separator)
             )
         }
         metrics[f"unobserved_id_prefixes.{name}.{column}"] = len(prefixes - set(identifier["observed_prefixes"]))
         metrics[f"unprefixed_ids.{name}.{column}"] = connection.execute(
-            f"SELECT COUNT(*) FROM {table_sql} WHERE {column_sql} IS NOT NULL AND instr({column_sql}, '-') <= 1"
+            f"SELECT COUNT(*) FROM {table_sql} WHERE {column_sql} IS NOT NULL AND instr({column_sql}, ?) <= 1",
+            (separator,),
         ).fetchone()[0]
     return metrics
 
 
 def schema(path, model, kind):
     """Check a Build against its selected Data Model specification."""
-    if model != "v2.2" or kind not in {"ngen", "reference"}:
-        raise ValueError(f"no schema specification for Data Model {model!r}, output kind {kind!r}")
-    spec_path = HERE / "models" / model / f"{kind}.json"
-    with spec_path.open(encoding="utf-8") as stream:
-        spec = json.load(stream)
+    spec = data_model.load_spec(model, kind, "schema")
+    separator = data_model.schema_semantics(spec)["id_prefix_separator"]
     with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as connection:
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
         contents = {row[0]: (row[1], row[2]) for row in connection.execute("SELECT table_name, data_type, srs_id FROM gpkg_contents")}
@@ -134,7 +142,7 @@ def schema(path, model, kind):
             if name in tables:
                 layer_metrics, columns_by_table[name] = schema_layer(connection, name, expected, contents)
                 metrics.update(layer_metrics)
-        metrics.update(schema_identifiers(connection, spec["identifiers"], columns_by_table))
+        metrics.update(schema_identifiers(connection, spec["identifiers"], columns_by_table, separator))
         return metrics
 
 
@@ -298,7 +306,7 @@ def vpu_input(path, vpu):
 
 def check_file(path, label, model, config, counts, kind=None, vpu=None, measurements=None):
     if kind is None or vpu is None:
-        match = FILENAME.fullmatch(path.name)
+        match = filename_pattern(data_model.output_kinds(model)).fullmatch(path.name)
         if not match:
             raise ValueError(f"unrecognized GeoPackage filename: {label}")
         kind, vpu = match.groups()
@@ -326,7 +334,7 @@ def check_selected_file(path, label, model, kind, vpu, config, recorded, measure
             informational, errors = {}, []
             if name == "geometry":
                 metrics, informational, errors = check(
-                    path, model, kind, overlap_min_area_m2=config[name].get("overlap_min_area_m2", 100)
+                    path, model, kind, overlap_min_area_m2=config[name].get("overlap_min_area_m2")
                 )
             elif name == "attributes":
                 metrics, informational = check(path, model, kind)
@@ -476,7 +484,8 @@ class DownloadRedirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def hydroshare_files(target):
+def hydroshare_files(target, filename):
+    """Yield GeoPackages of a HydroShare resource; ``filename`` matches checkable names."""
     parsed = https_url(target, HOSTS)
     match = RESOURCE_PATH.fullmatch(parsed.path)
     if not match or parsed.query:
@@ -522,7 +531,7 @@ def hydroshare_files(target):
                     any(part in ("", ".", "..") for part in relative.split("/")) or "\\" in relative):
                 raise ValueError("invalid HydroShare file path")
             label = f"https://www.hydroshare.org{file_url.path}"
-            if not FILENAME.fullmatch(name):
+            if not filename.fullmatch(name):
                 yield Path(name), label
                 continue
             if type(entry.get("size")) is not int or entry["size"] <= 0:
@@ -558,8 +567,8 @@ def hydroshare_files(target):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("target", help="GeoPackage, directory, or HydroShare resource URL")
-    parser.add_argument("--data-model", default="v2.2")
-    parser.add_argument("--type", choices=("ngen", "reference"), help="output type for a single GeoPackage")
+    parser.add_argument("--data-model", default="v2.2", help="Data Model directory name under models/")
+    parser.add_argument("--type", help="output kind of a single GeoPackage; any kind the Data Model specifies")
     parser.add_argument("--vpu", help="VPU for a single GeoPackage")
     parser.add_argument("--counts", type=Path, default=HERE / "counts.yaml")
     parser.add_argument("--config", type=Path, default=HERE / "checks.yaml")
@@ -567,6 +576,15 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     try:
+        # Fail before reading any input if the Data Model or output kind is
+        # not one the checks fully support; never fall back to another model.
+        kinds = data_model.validate_model(args.data_model)
+        if args.type is not None and args.type not in kinds:
+            raise ValueError(
+                f"unsupported output kind {args.type!r} for Data Model {args.data_model!r}; "
+                f"available: {', '.join(kinds)}"
+            )
+        filename = filename_pattern(kinds)
         counts_path = args.counts.resolve()
         counts = load_counts(counts_path, allow_missing=args.record)
         config = load_yaml(args.config)
@@ -574,15 +592,16 @@ def main(argv=None):
         for name in CHECKS:
             if not isinstance(config.get(name), dict) or type(config[name].get("blocking")) is not bool:
                 raise ValueError(f"{args.config}: {name} must have a boolean blocking flag")
-        if "geometry" in CHECKS:
-            threshold = config["geometry"].get("overlap_min_area_m2", 100)
+        if "geometry" in CHECKS and "overlap_min_area_m2" in config["geometry"]:
+            # An optional run-level override of the Data Model's default.
+            threshold = config["geometry"]["overlap_min_area_m2"]
             if type(threshold) not in (int, float) or not math.isfinite(threshold) or threshold < 0:
                 raise ValueError(f"{args.config}: geometry overlap_min_area_m2 must be a finite nonnegative number")
         metadata = (None, None)
         if urllib.parse.urlsplit(args.target).scheme:
             if args.type is not None or args.vpu is not None:
                 raise ValueError("--type and --vpu are only valid for a single GeoPackage")
-            paths = hydroshare_files(args.target)
+            paths = hydroshare_files(args.target, filename)
         else:
             target = Path(args.target)
             if target.is_dir():
