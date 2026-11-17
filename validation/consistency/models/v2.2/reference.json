@@ -599,7 +599,7 @@
         "terminal_id": 0,
         "layers": ["flowpaths", "network"],
         "link_label": "fl-fl",
-        "note": "Observed v2.2 convention, not an exhaustive specification. See the model README."
+        "note": "Observed v2.2 convention, not an exhaustive specification. See docs/consistency-checks/data-model-v2.2.md."
       }
     },
     "geometry": {

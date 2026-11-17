@@ -1,7 +1,10 @@
 # v2.2 Data Model specifications
 
-- `ngen.json`: NextGen output, based on the official VPU 03S and 16 GeoPackages.
-- `reference.json`: Reference output, based on the official VPU 16 GeoPackage.
+- [`ngen.json`](../../validation/consistency/models/v2.2/ngen.json): NextGen output, based on the official VPU 03S and 16 GeoPackages.
+- [`reference.json`](../../validation/consistency/models/v2.2/reference.json): Reference output, based on the official VPU 16 GeoPackage.
+
+This page documents the evidence behind those specifications. The checks that
+use them are described in the [index](README.md).
 
 These are data specifications, not a check implementation. Each file has
 `format_version: "1.0"`, `data_model_version: "v2.2"`, and `output_kind`
@@ -49,7 +52,7 @@ used local files only. No network access was used.
   thresholds. For v2.2 these are the conventions the checks previously
   hardcoded; they are observations, not an exhaustive specification. A new Data
   Model declares its own; see
-  [Data Model specifications](../../README.md#data-model-specifications-and-adding-a-model).
+  [Adding a Data Model](running-and-recording.md#adding-a-data-model).
 - `terminal_observations` records the queries' results, not mandatory or
   exhaustive terminal rules. NextGen groups rows where `toid = "wb-0"` by
   `id` prefix and `type`. Reference counts `toid = 0`, nulls, and nonzero
