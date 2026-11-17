@@ -172,7 +172,10 @@ To add a model:
    [`models/v2.2/ngen.json`](../../validation/consistency/models/v2.2/ngen.json)
    is the easiest start.
 2. Declare the layers and columns in `tables`, the identifiers to check, the
-   `attribute_constraints.rules`, and the `checks` section.
+   `attribute_constraints.rules`, and the `checks` section. Once the reviewed
+   parts are written, [regenerate](#regenerating-a-data-model-specification)
+   `sources`, `tables`, the identifier observations and `terminal_observations`
+   from the official GeoPackages rather than typing them.
 3. Run `pixi run consistency-check <file> --type <kind> --vpu <VPU> --data-model <name>`.
    A malformed or unsupported declaration is reported before any check runs.
 4. Optionally record limits under `<name>` in `counts.yaml`.
@@ -206,6 +209,72 @@ specification; a model that differs needs code changes and tests:
 - Batch filenames always have the form `<kind>-hydrofabric-vpu-<VPU>.gpkg`.
 - The hydroseq and cycle algorithms are fixed; only the routing style is selectable.
 - Attribute rules are limited to range, interval and scaled-difference kinds.
+
+## Regenerating a Data Model specification
+
+A specification mixes what the official products **contain** with what a person
+**decided**. `extract-data-model` rebuilds the first from the official GeoPackages
+and leaves the second alone, so a specification can be reproduced without
+overwriting reviewed scientific rules. It runs offline, opens each GeoPackage
+read-only, and needs only a GeoPackage per VPU.
+
+| Section | On regeneration |
+| --- | --- |
+| `sources` | Rebuilt: VPU, file name, local path and SHA-256 of each GeoPackage supplied, plus any URL you give. |
+| `tables` | Rebuilt: registration, geometry and columns of every registered layer. |
+| `identifiers` | The reviewed list of columns is kept; each column's `observations` (and `observed_prefixes`) are rebuilt. |
+| `terminal_observations` | Rebuilt from the `checks.network.routing` convention. |
+| `checks`, `attribute_constraints`, `structure_basis`, `identifier_basis`, metadata | Kept exactly as reviewed. |
+
+```sh
+pixi run extract-data-model <kind>-hydrofabric-vpu-<VPU>.gpkg [more VPUs ...] \
+    --data-model v2.2 --type ngen \
+    --resource-url https://www.hydroshare.org/resource/<id>/ \
+    --file-url <VPU>=https://www.hydroshare.org/resource/<id>/data/contents/<file>.gpkg
+```
+
+- Files must be named as for the [batch runner](#directories-and-hydroshare-resources),
+  which gives each file's VPU. Give **every** VPU the specification should
+  describe: the candidate reflects exactly the files supplied, and a note names
+  any VPU or identifier column of the previous specification that it drops.
+- Provenance is recorded only if you supply it. `--resource-url` applies to every
+  file and `--file-url VPU=URL` to one; no URL is derived from a file name. A
+  path inside the repository is recorded relative to it.
+- The command starts from the checked-in `models/<model>/<kind>.json`, because
+  the reviewed parts and the choice of identifier columns live there. For a new
+  Data Model, copy a specification first (see [Adding a Data Model](#adding-a-data-model)).
+- Direct routing records its terminal counts under `toid_zero_count` and so
+  supports only `terminal_id` 0; any other terminal is refused rather than
+  recorded under a misleading name.
+
+### Reviewing the result
+
+By default the command writes a **candidate** to
+`.scratch/data-model-candidates/<model>/<kind>.json` (or the file given with
+`--output`) and never touches the checked-in specification. Compare them:
+
+```sh
+git diff --no-index validation/consistency/models/v2.2/ngen.json \
+    .scratch/data-model-candidates/v2.2/ngen.json
+```
+
+Expect changes only in the rebuilt sections. A changed `local_path` alone is
+harmless if the `sha256` is unchanged. Any other change is a change in the
+products or in the files you supplied, and a reviewer decides whether it is
+intended. When satisfied, copy the candidate over the specification in the same
+pull request, or rerun with `--update`, which replaces the file directly.
+
+Exit statuses: `0` a candidate was written and the checks can use it; `1` the
+VPUs have conflicting structures (nothing is written; each difference is listed),
+or the candidate is written but the reviewed sections no longer fit the new
+structure (for example a rule names a layer that is gone), in which case edit
+`checks` or `attribute_constraints` in the candidate, and `--update` refuses to
+install it; `2` the request or an input is invalid.
+
+This regenerates the Data Model's observations. It does not measure the
+Consistency Check counts in `counts.yaml`; [record those](#recording-counts)
+separately. The tests in `tests/test_extract_data_model.py` use small generated
+GeoPackages and download nothing.
 
 ## Adding a check
 

@@ -45,7 +45,9 @@ each check's metrics with pass and fail conditions and worked examples
 conventions they use. Running, recording counts, and adding a Data Model or a
 check are in [Running and recording](docs/consistency-checks/running-and-recording.md).
 The v2.2 specifications are described in
-[the v2.2 Data Model](docs/consistency-checks/data-model-v2.2.md).
+[the v2.2 Data Model](docs/consistency-checks/data-model-v2.2.md), and
+`pixi run extract-data-model` regenerates their observed sections from the
+official GeoPackages ([how](docs/consistency-checks/running-and-recording.md#regenerating-a-data-model-specification)).
 
 ## DVC Installation
 
