@@ -78,7 +78,7 @@ function getAmzDate(date) {
     return date.toISOString().replace(/[:-]|\.\d{3}/g, '');
 }
 
-async function presignS3GetUrl(rawUrl, accessKey, secretKey) {
+async function presignS3GetUrl(rawUrl, accessKey, secretKey, method = 'GET') {
     const url = new URL(rawUrl);
     const now = new Date();
     const amzDate = getAmzDate(now);
@@ -94,7 +94,7 @@ async function presignS3GetUrl(rawUrl, accessKey, secretKey) {
     ];
     const canonicalQuery = canonicalQueryString(url, extraQueryEntries);
     const canonicalRequest = [
-        'GET',
+        method,
         canonicalUri(url.pathname),
         canonicalQuery,
         `host:${url.host}`,
@@ -115,18 +115,19 @@ async function presignS3GetUrl(rawUrl, accessKey, secretKey) {
     return url.toString();
 }
 
-export async function getAuthorizedS3Url(rawUrl) {
+//presigned URLs are method-specific: a GET-signed URL gets 403 on HEAD.
+export async function getAuthorizedS3Url(rawUrl, method = 'GET') {
     if (!isS3OriginUrl(rawUrl)) return rawUrl;
     const { accessKey, secretKey } = getCredentials();
     if (!accessKey || !secretKey) return rawUrl;
 
-    const cacheKey = `${rawUrl}::${accessKey}`;
+    const cacheKey = `${method}::${rawUrl}::${accessKey}`;
     const cached = presignedUrlCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now() + PRESIGN_REFRESH_BUFFER_MS) {
         return cached.url;
     }
 
-    const signedUrl = await presignS3GetUrl(rawUrl, accessKey, secretKey);
+    const signedUrl = await presignS3GetUrl(rawUrl, accessKey, secretKey, method);
     presignedUrlCache.set(cacheKey, {
         url: signedUrl,
         expiresAt: Date.now() + (PRESIGN_TTL_SECONDS * 1000),

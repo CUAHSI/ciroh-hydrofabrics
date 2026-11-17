@@ -26,8 +26,14 @@ export function useParquet() {
     if (state.fileHandleCache[url]) return state.fileHandleCache[url];
     if (_inflight.has(url)) return _inflight.get(url);
 
-    const p = getAuthorizedS3Url(url)
-      .then(authorizedUrl => state.hp.asyncBufferFromUrl({ url: authorizedUrl }))
+    const p = (async () => {
+      const headUrl = await getAuthorizedS3Url(url, 'HEAD');
+      const head = await fetch(headUrl, { method: 'HEAD' });
+      if (!head.ok) throw new Error(`HEAD ${url} failed: ${head.status}`);
+      const byteLength = Number(head.headers.get('Content-Length'));
+      const authorizedUrl = await getAuthorizedS3Url(url, 'GET');
+      return state.hp.asyncBufferFromUrl({ url: authorizedUrl, byteLength });
+    })()
       .then(handle => {
         state.fileHandleCache[url] = handle;
         _inflight.delete(url);
