@@ -159,7 +159,7 @@ def test_candidate_regenerates_structure_and_sources_and_keeps_reviewed_sections
     }
     # The source records the file's identity, with its digest taken independently.
     assert candidate["sources"] == [{
-        "vpu": "01", "filename": gpkg.name, "local_path": str(gpkg),
+        "vpu": "01", "filename": gpkg.name, "local_path": gpkg.name,
         "sha256": hashlib.sha256(gpkg.read_bytes()).hexdigest(),
     }]
     # Reviewed sections are carried over untouched, and the checked-in file is not.
@@ -478,3 +478,103 @@ def test_content_that_a_regeneration_drops_is_reported(models, tmp_path, capsys)
     # The base listed VPU 99 as a source and an identifier column that these files do not have.
     assert "VPU 99" in notes
     assert "hydrolocations.hl_id" in notes
+
+
+def test_recorded_paths_never_carry_a_user_directory(models, tmp_path, monkeypatch):
+    install(models, base_reference_spec())
+    inside = reference_gpkg(tmp_path, "01")
+    outside_root = tmp_path / "elsewhere"
+    outside_root.mkdir()
+    outside = outside_root / "reference-hydrofabric-vpu-02.gpkg"
+    outside.write_bytes(inside.read_bytes())
+    # Treat one folder as the repository: its file is recorded relative to it, the other by name only.
+    monkeypatch.setattr(extract_data_model, "REPO_ROOT", tmp_path / "data")
+    candidate_path = tmp_path / "candidate.json"
+
+    extract(inside, outside, "--data-model", "v9.9", "--type", "reference", "--output", candidate_path)
+
+    paths = {source["vpu"]: source["local_path"] for source in json.loads(candidate_path.read_text())["sources"]}
+    assert paths == {"01": "reference-hydrofabric-vpu-01.gpkg", "02": "reference-hydrofabric-vpu-02.gpkg"}
+    assert str(tmp_path) not in candidate_path.read_text().replace(str(candidate_path), "")
+
+
+def test_an_identifier_that_is_no_longer_text_loses_its_prefix_summary(models, tmp_path):
+    base = base_reference_spec()
+    base["identifiers"] = [{"table": "network", "column": "id", "observed_prefixes": ["old"],
+                            "note": "reviewed remark", "observations": {}}]
+    install(models, base)
+    candidate_path = tmp_path / "candidate.json"
+
+    extract(reference_gpkg(tmp_path), "--data-model", "v9.9", "--type", "reference", "--output", candidate_path)
+
+    entry = json.loads(candidate_path.read_text())["identifiers"][0]
+    assert "observed_prefixes" not in entry
+    assert entry["note"] == "reviewed remark"
+
+
+def test_a_regenerated_identifier_keeps_the_key_order_of_the_reviewed_one(models, tmp_path):
+    base = base_ngen_spec()
+    base["identifiers"] = [{"table": "divides", "column": "divide_id", "observed_prefixes": ["old"],
+                            "observations": {}}]
+    install(models, base, "ngen")
+    candidate_path = tmp_path / "candidate.json"
+
+    extract(ngen_gpkg(tmp_path), "--data-model", "v9.9", "--type", "ngen", "--output", candidate_path)
+
+    entry = json.loads(candidate_path.read_text())["identifiers"][0]
+    # Stable key order keeps a diff against the checked-in specification limited to real changes.
+    assert list(entry) == ["table", "column", "observed_prefixes", "observations"]
+
+
+def test_no_file_under_the_models_folder_is_overwritten_without_update(models, tmp_path, capsys):
+    install(models, base_reference_spec())
+    other = install(models, base_ngen_spec(), "ngen")
+    before = other.read_text()
+
+    status = extract(reference_gpkg(tmp_path), "--data-model", "v9.9", "--type", "reference", "--output", other)
+
+    assert status == 2
+    assert other.read_text() == before
+
+
+def test_provenance_of_an_unchanged_file_survives_regeneration(models, tmp_path):
+    install(models, base_reference_spec())
+    gpkg = reference_gpkg(tmp_path)
+    first = tmp_path / "first.json"
+    url = "https://www.hydroshare.org/resource/0123456789abcdef0123456789abcdef/"
+    extract(gpkg, "--data-model", "v9.9", "--type", "reference", "--output", first, "--resource-url", url)
+    install(models, json.loads(first.read_text()))
+    second, third = tmp_path / "second.json", tmp_path / "third.json"
+
+    extract(gpkg, "--data-model", "v9.9", "--type", "reference", "--output", second)
+    edit_gpkg(gpkg, "UPDATE network SET toid = 5.0 WHERE id = 1.0")
+    extract(gpkg, "--data-model", "v9.9", "--type", "reference", "--output", third)
+
+    # The same file keeps the URL that was recorded for it; a different file at that name does not.
+    assert json.loads(second.read_text())["sources"][0]["resource_url"] == url
+    assert "resource_url" not in json.loads(third.read_text())["sources"][0]
+
+
+def test_regenerating_from_a_regenerated_specification_changes_nothing(models, tmp_path):
+    install(models, base_ngen_spec(), "ngen")
+    first, second = ngen_gpkg(tmp_path, "01"), ngen_gpkg(tmp_path, "02")
+    once, twice = tmp_path / "once.json", tmp_path / "twice.json"
+    arguments = (first, second, "--data-model", "v9.9", "--type", "ngen")
+    extract(*arguments, "--output", once)
+    install(models, json.loads(once.read_text()), "ngen")
+
+    extract(*arguments, "--output", twice)
+
+    assert twice.read_text() == once.read_text()
+
+
+def test_very_large_whole_numbers_are_not_counted_as_fractional(models, tmp_path):
+    with_identifiers(models, ("network", "toid"))
+    gpkg = reference_gpkg(tmp_path)
+    edit_gpkg(gpkg, "UPDATE network SET toid = 1e300 WHERE id = 1.0")
+    candidate_path = tmp_path / "candidate.json"
+
+    extract(gpkg, "--data-model", "v9.9", "--type", "reference", "--output", candidate_path)
+
+    observation = json.loads(candidate_path.read_text())["identifiers"][0]["observations"]["01"]
+    assert observation["fractional_numeric_count"] == 0

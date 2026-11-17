@@ -27,6 +27,11 @@ from attributes.specification import text_declaration
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CANDIDATES = REPO_ROOT / ".scratch" / "data-model-candidates"
+READ_BLOCK_BYTES = 1 << 20
+# Whole numbers beyond this magnitude cannot be told apart from fractions once cast to an integer.
+LARGEST_COUNTABLE_NUMBER = 9e15
+# Source fields recording where a file came from; a person supplies them and the files cannot reveal them.
+PROVENANCE_URLS = ("resource_url", "file_url")
 
 
 class ExtractionError(Exception):
@@ -61,19 +66,25 @@ def vpu_of(path, kind):
 
 
 def sha256_of(path):
+    """Fingerprint a file's contents, reading it in blocks so a large GeoPackage stays out of memory."""
     digest = hashlib.sha256()
     with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1 << 20), b""):
+        for block in iter(lambda: stream.read(READ_BLOCK_BYTES), b""):
             digest.update(block)
     return digest.hexdigest()
 
 
 def recorded_path(path):
-    """A path inside the repository is recorded relative to it, so specs do not carry user directories."""
+    """Record where a file was found without recording whose computer it was on.
+
+    A path inside the repository is recorded relative to it. Any other path is recorded by file name only,
+    because an absolute path would put a user's home directory into a checked-in specification.
+    """
+    root = REPO_ROOT.resolve()
     resolved = path.resolve()
-    if resolved.is_relative_to(REPO_ROOT):
-        return str(resolved.relative_to(REPO_ROOT))
-    return str(path)
+    if resolved.is_relative_to(root):
+        return str(resolved.relative_to(root))
+    return path.name
 
 
 def quote(name):
@@ -110,8 +121,11 @@ def observe_numeric_identifier(connection, table, column):
     table_sql, column_sql = quote(table), quote(column)
     classes = dict(connection.execute(
         f"SELECT typeof({column_sql}), COUNT(*) FROM {table_sql} GROUP BY 1 ORDER BY 1"))
+    # Huge values are skipped: casting them to an integer saturates and would make a whole number look fractional.
+    limit = repr(LARGEST_COUNTABLE_NUMBER)
     fractional = connection.execute(
         f"SELECT COUNT(*) FROM {table_sql} WHERE typeof({column_sql}) IN ('integer', 'real') "
+        f"AND {column_sql} > -{limit} AND {column_sql} < {limit} "
         f"AND {column_sql} != CAST({column_sql} AS INTEGER)").fetchone()[0]
     return {"storage_class_counts": classes, "fractional_numeric_count": fractional}
 
@@ -203,6 +217,17 @@ def observe_terminals(connection, structure, routing, separator, vpu):
     return observe_nexus_terminals(connection, structure, routing, separator, vpu)
 
 
+def kept_provenance(base, vpu, digest):
+    """Keep the recorded URLs of a source whose file is byte-for-byte the one already described.
+
+    A different file at the same name is a different source, so it inherits nothing.
+    """
+    for source in base["sources"]:
+        if source["vpu"] == vpu and source.get("sha256") == digest:
+            return {key: source[key] for key in PROVENANCE_URLS if key in source}
+    return {}
+
+
 def observe(path, vpu, base, urls):
     """Read one GeoPackage, read-only, into its source record, structure and observations."""
     wanted = [(entry["table"], entry["column"]) for entry in base["identifiers"]]
@@ -215,7 +240,9 @@ def observe(path, vpu, base, urls):
                 connection, structure, base["checks"]["network"]["routing"], separator, vpu)
         except sqlite3.DatabaseError as exc:
             raise ExtractionError(f"{path}: not a readable GeoPackage ({exc})") from exc
-    source = {"vpu": vpu, "filename": path.name, **urls, "local_path": recorded_path(path), "sha256": sha256_of(path)}
+    digest = sha256_of(path)
+    source = {"vpu": vpu, "filename": path.name, **kept_provenance(base, vpu, digest), **urls,
+              "local_path": recorded_path(path), "sha256": digest}
     return {"source": source, "structure": structure, "identifiers": identifiers, "terminals": terminals}
 
 
@@ -232,6 +259,9 @@ def build_identifiers(base_identifiers, by_vpu):
             # A convenience summary of what was seen, not an allowed-prefix rule.
             entry["observed_prefixes"] = sorted({prefix for found in observations.values()
                                                  for prefix in found["prefix_counts"]})
+        else:
+            # A summary inherited from the base would be stale if the column is no longer text.
+            entry.pop("observed_prefixes", None)
         identifiers.append(entry)
     return identifiers
 
@@ -240,6 +270,7 @@ def build_candidate(base, by_vpu):
     """Replace the observed sections of the reviewed base; carry everything else over."""
     candidate = copy.deepcopy(base)
     candidate["sources"] = [found["source"] for found in by_vpu.values()]
+    # Every VPU's structure is the same by now, because conflicts are checked before a candidate is built.
     candidate["tables"] = next(iter(by_vpu.values()))["structure"]
     candidate["identifiers"] = build_identifiers(base["identifiers"], by_vpu)
     candidate["terminal_observations"] = [entry for found in by_vpu.values() for entry in found["terminals"]]
@@ -284,6 +315,7 @@ def structure_conflicts(by_vpu):
 
 
 def write_json(path, spec):
+    """Write a specification in the checked-in format: two-space indent, readable text, final newline."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(spec, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -308,8 +340,9 @@ def destination(arguments):
     if arguments.update:
         return checked_in
     target = arguments.output or CANDIDATES / arguments.data_model / f"{arguments.kind}.json"
-    if target.resolve() == checked_in.resolve():
-        raise ExtractionError(f"{target} is the checked-in specification; pass --update to replace it")
+    if target.resolve().is_relative_to(data_model.MODELS.resolve()):
+        raise ExtractionError(f"{target} is inside the checked-in specifications; pass --update to replace "
+                              f"the specification, or choose an --output elsewhere")
     return target
 
 
@@ -364,6 +397,7 @@ def dropped_content(base, candidate):
 
 
 def run(arguments):
+    """Extract, compare and write; return the exit status: 0 usable, 1 conflicting or needs review."""
     try:
         base = data_model.load_spec(arguments.data_model, arguments.kind, "extractor base")
     except ValueError as exc:

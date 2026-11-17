@@ -239,7 +239,11 @@ pixi run extract-data-model <kind>-hydrofabric-vpu-<VPU>.gpkg [more VPUs ...] \
   any VPU or identifier column of the previous specification that it drops.
 - Provenance is recorded only if you supply it. `--resource-url` applies to every
   file and `--file-url VPU=URL` to one; no URL is derived from a file name. A
-  path inside the repository is recorded relative to it.
+  file whose SHA-256 matches the previous specification keeps the URLs recorded
+  there, so regenerating does not erase them; a changed file keeps none and
+  needs its URLs given again.
+- A path inside the repository is recorded relative to it. Any other path is
+  recorded by file name only, so a specification never carries a home directory.
 - The command starts from the checked-in `models/<model>/<kind>.json`, because
   the reviewed parts and the choice of identifier columns live there. For a new
   Data Model, copy a specification first (see [Adding a Data Model](#adding-a-data-model)).
@@ -251,7 +255,8 @@ pixi run extract-data-model <kind>-hydrofabric-vpu-<VPU>.gpkg [more VPUs ...] \
 
 By default the command writes a **candidate** to
 `.scratch/data-model-candidates/<model>/<kind>.json` (or the file given with
-`--output`) and never touches the checked-in specification. Compare them:
+`--output`) and never touches the checked-in specification. `--output` is refused
+anywhere under `validation/consistency/models/`; only `--update` writes there. Compare them:
 
 ```sh
 git diff --no-index validation/consistency/models/v2.2/ngen.json \
