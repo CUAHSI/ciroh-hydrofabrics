@@ -136,7 +136,9 @@ def test_single_file_rejects_unknown_output_type(gpkg):
     result = run_command(gpkg, "--type", "other", "--vpu", "03S")
 
     assert result.returncode == 2
-    assert "invalid choice" in result.stderr
+    assert "unsupported output kind 'other'" in result.stderr
+    assert "available: ngen, reference" in result.stderr
+    assert "PASS" not in result.stdout
 
 
 def test_batch_does_not_accept_single_file_metadata(gpkg, tmp_path):

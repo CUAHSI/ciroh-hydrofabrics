@@ -1,20 +1,15 @@
 """Attribute Consistency Checks for GeoPackage Data Model specifications."""
 
-import json
-import re
 import sqlite3
 import sys
 from contextlib import closing
 from fractions import Fraction
-from pathlib import Path
 
+import data_model
 from attributes.specification import (
     numeric_declaration,
-    unique_json_object,
     validate_attribute_rules,
 )
-
-MODELS = Path(__file__).resolve().parents[1] / "models"
 
 
 def quote(name):
@@ -445,8 +440,8 @@ def unchecked_inventory(spec, rules, informational):
 def load_attribute_spec(model, kind):
     """Load the selected Data Model specification by identifier.
 
-    Read ``<model>/<kind>.json`` under the model directory and check its
-    format and identifying metadata. Selection is not restricted to a fixed
+    Read ``<model>/<kind>.json`` through ``data_model.load_spec``, which checks
+    its format and identifying metadata. Selection is not restricted to a fixed
     list of versions: a future specification can be loaded if its identifiers
     and metadata match and its rules and policies use supported semantics.
     The model directory is trusted repository content, not an untrusted
@@ -473,22 +468,11 @@ def load_attribute_spec(model, kind):
         or the model declares unsupported attribute semantics. Invalid JSON also
         raises a ``ValueError`` subclass.
     """
-    if any(not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value)
-           for value in (model, kind)):
-        raise ValueError(f"invalid attribute Data Model or output kind: {model!r}, {kind!r}")
-    directory = MODELS / model
-    path = directory / f"{kind}.json"
-    if directory.is_symlink() or path.is_symlink() or not path.is_file():
-        raise ValueError(f"no attribute specification for Data Model {model!r}, output kind {kind!r}")
-    with path.open(encoding="utf-8") as stream:
-        spec = json.load(stream, object_pairs_hook=unique_json_object)
-    if (not isinstance(spec, dict) or spec.get("format_version") != "1.0" or spec.get("data_model_version") != model
-            or spec.get("output_kind") != kind):
-        raise ValueError(f"incompatible attribute specification metadata: {path}")
+    spec = data_model.load_spec(model, kind, "attribute")
     try:
         validate_attribute_rules(spec)
     except (KeyError, TypeError, IndexError, AttributeError) as exc:
-        raise ValueError(f"invalid attribute specification {path}: {exc}") from exc
+        raise ValueError(f"invalid attribute specification for Data Model {model!r}, output kind {kind!r}: {exc}") from exc
     return spec
 
 

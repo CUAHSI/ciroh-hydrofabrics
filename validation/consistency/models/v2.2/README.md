@@ -43,6 +43,13 @@ used local files only. No network access was used.
   fractional part for selected identifiers and topology sequence fields.
   SQLite `REAL` identifiers observed with integral values are not strings or
   necessarily SQL `INTEGER` columns.
+- `checks` holds the conventions the Consistency Checks read for this model:
+  the schema identifier separator, network primary IDs, relationships and
+  routing (terminal value and style), and geometry topology layer and area
+  thresholds. For v2.2 these are the conventions the checks previously
+  hardcoded; they are observations, not an exhaustive specification. A new Data
+  Model declares its own; see
+  [Data Model specifications](../../README.md#data-model-specifications-and-adding-a-model).
 - `terminal_observations` records the queries' results, not mandatory or
   exhaustive terminal rules. NextGen groups rows where `toid = "wb-0"` by
   `id` prefix and `type`. Reference counts `toid = 0`, nulls, and nonzero

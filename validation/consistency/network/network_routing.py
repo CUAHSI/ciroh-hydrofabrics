@@ -4,12 +4,9 @@ Dangling counts are source rows, including possible VPU-boundary links. Cycle
 counts are distinct member IDs; identical edges are collapsed and conflicting
 edges are retained. NULL targets are reported separately as indeterminate and
 excluded from dangling counts. Terminal rules compare observations with the
-v2.2 outlet convention, not an exhaustive, authoritative specification.
+outlet convention the Data Model declares (``routing`` in its network
+section), which is not necessarily an exhaustive, authoritative specification.
 """
-
-
-OUTLET_TYPES = {"tnx-": "terminal", "cnx-": "coastal", "inx-": "internal"}
-NEXUS_TARGET_LAYERS = ("flowpaths", "divides", "flowpath-attributes", "flowpath-attributes-ml")
 
 
 def cycle_node_count(connection, tables, sentinel):
@@ -67,49 +64,57 @@ def cycle_node_count(connection, tables, sentinel):
     return count
 
 
-def invalid_nexus_outlet(identifier, nexus_type, target):
-    """Compare outlet-like rows with the observed v2.2 nexus convention."""
-    expected_type = OUTLET_TYPES.get(identifier[:4]) if isinstance(identifier, str) else None
-    outlet_like = target == "wb-0" or expected_type is not None or nexus_type in OUTLET_TYPES.values()
-    return outlet_like and not (expected_type is not None and nexus_type == expected_type and target == "wb-0")
+def invalid_nexus_outlet(identifier, nexus_type, target, routing):
+    """Compare outlet-like rows with the Data Model's nexus outlet convention."""
+    outlet_types = routing["outlet_types"]
+    expected_type = None
+    if isinstance(identifier, str):
+        expected_type = next((kind for prefix, kind in outlet_types.items() if identifier.startswith(prefix)), None)
+    outlet_like = target == routing["terminal_id"] or expected_type is not None or nexus_type in outlet_types.values()
+    return outlet_like and not (
+        expected_type is not None and nexus_type == expected_type and target == routing["terminal_id"]
+    )
 
 
-def reference_metrics(connection, columns):
-    """Check Reference flowpaths and network independently."""
+def direct_metrics(connection, columns, routing):
+    """Check each directly routed layer (such as flowpaths and network) independently."""
     results = {}
-    for table in ("flowpaths", "network"):
+    terminal = routing["terminal_id"]
+    for table in routing["layers"]:
         if not {"id", "toid"} <= columns.get(table, set()):
             continue
         ids = {row[0] for row in connection.execute(f'SELECT id FROM "{table}"') if row[0] is not None}
         results[f"dangling_toid.{table}"] = sum(
-            target is not None and target != 0 and target not in ids
+            target is not None and target != terminal and target not in ids
             for (target,) in connection.execute(f'SELECT toid FROM "{table}"')
         )
         del ids
-        results[f"cycle_nodes.{table}"] = cycle_node_count(connection, (table,), 0)
+        results[f"cycle_nodes.{table}"] = cycle_node_count(connection, (table,), terminal)
     return results
 
 
-def nextgen_dangling_metrics(connection, columns):
-    """Check each NextGen source against its applicable downstream ID set."""
+def nextgen_dangling_metrics(connection, columns, routing):
+    """Check each nexus-routed source against its applicable downstream ID set."""
     results = {}
+    terminal = routing["terminal_id"]
+    target_layers = routing["target_layers"]
     if "id" in columns.get("nexus", set()) and any(
-        "toid" in columns.get(table, set()) for table in NEXUS_TARGET_LAYERS
+        "toid" in columns.get(table, set()) for table in target_layers
     ):
         nexus_ids = {row[0] for row in connection.execute('SELECT id FROM "nexus"') if row[0] is not None}
-        # Coastal and internal divides point to cnx-/inx- IDs in nexus;
-        # their nexus outlets use wb-0, not a missing-flowpath link.
-        for table in NEXUS_TARGET_LAYERS:
+        # Coastal and internal divides point to outlet nexus IDs;
+        # their nexus outlets use the terminal ID, not a missing-flowpath link.
+        for table in target_layers:
             if "toid" in columns.get(table, set()):
                 results[f"dangling_toid.{table}"] = sum(
-                    target is not None and target != "wb-0" and target not in nexus_ids
+                    target is not None and target != terminal and target not in nexus_ids
                     for (target,) in connection.execute(f'SELECT toid FROM "{table}"')
                 )
         del nexus_ids
     if "toid" in columns.get("nexus", set()) and "id" in columns.get("flowpaths", set()):
         flowpath_ids = {row[0] for row in connection.execute('SELECT id FROM "flowpaths"') if row[0] is not None}
         results["dangling_toid.nexus"] = sum(
-            target is not None and target != "wb-0" and target not in flowpath_ids
+            target is not None and target != terminal and target not in flowpath_ids
             for (target,) in connection.execute('SELECT toid FROM "nexus"')
         )
         del flowpath_ids
@@ -121,55 +126,60 @@ def nextgen_dangling_metrics(connection, columns):
         for table in tables:
             ids.update(row[0] for row in connection.execute(f'SELECT id FROM "{table}"') if row[0] is not None)
         results["dangling_toid.network"] = sum(
-            target is not None and target != "wb-0" and target not in ids
+            target is not None and target != terminal and target not in ids
             for (target,) in connection.execute('SELECT toid FROM "network"')
         )
     return results
 
 
-def nextgen_terminal_metrics(connection, columns):
-    """Compare NextGen outlet rows with the observed terminal convention."""
+def nextgen_terminal_metrics(connection, columns, routing):
+    """Compare nexus-routed outlet rows with the Data Model's terminal convention."""
     results = {}
+    terminal = routing["terminal_id"]
     # These layers should point to a nexus, even at an outlet.
-    # Report direct wb-0 references separately from dangling targets.
-    for table in NEXUS_TARGET_LAYERS:
+    # Report direct terminal references separately from dangling targets.
+    for table in routing["target_layers"]:
         if "toid" in columns.get(table, set()):
             results[f"terminal_convention.{table}"] = connection.execute(
-                f'SELECT COUNT(*) FROM "{table}" WHERE toid = ?', ("wb-0",)
+                f'SELECT COUNT(*) FROM "{table}" WHERE toid = ?', (terminal,)
             ).fetchone()[0]
+    nexus_prefixes = tuple(routing["nexus_id_prefixes"]) + tuple(routing["outlet_types"])
     for table in ("nexus", "network"):
         if not {"id", "type", "toid"} <= columns.get(table, set()):
             continue
         # Network also labels flowpaths by their downstream nexus type;
-        # only nexus-like IDs and actual sentinel outlets are comparable.
+        # only nexus-like IDs and actual terminal outlets are comparable.
         results[f"terminal_convention.{table}"] = sum(
-            invalid_nexus_outlet(identifier, nexus_type, target)
+            invalid_nexus_outlet(identifier, nexus_type, target, routing)
             for identifier, nexus_type, target in connection.execute(f'SELECT id, type, toid FROM "{table}"')
-            if table == "nexus" or target == "wb-0"
-            or (isinstance(identifier, str) and identifier.startswith(("nex-", "tnx-", "cnx-", "inx-")))
+            if table == "nexus" or target == terminal
+            or (isinstance(identifier, str) and identifier.startswith(nexus_prefixes))
         )
     return results
 
 
-def metrics(connection, kind, columns):
+def metrics(connection, columns, semantics):
     """Return applicable routing metrics for a read-only GeoPackage connection."""
+    routing = semantics["routing"]
     results = {}
-    checked_layers = {
-        "reference": ("flowpaths", "network"),
-        "ngen": NEXUS_TARGET_LAYERS + ("nexus", "network"),
-    }
-    for table in checked_layers.get(kind, ()):
+    if routing["style"] == "direct":
+        checked_layers = tuple(routing["layers"])
+    else:
+        checked_layers = tuple(routing["target_layers"]) + ("nexus", "network")
+    for table in checked_layers:
         if "toid" in columns.get(table, set()):
             results[f"indeterminate_null_toid.{table}"] = connection.execute(
                 f'SELECT COUNT(*) FROM "{table}" WHERE toid IS NULL'
             ).fetchone()[0]
-    if kind == "reference":
-        results.update(reference_metrics(connection, columns))
-    elif kind == "ngen":
-        results.update(nextgen_dangling_metrics(connection, columns))
+    if routing["style"] == "direct":
+        results.update(direct_metrics(connection, columns, routing))
+    else:
+        results.update(nextgen_dangling_metrics(connection, columns, routing))
         if all({"id", "toid"} <= columns.get(table, set()) for table in ("flowpaths", "nexus")):
-            results["cycle_nodes.flowpaths_nexus"] = cycle_node_count(connection, ("flowpaths", "nexus"), "wb-0")
+            results["cycle_nodes.flowpaths_nexus"] = cycle_node_count(
+                connection, ("flowpaths", "nexus"), routing["terminal_id"]
+            )
         if {"id", "toid"} <= columns.get("network", set()):
-            results["cycle_nodes.network"] = cycle_node_count(connection, ("network",), "wb-0")
-        results.update(nextgen_terminal_metrics(connection, columns))
+            results["cycle_nodes.network"] = cycle_node_count(connection, ("network",), routing["terminal_id"])
+        results.update(nextgen_terminal_metrics(connection, columns, routing))
     return results

@@ -578,6 +578,36 @@
       }
     }
   ],
+  "checks": {
+    "schema": {
+      "id_prefix_separator": "-"
+    },
+    "network": {
+      "primary_ids": {
+        "divides": "divide_id",
+        "flowpaths": "id",
+        "hydrolocations": "hl_id"
+      },
+      "relationships": [
+        {"name": "divides_without_flowpaths", "source": "divides", "source_key": "id", "target": "flowpaths", "target_key": "id", "flag": "has_flowline"},
+        {"name": "divides_without_referencing_flowpaths", "source": "divides", "source_key": "divide_id", "target": "flowpaths", "target_key": "divide_id", "flag": "has_flowline"},
+        {"name": "flowpaths_without_divides", "source": "flowpaths", "source_key": "divide_id", "target": "divides", "target_key": "divide_id", "flag": "has_divide"}
+      ],
+      "reciprocal_links": [["divides", "divide_id", "id"], ["flowpaths", "id", "divide_id"]],
+      "routing": {
+        "style": "direct",
+        "terminal_id": 0,
+        "layers": ["flowpaths", "network"],
+        "link_label": "fl-fl",
+        "note": "Observed v2.2 convention, not an exhaustive specification. See the model README."
+      }
+    },
+    "geometry": {
+      "topology_layer": "divides",
+      "overlap_min_area_m2": 100,
+      "gap_min_area_m2": 100
+    }
+  },
   "terminal_observations": [
     {
       "table": "flowpaths",
