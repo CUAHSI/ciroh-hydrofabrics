@@ -13,7 +13,9 @@ filenames/paths, and SHA-256 digests are recorded in `sources`. The paths are
 provenance, not dependencies: these large files are not checked in and consumers
 need not download them to read the specifications. The GeoPackage specifications
 were extracted with SQLite read-only connections; the Parquet comparison below
-used local files only. No network access was used.
+used local files only. No network access was used. They can be regenerated from
+the official GeoPackages with `extract-data-model`, which keeps the reviewed
+rules; see [Regenerating a Data Model specification](running-and-recording.md#regenerating-a-data-model-specification).
 
 ## Consumer contract
 

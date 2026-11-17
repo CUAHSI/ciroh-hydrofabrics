@@ -41,6 +41,7 @@ pytest = ">=8.0,<9"
 
 [feature.consistency.tasks]
 consistency-check = "python validation/consistency/consistency_check.py"
+extract-data-model = "python validation/consistency/extract_data_model.py"
 
 [environments]
 consistency = { features = ["consistency"], no-default-feature = true }

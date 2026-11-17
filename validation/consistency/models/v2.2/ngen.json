@@ -905,7 +905,9 @@
     {
       "table": "divides",
       "column": "divide_id",
-      "observed_prefixes": ["cat"],
+      "observed_prefixes": [
+        "cat"
+      ],
       "observations": {
         "03S": {
           "row_count": 14138,
@@ -928,7 +930,9 @@
     {
       "table": "divides",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 14138,
@@ -951,7 +955,12 @@
     {
       "table": "divides",
       "column": "toid",
-      "observed_prefixes": ["cnx", "inx", "nex", "tnx"],
+      "observed_prefixes": [
+        "cnx",
+        "inx",
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 14138,
@@ -979,7 +988,9 @@
     {
       "table": "flowpaths",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 13878,
@@ -1002,7 +1013,10 @@
     {
       "table": "flowpaths",
       "column": "toid",
-      "observed_prefixes": ["nex", "tnx"],
+      "observed_prefixes": [
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 13878,
@@ -1027,7 +1041,9 @@
     {
       "table": "flowpaths",
       "column": "divide_id",
-      "observed_prefixes": ["cat"],
+      "observed_prefixes": [
+        "cat"
+      ],
       "observations": {
         "03S": {
           "row_count": 13878,
@@ -1050,7 +1066,12 @@
     {
       "table": "nexus",
       "column": "id",
-      "observed_prefixes": ["cnx", "inx", "nex", "tnx"],
+      "observed_prefixes": [
+        "cnx",
+        "inx",
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 7864,
@@ -1078,7 +1099,9 @@
     {
       "table": "nexus",
       "column": "toid",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 7864,
@@ -1101,7 +1124,11 @@
     {
       "table": "network",
       "column": "id",
-      "observed_prefixes": ["nex", "tnx", "wb"],
+      "observed_prefixes": [
+        "nex",
+        "tnx",
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 67144,
@@ -1128,7 +1155,12 @@
     {
       "table": "network",
       "column": "toid",
-      "observed_prefixes": ["inx", "nex", "tnx", "wb"],
+      "observed_prefixes": [
+        "inx",
+        "nex",
+        "tnx",
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 67144,
@@ -1157,7 +1189,9 @@
     {
       "table": "network",
       "column": "divide_id",
-      "observed_prefixes": ["cat"],
+      "observed_prefixes": [
+        "cat"
+      ],
       "observations": {
         "03S": {
           "row_count": 67144,
@@ -1180,7 +1214,9 @@
     {
       "table": "pois",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 2286,
@@ -1203,7 +1239,10 @@
     {
       "table": "pois",
       "column": "nex_id",
-      "observed_prefixes": ["nex", "tnx"],
+      "observed_prefixes": [
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 2286,
@@ -1228,7 +1267,9 @@
     {
       "table": "hydrolocations",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 3159,
@@ -1251,7 +1292,10 @@
     {
       "table": "hydrolocations",
       "column": "nex_id",
-      "observed_prefixes": ["nex", "tnx"],
+      "observed_prefixes": [
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 3159,
@@ -1276,7 +1320,9 @@
     {
       "table": "flowpath-attributes",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 13888,
@@ -1299,7 +1345,10 @@
     {
       "table": "flowpath-attributes",
       "column": "toid",
-      "observed_prefixes": ["nex", "tnx"],
+      "observed_prefixes": [
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 13888,
@@ -1324,7 +1373,9 @@
     {
       "table": "flowpath-attributes-ml",
       "column": "id",
-      "observed_prefixes": ["wb"],
+      "observed_prefixes": [
+        "wb"
+      ],
       "observations": {
         "03S": {
           "row_count": 13888,
@@ -1347,7 +1398,10 @@
     {
       "table": "flowpath-attributes-ml",
       "column": "toid",
-      "observed_prefixes": ["nex", "tnx"],
+      "observed_prefixes": [
+        "nex",
+        "tnx"
+      ],
       "observations": {
         "03S": {
           "row_count": 13888,
@@ -1386,19 +1440,75 @@
         "flowpath-attributes-ml": "id"
       },
       "relationships": [
-        {"name": "divides_without_flowpaths", "source": "divides", "source_key": "id", "target": "flowpaths", "target_key": "id", "flag": "has_flowline"},
-        {"name": "divides_without_referencing_flowpaths", "source": "divides", "source_key": "divide_id", "target": "flowpaths", "target_key": "divide_id", "flag": "has_flowline"},
-        {"name": "flowpaths_without_divides", "source": "flowpaths", "source_key": "divide_id", "target": "divides", "target_key": "divide_id", "flag": "has_divide"},
-        {"name": "divides_without_attributes", "source": "divides", "source_key": "divide_id", "target": "divide-attributes", "target_key": "divide_id", "flag": "has_flowline"},
-        {"name": "hydrolocations_without_nexus", "source": "hydrolocations", "source_key": "nex_id", "target": "nexus", "target_key": "id"}
+        {
+          "name": "divides_without_flowpaths",
+          "source": "divides",
+          "source_key": "id",
+          "target": "flowpaths",
+          "target_key": "id",
+          "flag": "has_flowline"
+        },
+        {
+          "name": "divides_without_referencing_flowpaths",
+          "source": "divides",
+          "source_key": "divide_id",
+          "target": "flowpaths",
+          "target_key": "divide_id",
+          "flag": "has_flowline"
+        },
+        {
+          "name": "flowpaths_without_divides",
+          "source": "flowpaths",
+          "source_key": "divide_id",
+          "target": "divides",
+          "target_key": "divide_id",
+          "flag": "has_divide"
+        },
+        {
+          "name": "divides_without_attributes",
+          "source": "divides",
+          "source_key": "divide_id",
+          "target": "divide-attributes",
+          "target_key": "divide_id",
+          "flag": "has_flowline"
+        },
+        {
+          "name": "hydrolocations_without_nexus",
+          "source": "hydrolocations",
+          "source_key": "nex_id",
+          "target": "nexus",
+          "target_key": "id"
+        }
       ],
-      "reciprocal_links": [["divides", "divide_id", "id"], ["flowpaths", "id", "divide_id"]],
+      "reciprocal_links": [
+        [
+          "divides",
+          "divide_id",
+          "id"
+        ],
+        [
+          "flowpaths",
+          "id",
+          "divide_id"
+        ]
+      ],
       "routing": {
         "style": "via_nexus",
         "terminal_id": "wb-0",
-        "target_layers": ["flowpaths", "divides", "flowpath-attributes", "flowpath-attributes-ml"],
-        "outlet_types": {"tnx-": "terminal", "cnx-": "coastal", "inx-": "internal"},
-        "nexus_id_prefixes": ["nex-"],
+        "target_layers": [
+          "flowpaths",
+          "divides",
+          "flowpath-attributes",
+          "flowpath-attributes-ml"
+        ],
+        "outlet_types": {
+          "tnx-": "terminal",
+          "cnx-": "coastal",
+          "inx-": "internal"
+        },
+        "nexus_id_prefixes": [
+          "nex-"
+        ],
         "note": "Observed v2.2 convention, not an exhaustive specification. See docs/consistency-checks/data-model-v2.2.md."
       }
     },
@@ -1479,7 +1589,10 @@
   "attribute_constraints": {
     "numeric_value_policy": {
       "scope": "numeric operand columns of these rules, independent of row applicability",
-      "sqlite_storage_classes": ["integer", "real"],
+      "sqlite_storage_classes": [
+        "integer",
+        "real"
+      ],
       "require_finite": true,
       "invalid_or_nonfinite": "report",
       "nonfinite_intermediate": "report",
@@ -1496,74 +1609,146 @@
     "rules": [
       {
         "id": "divide-attributes.mean.slope_1km_range",
-        "kind": "interval", "source": "NWM soil-bottom drainage factor, dimensionless [0, 1]",
-        "table": "divide-attributes", "column": "mean.slope_1km",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "NWM soil-bottom drainage factor, dimensionless [0, 1]",
+        "table": "divide-attributes",
+        "column": "mean.slope_1km",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcmax_soil_layers_stag=1_range",
-        "kind": "interval", "source": "Saturated volumetric soil moisture, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcmax_soil_layers_stag=1",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Saturated volumetric soil moisture, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcmax_soil_layers_stag=1",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcmax_soil_layers_stag=2_range",
-        "kind": "interval", "source": "Saturated volumetric soil moisture, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcmax_soil_layers_stag=2",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Saturated volumetric soil moisture, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcmax_soil_layers_stag=2",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcmax_soil_layers_stag=3_range",
-        "kind": "interval", "source": "Saturated volumetric soil moisture, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcmax_soil_layers_stag=3",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Saturated volumetric soil moisture, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcmax_soil_layers_stag=3",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcmax_soil_layers_stag=4_range",
-        "kind": "interval", "source": "Saturated volumetric soil moisture, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcmax_soil_layers_stag=4",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Saturated volumetric soil moisture, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcmax_soil_layers_stag=4",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcwlt_soil_layers_stag=1_range",
-        "kind": "interval", "source": "Volumetric soil moisture at wilting point, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcwlt_soil_layers_stag=1",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Volumetric soil moisture at wilting point, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcwlt_soil_layers_stag=1",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcwlt_soil_layers_stag=2_range",
-        "kind": "interval", "source": "Volumetric soil moisture at wilting point, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcwlt_soil_layers_stag=2",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Volumetric soil moisture at wilting point, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcwlt_soil_layers_stag=2",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcwlt_soil_layers_stag=3_range",
-        "kind": "interval", "source": "Volumetric soil moisture at wilting point, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcwlt_soil_layers_stag=3",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Volumetric soil moisture at wilting point, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcwlt_soil_layers_stag=3",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
         "id": "divide-attributes.mean.smcwlt_soil_layers_stag=4_range",
-        "kind": "interval", "source": "Volumetric soil moisture at wilting point, volume fraction",
-        "table": "divide-attributes", "column": "mean.smcwlt_soil_layers_stag=4",
-        "lower": 0, "lower_inclusive": true, "upper": 1, "upper_inclusive": true,
-        "applies_when": {"kind": "all_rows"}, "null_policy": "undetermined",
+        "kind": "interval",
+        "source": "Volumetric soil moisture at wilting point, volume fraction",
+        "table": "divide-attributes",
+        "column": "mean.smcwlt_soil_layers_stag=4",
+        "lower": 0,
+        "lower_inclusive": true,
+        "upper": 1,
+        "upper_inclusive": true,
+        "applies_when": {
+          "kind": "all_rows"
+        },
+        "null_policy": "undetermined",
         "sentinel_policy": "report_unless_field_defined_missing"
       },
       {
@@ -1639,7 +1824,10 @@
           "column": "has_divide",
           "value": 1,
           "sqlite_boolean_storage_class": "integer",
-          "valid_values": [0, 1],
+          "valid_values": [
+            0,
+            1
+          ],
           "false_policy": "not_applicable",
           "null_or_nonboolean_policy": "report_indeterminate"
         },

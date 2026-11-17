@@ -589,15 +589,50 @@
         "hydrolocations": "hl_id"
       },
       "relationships": [
-        {"name": "divides_without_flowpaths", "source": "divides", "source_key": "id", "target": "flowpaths", "target_key": "id", "flag": "has_flowline"},
-        {"name": "divides_without_referencing_flowpaths", "source": "divides", "source_key": "divide_id", "target": "flowpaths", "target_key": "divide_id", "flag": "has_flowline"},
-        {"name": "flowpaths_without_divides", "source": "flowpaths", "source_key": "divide_id", "target": "divides", "target_key": "divide_id", "flag": "has_divide"}
+        {
+          "name": "divides_without_flowpaths",
+          "source": "divides",
+          "source_key": "id",
+          "target": "flowpaths",
+          "target_key": "id",
+          "flag": "has_flowline"
+        },
+        {
+          "name": "divides_without_referencing_flowpaths",
+          "source": "divides",
+          "source_key": "divide_id",
+          "target": "flowpaths",
+          "target_key": "divide_id",
+          "flag": "has_flowline"
+        },
+        {
+          "name": "flowpaths_without_divides",
+          "source": "flowpaths",
+          "source_key": "divide_id",
+          "target": "divides",
+          "target_key": "divide_id",
+          "flag": "has_divide"
+        }
       ],
-      "reciprocal_links": [["divides", "divide_id", "id"], ["flowpaths", "id", "divide_id"]],
+      "reciprocal_links": [
+        [
+          "divides",
+          "divide_id",
+          "id"
+        ],
+        [
+          "flowpaths",
+          "id",
+          "divide_id"
+        ]
+      ],
       "routing": {
         "style": "direct",
         "terminal_id": 0,
-        "layers": ["flowpaths", "network"],
+        "layers": [
+          "flowpaths",
+          "network"
+        ],
         "link_label": "fl-fl",
         "note": "Observed v2.2 convention, not an exhaustive specification. See docs/consistency-checks/data-model-v2.2.md."
       }
@@ -631,7 +666,10 @@
   "attribute_constraints": {
     "numeric_value_policy": {
       "scope": "numeric operand columns of these rules, independent of row applicability",
-      "sqlite_storage_classes": ["integer", "real"],
+      "sqlite_storage_classes": [
+        "integer",
+        "real"
+      ],
       "require_finite": true,
       "invalid_or_nonfinite": "report",
       "nonfinite_intermediate": "report",
@@ -687,7 +725,10 @@
           "column": "has_divide",
           "value": 1,
           "sqlite_boolean_storage_class": "integer",
-          "valid_values": [0, 1],
+          "valid_values": [
+            0,
+            1
+          ],
           "false_policy": "not_applicable",
           "null_or_nonboolean_policy": "report_indeterminate"
         },
