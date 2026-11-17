@@ -1,9 +1,6 @@
 """Hydrosequence consistency behavior through the command-line interface."""
 
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
@@ -11,8 +8,7 @@ import pyogrio
 import pytest
 from shapely.geometry import Point
 
-
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
+import check_runner
 
 
 def write_layer(path, layer, data):
@@ -27,10 +23,7 @@ def write_network(path, data):
 
 
 def run_check(path, kind):
-    result = subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01"],
-        capture_output=True, text=True, check=False,
-    )
+    result = check_runner.run_check(path, kind)
     assert result.returncode == 0, result.stderr
     return {
         parts[1]: int(parts[2])

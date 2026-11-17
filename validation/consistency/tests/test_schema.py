@@ -1,24 +1,11 @@
 """Behavioral tests for the v2.2 schema check through its CLI."""
 
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 from shapely.geometry import LineString, Point, box
 
-
-RUNNER = Path(__file__).resolve().parents[1] / "consistency_check.py"
-
-
-def run_check(path, kind="ngen", *extra):
-    return subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01", *map(str, extra)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+from check_runner import run_check
 
 
 def test_missing_required_layers_are_reported_without_downloading_a_reference(tmp_path):

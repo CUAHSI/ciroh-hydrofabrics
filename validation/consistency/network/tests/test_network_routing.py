@@ -1,15 +1,12 @@
 """Routing graph behavior exercised through the consistency-check CLI."""
 
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pytest
 from shapely.geometry import Point, box
 
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
+import check_runner
 
 
 def write_layer(path, name, data):
@@ -19,10 +16,7 @@ def write_layer(path, name, data):
 
 
 def run_check(path, kind):
-    result = subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01"],
-        capture_output=True, text=True, check=False,
-    )
+    result = check_runner.run_check(path, kind)
     assert result.returncode == 0, result.stderr
     return result.stdout
 
