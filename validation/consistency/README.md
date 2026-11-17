@@ -29,10 +29,12 @@ from the published per-VPU files. Files with no `vpuid` fields retain the
 existing single-VPU-file assumption.
 
 A directory is searched recursively for GeoPackages. For directories and
-HydroShare resource, each GeoPackage must be named
+HydroShare resources, each GeoPackage must be named
 `<kind>-hydrofabric-vpu-<VPU>.gpkg`, where `<kind>` is one of the selected Data
 Model's output kinds (for v2.2, `reference` or `ngen`), so its type and VPU can
-be inferred separately. Other files are ignored. The
+be inferred separately. Files that are not GeoPackages are ignored; a local
+GeoPackage with any other name, including one of another Data Model's kinds, is
+an error. The
 `--type` and `--vpu` flags apply only to a single file and are rejected for batch
 inputs.
 
@@ -452,10 +454,16 @@ The following are implementation extensions, not yet declared in the
 specification; a model that differs needs code changes and tests:
 
 - Routing and hydroseq checks use layers named `flowpaths`, `nexus`, `network`
-  and `divides` and the columns `id`, `toid`, `hydroseq`, `dnhydroseq` and `topo`.
-- The two reciprocal metrics are always named `reciprocal_divide_flowpath_*`.
+  and `divides` and the columns `id`, `toid`, `hydroseq`, `dnhydroseq` and `topo`;
+  nexus outlet types are read from a `type` column.
+- The network check always reports `duplicate_network_rows` for a layer named
+  `network`, ignoring a `fid` column.
+- The two reciprocal metrics are always named `reciprocal_divide_flowpath_*`, and
+  the topology metrics `divide_overlaps.*`, `divide_gaps.*` and
+  `divide_union_area_m2`, whatever the `topology_layer`.
 - The VPU selection assumes a `vpuid` column and treats the `network` and
-  `divides` layers specially.
+  `divides` layers specially (via `divide_id`), independently of the
+  `topology_layer`.
 - Batch filenames always have the form `<kind>-hydrofabric-vpu-<VPU>.gpkg`.
 - The hydroseq and cycle algorithms are fixed; only the routing style is selectable.
 - Attribute rules are limited to range, interval and scaled-difference kinds.

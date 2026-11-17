@@ -146,12 +146,14 @@ def _section(spec, name):
 
 
 def _reject_unknown(section, allowed, label):
+    """Reject keys the checks would silently ignore; ``note`` and ``source`` are free-form provenance."""
     unknown = set(section) - allowed - {"note", "source"}
     if unknown:
         raise ValueError(f"unsupported {label} semantics: {sorted(unknown)}")
 
 
 def _nonnegative_number(value, label):
+    """Require a finite number >= 0, such as an area threshold."""
     if not finite_number(value) or value < 0:
         raise ValueError(f"{label} must be a finite nonnegative number")
 
@@ -189,6 +191,7 @@ def schema_semantics(spec):
 
 
 def _scalar_terminal(value):
+    """A terminal ID is compared with ``toid`` values, so it must be a nonempty text or an integer."""
     return type(value) in (int, str) and value != ""
 
 
@@ -207,8 +210,9 @@ def _validate_routing(routing, columns):
             if not {"id", "toid"} <= set(columns.get(layer, {})):
                 raise ValueError(f"routing layer {layer!r} is not a table with id and toid columns")
 
-    # The routing algorithms identify their layers by these names; a model
-    # must provide them (documented implementation extension).
+    # The routing algorithms identify their layers by these names: both styles
+    # read flowpaths and network, and via_nexus also follows nexus rows. A model
+    # must provide them (a documented implementation extension).
     required = {"direct": ("flowpaths", "network"), "via_nexus": ("flowpaths", "nexus", "network")}[style]
     for layer in required:
         if layer not in columns:
@@ -230,6 +234,7 @@ def _validate_routing(routing, columns):
 
 
 def _validate_relationship(relationship, columns):
+    """Check one relationship's keys and optional flag against the model's columns."""
     name = relationship["name"]
     allowed = {"name", "source", "source_key", "target", "target_key", "flag"}
     if set(relationship) - allowed - {"note", "source_note"}:

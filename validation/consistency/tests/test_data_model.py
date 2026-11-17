@@ -11,6 +11,8 @@ CONSISTENCY = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CONSISTENCY))
 
 import data_model
+from geometry.geometry_checks import geometry
+from network.network_checks import network
 
 V22 = CONSISTENCY / "models" / "v2.2"
 
@@ -170,3 +172,30 @@ def test_validate_model_checks_every_kind_before_any_input_is_read(models):
 
     with pytest.raises(ValueError, match="reference.*routing style"):
         data_model.validate_model("v9.9")
+
+
+# Each check loads the selected model itself, so it must fail explicitly,
+# before reading the input, rather than fall back to v2.2.
+@pytest.mark.parametrize("check", [network, geometry])
+def test_a_check_rejects_an_unknown_model_before_reading_its_input(models, tmp_path, check):
+    with pytest.raises(ValueError, match="no Data Model 'v9.9'"):
+        check(tmp_path / "missing.gpkg", "v9.9", "ngen")
+
+
+@pytest.mark.parametrize("check, section", [(network, "network"), (geometry, "geometry")])
+def test_a_check_rejects_a_model_that_does_not_declare_its_semantics(models, tmp_path, check, section):
+    spec = v22_spec("ngen")
+    del spec["checks"][section]
+    install(models, spec)
+
+    with pytest.raises(ValueError, match=section):
+        check(tmp_path / "missing.gpkg", "v9.9", "ngen")
+
+
+def test_the_network_check_rejects_an_unsupported_routing_style(models, tmp_path):
+    spec = v22_spec("ngen")
+    spec["checks"]["network"]["routing"]["style"] = "mesh"
+    install(models, spec)
+
+    with pytest.raises(ValueError, match="unsupported routing style 'mesh'"):
+        network(tmp_path / "missing.gpkg", "v9.9", "ngen")
