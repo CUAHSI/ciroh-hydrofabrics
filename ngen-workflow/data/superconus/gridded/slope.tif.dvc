@@ -1,0 +1,10 @@
+md5: 593c91c2b8be08588072d6771adf4439
+frozen: true
+deps:
+- etag: 0b442ae583e6a321aec2eab4c33b3224
+  size: 1173161
+  hash: md5
+  path: remote://v2.3/gridded/slope.tif
+outs:
+- hash: md5
+  path: slope.tif

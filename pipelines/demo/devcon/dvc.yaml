@@ -98,6 +98,7 @@ stages:
       /ngen-workflow/data/superconus/derived/CONUS_imp_240.tif
       /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
       /ngen-workflow/data/superconus/tabular/riverml_channel_geometry_with_ahg.parquet
+      ${vpuid}
       /ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
 
     deps:
@@ -117,6 +118,7 @@ stages:
       /ngen-workflow/data/superconus/gridded/soil/ 
       /ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
       /ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/dem${vpuid}.vrt
+      /ngen-workflow/data/superconus/gridded/slope.tif
     deps:
       - ../../../ngen-workflow/bash/run-vaa.sh
       - ../../../ngen-workflow/R/vaa.r
@@ -125,16 +127,21 @@ stages:
       - ../../../ngen-workflow/data/superconus/tabular/nwm_gw_basins.parquet
       - ../../../ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/
       - ../../../ngen-workflow/data/NHDSnapshot/DEM/${vpuid}/dem${vpuid}.vrt
+      - ../../../ngen-workflow/data/superconus/gridded/slope.tif
     outs:
       - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg
   reconcile:
     cmd: >
       docker compose run --rm hydrofabric ./bash/run-reconcile.sh
-      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+      /ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg
       ${vpuid}
       /ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg
+      /ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+      /ngen-workflow/data/superconus/vector/nwm_lakes.gpkg
     deps:
       - ../../../ngen-workflow/R/reconcile.Rmd
-      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_with_atts.gpkg
+      - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_vaa.gpkg
+      - ../../../ngen-workflow/output/${output_folder}/corrections/reference_hydrofabric_fixed.gpkg
+      - ../../../ngen-workflow/data/superconus/vector/nwm_lakes.gpkg
     outs:
       - ../../../ngen-workflow/output/${output_folder}/ngen_hydrofabric_reconciled.gpkg

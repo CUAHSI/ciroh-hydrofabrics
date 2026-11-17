@@ -67,8 +67,10 @@ divides$vpuid <- params$vpu_id
 #    the maximum streamorde across all member COMIDs for each aggregated flowpath
 
 # build stream order lookup from reference hydrofabric: id -> streamorde
+# v2.2 references use id/streamorde; v2.3 uses flowpath_id/streamorder
 ref_streamorde <- st_read(params$reference_gpkg, layer = "flowpaths", quiet = TRUE) |>
   st_drop_geometry() |>
+  rename(any_of(c(id = "flowpath_id", streamorde = "streamorder"))) |>
   select(id, streamorde) |>
   mutate(id = as.character(as.integer(id)))
 
@@ -161,6 +163,7 @@ nexus$vpuid <- params$vpu_id
 # via reference_id, taking max(mainstemlp) and mode(topo)
 ref_net <- st_read(params$reference_gpkg, layer = "network", quiet = TRUE) |>
   st_drop_geometry() |>
+  rename(any_of(c(id = "flowpath_id"))) |>
   select(id, mainstemlp, topo) |>
   mutate(id = as.character(as.integer(id)))
 
