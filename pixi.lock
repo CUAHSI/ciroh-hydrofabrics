@@ -497,7 +497,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiodns-3.0.0-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiofiles-25.1.0-pyhcf101f3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiohappyeyeballs-2.6.1-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/aiohttp-3.13.5-py311h6771f6e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/aiohttp-3.14.5-py311h19107a3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiohttp-client-cache-0.14.3-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiosignal-1.4.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/aiosqlite-0.22.1-pyhcf101f3_1.conda
@@ -811,13 +811,13 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/xorg-libxdmcp-1.1.5-hc919400_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/xyzservices-2026.3.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h925e9cb_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yarl-1.23.0-py311hc290fe0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yarl-1.25.1-py311hde9f260_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zeromq-4.3.5-h4818236_10.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.2-h8088a28_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-ng-2.3.3-hed4e4f5_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hbf9d68e_6.conda
-      - pypi: https://files.pythonhosted.org/packages/90/5f/85535dfb3cfd6442d66d1df1694062c5d6df02f895329e7e120b2a3d2b8b/aiobotocore-3.7.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/7f/bc/3bb8965204ba51bbf4d021bc89d1357cd2179a17ef71b5fc429e21b511a2/aiobotocore-3.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1a/99/84ba7273339d0f3dfa57901b846489d2e5c2cd731470167757f1935fffbd/aiohttp_retry-2.9.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/a1/510b0a7fadc6f43a6ce50152e69dbd86415240835868bb0bd9b5b88b1e06/aioitertools-0.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/26/99/fc813cd978842c26c82534010ea849eee9ab3a13ea2b74e95cb9c99e747b/amqp-5.3.1-py3-none-any.whl
@@ -827,9 +827,9 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ff/b5/b1a3979f4840d1271ca8e0978dbccfb18ad2d33b4ece85cf77122fb46e5f/asyncssh-2.23.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/c0/271f3e1e3502a8decb8ee5c680dbed2d8dc2cd504f5e20f7ed491d5f37e1/atpublic-7.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/30/87/af0dc43eca79bdfcfe06592f0defcadabc0571c4214ee93001be922b61f2/awscli-1.45.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e4/2d/adc2674fcb983720e77f5bfd76d89c0577a566dd89b2d29d298af11ea351/awscli-1.46.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/87/8bab77b323f16d67be364031220069f79159117dd5e43eeb4be2fef1ac9b/billiard-4.2.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/bf/4b/afc1fef8a43bafb139f57f73bbd70df82807af5934321e8112ae50668827/botocore-1.43.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/10/94/050e35c9febf6dd2fce4a76be587ae4a323964865700467d9d7b082f7133/botocore-1.43.117-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cf/c9/6eccdda96e098f7ae843162db2d3c149c6931a24fda69fe4ab84d0027eb5/celery-5.6.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1b/5b/974430b5ffdb7a4f1941d13d83c64a0395114503cc357c6b9ae4ce5047ed/click_didyoumean-0.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/52/40/9d857001228658f0d59e97ebd4c346fe73e138c6de1bce61dc568a57c7f8/click_repl-0.3.0-py3-none-any.whl
@@ -878,7 +878,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e9/93/0c0f002031f18b53af7a6166103c02b9c0667be528944137cc954ec921b3/rsa-4.7.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b8/0c/51f6841f1d84f404f92463fc2b1ba0da357ca1e3db6b7fbda26956c3b82a/ruamel_yaml-0.19.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/52/5ccdc01f7a8a61357d15a66b5d8a6580aa8529cb33f32e6cbb71c52622c5/s3fs-2026.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/87/72/c6c32d2b657fa3dad1de340254e14390b1e334ce38268b7ad51abda3c8c2/s3transfer-0.17.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/16/42/f4bb5e4612681d28fb01335d5faa67e1478adc63077c86555776fe89e584/scmrepo-3.6.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a6/24/4d91e05817e92e3a61c8a21e08fd0f390f5301f1c448b137c57c4bc6e543/semver-3.0.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl
@@ -894,7 +893,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/ff/7c0c86c43b3cbb927e0ccc0255cb4057ceba4799cd44ae95174ce8e8b5b2/vine-5.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d1/00/0e0da784245c93cf346150ab67634177bf277f93b7a162bb56c928c39c04/voluptuous-0.16.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/0e/23/03248de44165f9c06dc23da981f3d58889ee2600004289c7afd12ef316b1/wrapt-2.2.0-cp311-cp311-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/f7/d4/57db9384ffb339f29b6712cc1d7d4ace29d07670756becf9ad336728ca42/wrapt-2.5.2-cp311-cp311-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/3b/7f/3a614b65bc4b181578b1d50a78663ee02d5d2d3b859712f3d3597c8afe6f/zc_lockfile-4.0-py3-none-any.whl
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -973,20 +972,23 @@ packages:
   - pkg:pypi/affine?source=hash-mapping
   size: 19164
   timestamp: 1733762153202
-- pypi: https://files.pythonhosted.org/packages/90/5f/85535dfb3cfd6442d66d1df1694062c5d6df02f895329e7e120b2a3d2b8b/aiobotocore-3.7.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/7f/bc/3bb8965204ba51bbf4d021bc89d1357cd2179a17ef71b5fc429e21b511a2/aiobotocore-3.10.0-py3-none-any.whl
   name: aiobotocore
-  version: 3.7.0
-  sha256: 680bde7c64679a821a9312641b759d9497f790ba8b2e88c6959e6273ee765b8e
+  version: 3.10.0
+  sha256: de0ccbcb82b6b0009f1b6667f48442e9d0432f9b8bfe6172fa51777cbea89d03
   requires_dist:
-  - aiohttp>=3.12.0,<4.0.0
+  - aiohttp>=3.14.0,<4.0.0
   - aioitertools>=0.5.1,<1.0.0
-  - botocore>=1.42.90,<1.43.1
-  - python-dateutil>=2.1,<3.0.0
+  - botocore>=1.43.115,<1.43.118
   - jmespath>=0.7.1,<2.0.0
-  - multidict>=6.0.0,<7.0.0
+  - multidict>=6.0.0,<8.0.0
+  - python-dateutil>=2.1,<3.0.0
   - typing-extensions>=4.14.0,<5.0.0 ; python_full_version < '3.11'
   - wrapt>=1.10.10,<3.0.0
+  - anyio>=4.11.0,<5 ; extra == 'httpx'
   - httpx>=0.25.1,<0.29 ; extra == 'httpx'
+  - anyio>=4.11.0,<5 ; extra == 'httpx2'
+  - httpx2>=2.0,<3.0.0 ; extra == 'httpx2'
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/noarch/aiodns-3.0.0-pyhd8ed1ab_0.tar.bz2
   sha256: df026a45ea99e4bdb048b611d8e7c796773b204e96a656e01ac33157990a369b
@@ -1023,27 +1025,26 @@ packages:
   - pkg:pypi/aiohappyeyeballs?source=hash-mapping
   size: 19750
   timestamp: 1741775303303
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/aiohttp-3.13.5-py311h6771f6e_0.conda
-  sha256: 8a7daa61637c1287d471c9a6136d06b2b7fee8728562daeb2c14a7e0509f3eeb
-  md5: 0e81bc83e3076f65f19c0649cb91c6b9
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/aiohttp-3.14.5-py311h19107a3_0.conda
+  sha256: dca23247f62fd4f4a70fbd0bf594aee94ba376d9a36eac155ca560cae9e86dd5
+  md5: d9ef8030f9ed8b520dc8e51692e3f33d
   depends:
-  - __osx >=11.0
+  - python
   - aiohappyeyeballs >=2.5.0
   - aiosignal >=1.4.0
   - attrs >=17.3.0
   - frozenlist >=1.1.1
-  - multidict >=4.5,<7.0
+  - multidict >=4.5,<8.0
   - propcache >=0.2.0
-  - python >=3.11,<3.12.0a0
-  - python >=3.11,<3.12.0a0 *_cpython
+  - yarl >=1.25.1,<2.0
+  - typing_extensions >=4.4
+  - __osx >=11.0
   - python_abi 3.11.* *_cp311
-  - yarl >=1.17.0,<2.0
   license: MIT AND Apache-2.0
-  license_family: Apache
   purls:
   - pkg:pypi/aiohttp?source=hash-mapping
-  size: 1003366
-  timestamp: 1775000375490
+  size: 1201477
+  timestamp: 1791734315340
 - conda: https://conda.anaconda.org/conda-forge/noarch/aiohttp-client-cache-0.14.3-pyhd8ed1ab_0.conda
   sha256: 37548573ddd447b308abd037aee4f74c1f82b21b08d7db1fbed3b51f88c9fef7
   md5: 5a82c8ab1c8305d4e0f74ef856f7f15b
@@ -1452,17 +1453,19 @@ packages:
   purls: []
   size: 3260974
   timestamp: 1773666675518
-- pypi: https://files.pythonhosted.org/packages/30/87/af0dc43eca79bdfcfe06592f0defcadabc0571c4214ee93001be922b61f2/awscli-1.45.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/e4/2d/adc2674fcb983720e77f5bfd76d89c0577a566dd89b2d29d298af11ea351/awscli-1.46.3-py3-none-any.whl
   name: awscli
-  version: 1.45.0
-  sha256: 72e9c38c1b3c0bb5c1b8438dc12ebe02174bb251c16baef55065ebe9df72aa97
+  version: 1.46.3
+  sha256: 94c561c1b1b2cf0978ec8d87d956c26c807555438593eec29ea90602b9518cfb
   requires_dist:
-  - botocore==1.43.0
   - docutils>=0.18.1,<=0.19
-  - s3transfer>=0.17.0,<0.18.0
   - pyyaml>=3.10,<6.1
   - colorama>=0.2.5,<0.4.7
   - rsa>=3.1.2,<4.8
+  - jmespath>=0.7.1,<2.0.0
+  - python-dateutil>=2.1,<3.0.0
+  - urllib3>=1.25.4,!=2.2.0,<3
+  - awscrt==0.36.0 ; extra == 'crt'
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/azure-core-cpp-1.16.2-he5ae378_0.conda
   sha256: d9a04af33d9200fcd9f6c954e2a882c5ac78af4b82025623e59cb7f7e590b451
@@ -1694,15 +1697,15 @@ packages:
   license_family: BSD
   size: 34248
   timestamp: 1793463440076
-- pypi: https://files.pythonhosted.org/packages/bf/4b/afc1fef8a43bafb139f57f73bbd70df82807af5934321e8112ae50668827/botocore-1.43.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/10/94/050e35c9febf6dd2fce4a76be587ae4a323964865700467d9d7b082f7133/botocore-1.43.117-py3-none-any.whl
   name: botocore
-  version: 1.43.0
-  sha256: cc5b15eaec3c6eac05d8012cb5ef17ebe891beb88a16ca13c374bfaece1241e6
+  version: 1.43.117
+  sha256: 5920ef9b3002e1361846549078549d9154a6e0004c22853c01ce7b279d05d495
   requires_dist:
   - jmespath>=0.7.1,<2.0.0
   - python-dateutil>=2.1,<3.0.0
   - urllib3>=1.25.4,!=2.2.0,<3
-  - awscrt==0.32.2 ; extra == 'crt'
+  - awscrt==0.36.0 ; extra == 'crt'
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/noarch/branca-0.8.2-pyhd8ed1ab_0.conda
   sha256: 1acf87c77d920edd098ddc91fa785efc10de871465dee0f463815b176e019e8b
@@ -9832,14 +9835,6 @@ packages:
   - fsspec==2026.3.0
   - aiohttp>=3.9.0,!=4.0.0a0,!=4.0.0a1
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/87/72/c6c32d2b657fa3dad1de340254e14390b1e334ce38268b7ad51abda3c8c2/s3transfer-0.17.0-py3-none-any.whl
-  name: s3transfer
-  version: 0.17.0
-  sha256: ce3801712acf4ad3e89fb9990df97b4972e93f4b3b0004d214be5bce12814c20
-  requires_dist:
-  - botocore>=1.37.4,<2.0a0
-  - botocore[crt]>=1.37.4,<2.0a0 ; extra == 'crt'
-  requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/scikit-learn-1.9.1-np2py311h1e9b377_1.conda
   sha256: 2edc09c7d3c06898bb1c1061210ed9f4e04d6dc38d2f569c1463bbdbfe990cf5
   md5: 4f9cf6d0567b243c16099c441186bbf7
@@ -10780,10 +10775,10 @@ packages:
   - pkg:pypi/websocket-client?source=hash-mapping
   size: 61391
   timestamp: 1759928175142
-- pypi: https://files.pythonhosted.org/packages/0e/23/03248de44165f9c06dc23da981f3d58889ee2600004289c7afd12ef316b1/wrapt-2.2.0-cp311-cp311-macosx_11_0_arm64.whl
+- pypi: https://files.pythonhosted.org/packages/f7/d4/57db9384ffb339f29b6712cc1d7d4ace29d07670756becf9ad336728ca42/wrapt-2.5.2-cp311-cp311-macosx_11_0_arm64.whl
   name: wrapt
-  version: 2.2.0
-  sha256: 97fbe7a0df35afe37e7e2f053dee6300a3eed00055cfd907fa51161e22c40236
+  version: 2.5.2
+  sha256: b632d90ac0d04e3ba8821b19954d6c36ea8f714b75db53c58015025fefccb1ac
   requires_dist:
   - pytest ; extra == 'dev'
   - setuptools ; extra == 'dev'
@@ -11062,23 +11057,22 @@ packages:
   purls: []
   size: 83386
   timestamp: 1753484079473
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/yarl-1.23.0-py311hc290fe0_0.conda
-  sha256: ff782e7bcc57a4387989b14ddfb6142e0b6890cec187cc05c1c9da693d171fd0
-  md5: e4d202b8b445cb3e3fd60f3f48881a11
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/yarl-1.25.1-py311hde9f260_0.conda
+  sha256: 98f15ad07c1492e549a633bf0c03b96940a5fca7ed8c2b4e836ceb1e805b26bb
+  md5: de4b8d3683817a07f81ad158e4a469e4
   depends:
   - __osx >=11.0
   - idna >=2.0
   - multidict >=4.0
   - propcache >=0.2.1
   - python >=3.11,<3.12.0a0
-  - python >=3.11,<3.12.0a0 *_cpython
   - python_abi 3.11.* *_cp311
   license: Apache-2.0
   license_family: Apache
   purls:
   - pkg:pypi/yarl?source=hash-mapping
-  size: 142272
-  timestamp: 1772409712668
+  size: 179455
+  timestamp: 1791286122089
 - pypi: https://files.pythonhosted.org/packages/3b/7f/3a614b65bc4b181578b1d50a78663ee02d5d2d3b859712f3d3597c8afe6f/zc_lockfile-4.0-py3-none-any.whl
   name: zc-lockfile
   version: '4.0'
