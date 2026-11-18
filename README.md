@@ -34,6 +34,20 @@ counts. Five checks (`geopackage_layers`, `schema`, `network`, `geometry` and
 official products. They currently run in advisory mode: a FAIL is shown to the
 reviewer but does not fail the run.
 
+The [`Consistency Check`](.github/workflows/consistency_check.yaml) workflow
+starts on every pull request, but runs these checks, and posts the report as a
+comment, only on one that changes the Build. A pull request that changes the
+Build (`pipelines/**`, `ngen-workflow/**` other than `*.md`, `Dockerfile`,
+`docker-compose.yml`) must fill in the `Build resource:` field of the
+[PR template](.github/PULL_REQUEST_TEMPLATE.md) with the Build's HydroShare
+resource page (`https://www.hydroshare.org/resource/<id>/`); an empty or invalid
+field fails the check. The optional `Data model:` field defaults to `v2.2`.
+Other pull requests pass with "no Build required" without running any check, and
+the check can be required in branch protection by its job name,
+`consistency-check`. While every `blocking` flag in `checks.yaml` is false the
+job does not fail on check results; it fails only when a required Build
+resource is missing or invalid, or when the checks could not run.
+
 The documentation in [`docs/consistency-checks/`](docs/consistency-checks/README.md)
 covers how to read a report ([reading a report](docs/consistency-checks/reading-a-report.md)),
 each check's metrics with pass and fail conditions and worked examples

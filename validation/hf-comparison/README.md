@@ -146,6 +146,15 @@ The generated PNGs are about 8 MB in total and are git-ignored.
 [`.github/workflows/hf_comparison.yaml`](../../.github/workflows/hf_comparison.yaml)
 posts the comparison as a comment on pull requests, to assist reviewers.
 
+> **Currently inactive on new PRs.** The PR template no longer has the
+> **Hydrofabric comparison** fields described below (CAM-1604 replaced them with
+> `Build resource:` and `Data model:`; see the root
+> [README](../../README.md#consistency-checks)). Until CAM-1573 replaces or
+> reworks this workflow, a PR that follows the template names no URLs, so this
+> workflow finds nothing to compare and posts no comment. Writing the old
+> `Version`, `VPU`, `Reference hydrofabric URL` and `Ngen hydrofabric URL`
+> lines in a PR description by hand still works.
+
 1. When opening a PR, fill in the **Hydrofabric comparison** section of the
    [PR template](../../.github/PULL_REQUEST_TEMPLATE.md): the version, the VPU,
    and a public HydroShare URL (`.gpkg` or `.zip`) for a **reference**

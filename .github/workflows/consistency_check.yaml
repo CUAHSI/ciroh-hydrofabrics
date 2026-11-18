@@ -1,0 +1,186 @@
+name: Consistency Check
+
+# Runs the Consistency Checks on the Build named in a pull request and posts the
+# report as a comment for the reviewer.
+#
+# A pull request that touches the Build (pipelines/**, ngen-workflow/** except
+# *.md, Dockerfile, docker-compose.yml) must give a "Build resource:" in its
+# description (see .github/PULL_REQUEST_TEMPLATE.md); leaving it empty or giving
+# an invalid value fails the job. Other pull requests pass with "no Build
+# required" and are not checked, whatever they put in those fields. The job
+# starts on every pull request so that it can be a required status check: a
+# workflow filtered by path never reports on other pull requests, which would
+# leave a required check pending forever.
+#
+# The job never fails on check results while every `blocking` flag in
+# validation/consistency/checks.yaml is false (docs/adr/0001). It fails only when
+# the Build resource is required but missing or malformed, or when the checks
+# could not run. The job name "consistency-check" is stable so it can be
+# registered as a required status check.
+#
+# Editing the pull request description re-runs the check.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+# A newer run for the same PR replaces an in-progress one.
+concurrency:
+  group: consistency-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  consistency-check:
+    name: consistency-check
+    runs-on: ubuntu-latest
+    env:
+      GATE: validation/consistency/pr_gate.py
+    steps:
+      # Check out the PR's own head commit, not GitHub's temporary merge commit.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # Both a rename's old and new path count as changed.
+      - name: List changed files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >
+          gh api --paginate "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files"
+          --jq '.[] | .filename, (.previous_filename // empty)'
+          > "$RUNNER_TEMP/changed.txt"
+
+      # The PR description is untrusted input. It is passed in through an
+      # environment variable (never interpolated into the script) and every
+      # value is validated by pr_gate.py before anything uses it.
+      - name: Decide whether a Build is required
+        id: gate
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 "$GATE" --changed-files "$RUNNER_TEMP/changed.txt" >> "$GITHUB_OUTPUT"
+
+      # Installs exactly what pixi.lock records for the "consistency"
+      # environment and fails if the lock file is out of date with pixi.toml.
+      - name: Set up pixi
+        if: steps.gate.outputs.status == 'run'
+        uses: prefix-dev/setup-pixi@v0.11.3
+        with:
+          pixi-version: v0.64.0
+          environments: consistency
+          locked: true
+
+      # The step records the exit code instead of failing, so the report is
+      # always posted. Exit 0: no blocking failure; 1: a blocking check failed;
+      # 2: the checks could not run (for example, an unreadable resource).
+      - name: Run Consistency Checks
+        id: checks
+        if: steps.gate.outputs.status == 'run'
+        env:
+          RESOURCE: ${{ steps.gate.outputs.resource }}
+          DATA_MODEL: ${{ steps.gate.outputs.data_model }}
+        run: |
+          set +e
+          pixi run -e consistency consistency-check "$RESOURCE" --data-model "$DATA_MODEL" \
+            > "$RUNNER_TEMP/report.txt" 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      # GitHub limits a comment to 65,536 characters, so a long report is cut
+      # and the full text stays in the job log.
+      - name: Build PR comment
+        if: always() && steps.gate.outcome == 'success'
+        env:
+          STATUS: ${{ steps.gate.outputs.status }}
+          MESSAGE: ${{ steps.gate.outputs.message }}
+          RESOURCE: ${{ steps.gate.outputs.resource }}
+          DATA_MODEL: ${{ steps.gate.outputs.data_model }}
+          EXIT_CODE: ${{ steps.checks.outputs.exit_code }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '<!-- consistency-check-report -->'
+            echo '## Consistency Check'
+            echo
+            case "$STATUS" in
+              skip) echo "$MESSAGE." ;;
+              fail) echo "**Failed:** $MESSAGE" ;;
+              run)
+                echo "Build resource: $RESOURCE (Data model: $DATA_MODEL)"
+                echo
+                if [ -z "$EXIT_CODE" ]; then
+                  echo "**The checks did not finish.** See the [run log]($RUN_URL)."
+                elif [ "$EXIT_CODE" = "2" ]; then
+                  echo "**The checks could not run to completion.** The report below shows what was measured."
+                  echo
+                elif [ "$EXIT_CODE" = "1" ]; then
+                  echo "**A blocking check failed.**"
+                  echo
+                fi
+                if [ -f "$RUNNER_TEMP/report.txt" ]; then
+                  echo '````text'
+                  head -c 60000 "$RUNNER_TEMP/report.txt"
+                  echo
+                  echo '````'
+                  echo
+                  echo "A FAIL line is advisory unless its mode is blocking; see [reading a report](${{ github.server_url }}/${{ github.repository }}/blob/main/docs/consistency-checks/reading-a-report.md)."
+                fi
+                ;;
+            esac
+          } > "$RUNNER_TEMP/comment.md"
+          cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # One sticky comment per PR: update it if it exists. Only create a new
+      # one when there is a report or a problem to show, so pull requests that
+      # need no Build are not commented on. A pull request from a fork gets a
+      # read-only token, so a failed comment must not fail the job; the report
+      # is still in the job summary.
+      - name: Post or update PR comment
+        if: always() && steps.gate.outcome == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          COMMENT_FILE: ${{ runner.temp }}/comment.md
+          HAS_CONTENT: ${{ steps.gate.outputs.status != 'skip' }}
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- consistency-check-report -->';
+            const body = fs.readFileSync(process.env.COMMENT_FILE, 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number,
+            });
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else if (process.env.HAS_CONTENT === 'true') {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      # The comment is posted first so the reviewer can see why the job fails.
+      - name: Fail if the Build resource is missing or the checks did not run
+        if: always() && steps.gate.outcome == 'success'
+        env:
+          STATUS: ${{ steps.gate.outputs.status }}
+          MESSAGE: ${{ steps.gate.outputs.message }}
+          EXIT_CODE: ${{ steps.checks.outputs.exit_code }}
+        run: |
+          if [ "$STATUS" = "fail" ]; then
+            echo "::error::$MESSAGE"
+            exit 1
+          fi
+          if [ "$STATUS" = "run" ] && [ "$EXIT_CODE" != "0" ]; then
+            echo "::error::Consistency Checks exited with ${EXIT_CODE:-no exit code}; see the report."
+            exit 1
+          fi
+          echo "$MESSAGE"
