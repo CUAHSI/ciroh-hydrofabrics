@@ -3,23 +3,22 @@
 <!-- Summarize what changed and why (pipeline stages, parameters, scripts, outputs). -->
 
 
-## Hydrofabric comparison (optional)
+## Build resource
 
 <!--
-Fill in the fields below to have a bot post a comparison of your output
-against the official HydroShare hydrofabric on this PR.
+A pull request that changes the Build (pipelines/**, ngen-workflow/** other than
+Markdown files, Dockerfile, docker-compose.yml) must name the Build it produced.
+The Consistency Checks run on it and post their report on this pull request. An
+empty "Build resource" on such a pull request fails the check.
 
-- Upload your GeoPackage to HydroShare and make the resource public. A
-  zipped GeoPackage (.zip) also works.
-- The URL must be a https://www.hydroshare.org/... link that ends in .gpkg
-  or .zip, e.g.
-  https://www.hydroshare.org/resource/<resource-id>/data/contents/my-file.gpkg
-- Provide at most one URL for each type. Leave the other blank.
-- The VPU is required when a URL is provided (e.g. 16, 03N).
-- Editing this description re-runs the comparison.
+- Upload the Build's GeoPackages to HydroShare and make the resource public.
+- Give the resource page, in the form
+  https://www.hydroshare.org/resource/<resource-id>/
+- Other pull requests may leave it empty ("no Build required"). A value that is
+  not a resource page like the one above fails the check on any pull request.
+- "Data model" is optional and defaults to v2.2.
+- Editing this description re-runs the checks.
 -->
 
-- Version: v2.2
-- VPU:
-- Reference hydrofabric URL:
-- Ngen hydrofabric URL:
+Build resource:
+Data model: v2.2
