@@ -304,5 +304,31 @@ the [index](README.md).
 Run the focused tests, which generate small temporary GeoPackages:
 
 ```sh
-pixi run -e consistency python -m pytest validation/consistency
+pixi run -e consistency pytest validation/consistency -q
 ```
+
+GitHub runs the same command on pull requests that touch the checks (see
+[Tests in CI](#tests-in-ci)).
+
+## Tests in CI
+
+The [Consistency Check Tests](../../.github/workflows/consistency_tests.yaml)
+workflow runs this repository's own test suite for the Consistency Check
+tooling. It does not run the Consistency Checks against a Build's output; use
+[`consistency-check`](#running-the-checks) for that.
+
+The workflow sets up the `consistency` Pixi environment from the checked-in
+`pixi.lock` and runs the command shown under [Adding a check](#adding-a-check).
+It runs on:
+
+- pull requests that change the checks, their documentation, the Pixi
+  environment (`pixi.toml`, `pixi.lock`), or the workflow file itself (the
+  workflow's `paths` list is authoritative);
+- every push to `main`.
+
+A pull request that breaks a test shows a failing `Consistency Check Tests /
+pytest` check; one that leaves the tests passing shows a passing check. Because
+the pull request trigger is limited to those paths, the check does not appear on
+other pull requests. If you make it a required status check in branch
+protection, those pull requests would wait for a check that never starts, so
+remove the `paths` filter first.

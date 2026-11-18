@@ -1,0 +1,52 @@
+name: Consistency Check Tests
+
+# Run the test suite for the Consistency Check tooling (validation/consistency)
+# so a change that breaks it fails the pull request instead of going unnoticed.
+#
+# This runs the repository's own tests. It does not run the Consistency Checks
+# against a Build's output; see docs/consistency-checks/running-and-recording.md.
+
+on:
+  pull_request:
+    paths:
+      - 'validation/consistency/**'
+      - 'docs/consistency-checks/**'
+      # The tests run in the pixi "consistency" environment, and this file
+      # defines how they run, so changes to either must be tested too.
+      - 'pixi.toml'
+      - 'pixi.lock'
+      - '.github/workflows/consistency_tests.yaml'
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request supersedes the run in progress.
+# Runs on main are never cancelled, so every merged commit gets a result.
+concurrency:
+  group: consistency-tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Installs exactly what pixi.lock records for the "consistency"
+      # environment and fails if the lock file is out of date with pixi.toml.
+      # pixi is pinned so the lock file is read by the version that wrote it;
+      # bump it together with pixi.lock.
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.11.3
+        with:
+          pixi-version: v0.64.0
+          environments: consistency
+          locked: true
+
+      - name: Run Consistency Check tests
+        run: pixi run -e consistency pytest validation/consistency -q
