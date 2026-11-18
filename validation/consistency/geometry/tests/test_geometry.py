@@ -2,9 +2,6 @@
 
 import hashlib
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
@@ -12,8 +9,7 @@ import pyogrio
 import pytest
 from shapely.geometry import Point, Polygon, box
 
-
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
+from check_runner import run_check
 
 
 def write_layer(path, layer, geometries, crs="EPSG:5070"):
@@ -23,14 +19,6 @@ def write_layer(path, layer, geometries, crs="EPSG:5070"):
         crs=crs,
     ).to_file(path, layer=layer, engine="pyogrio")
 
-
-def run_check(path, kind="ngen", *extra):
-    return subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01", *map(str, extra)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
 
 
 def geometry_value(result, metric):

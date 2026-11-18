@@ -1,40 +1,13 @@
 """Attribute Consistency Checks exercised through the real CLI."""
 
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pytest
 import yaml
 from shapely.geometry import Point, box
 
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
-
-
-def run_check(path, kind="ngen", *extra):
-    """Run the consistency-check CLI for VPU 01 and capture its output.
-
-    Parameters
-    ----------
-    path : pathlib.Path
-        GeoPackage passed to the CLI.
-    kind : str, optional
-        Product type passed via ``--type``; defaults to ``ngen``.
-    *extra : object
-        Additional CLI arguments, converted to strings.
-
-    Returns
-    -------
-    subprocess.CompletedProcess
-        Process result with text stdout and stderr; nonzero exit codes do not
-        raise an exception.
-    """
-    return subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01", *map(str, extra)],
-        capture_output=True, text=True, check=False,
-    )
+from check_runner import run_check
 
 
 def metric(result, name):

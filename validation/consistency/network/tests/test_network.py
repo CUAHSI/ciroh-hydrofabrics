@@ -1,23 +1,9 @@
 """Behavioral tests for network Consistency Checks through the CLI."""
 
-import subprocess
-import sys
-from pathlib import Path
-
 import geopandas as gpd
 from shapely.geometry import Point
 
-
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
-
-
-def run_check(path, kind="ngen", *extra):
-    return subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01", *map(str, extra)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+from check_runner import run_check
 
 
 def test_reports_extra_duplicate_primary_ids_but_not_network_ids(tmp_path):

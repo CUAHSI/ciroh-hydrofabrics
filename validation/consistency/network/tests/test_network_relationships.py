@@ -1,25 +1,13 @@
 """Relationship checks exercised through the consistency-check CLI."""
 
 import sqlite3
-import subprocess
-import sys
-from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
 import pytest
 from shapely.geometry import Point, box
 
-RUNNER = Path(__file__).resolve().parents[2] / "consistency_check.py"
-
-
-def run_check(path, kind="ngen"):
-    return subprocess.run(
-        [sys.executable, str(RUNNER), str(path), "--type", kind, "--vpu", "01"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+from check_runner import run_check
 
 
 def test_network_duplicate_rows_include_geometry(tmp_path):
