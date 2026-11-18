@@ -24,19 +24,23 @@ permissions:
   contents: read
 
 # A newer push to the same pull request supersedes the run in progress.
+# Runs on main are never cancelled, so every merged commit gets a result.
 concurrency:
   group: consistency-tests-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       # Installs exactly what pixi.lock records for the "consistency"
       # environment and fails if the lock file is out of date with pixi.toml.
+      # pixi is pinned so the lock file is read by the version that wrote it;
+      # bump it together with pixi.lock.
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.11.3
         with:

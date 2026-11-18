@@ -307,7 +307,7 @@ Run the focused tests, which generate small temporary GeoPackages:
 pixi run -e consistency pytest validation/consistency -q
 ```
 
-GitHub runs the same command on every pull request that touches the checks (see
+GitHub runs the same command on pull requests that touch the checks (see
 [Tests in CI](#tests-in-ci)).
 
 ## Tests in CI
@@ -318,17 +318,12 @@ tooling. It does not run the Consistency Checks against a Build's output; use
 [`consistency-check`](#running-the-checks) for that.
 
 The workflow sets up the `consistency` Pixi environment from the checked-in
-`pixi.lock` and runs:
-
-```sh
-pixi run -e consistency pytest validation/consistency -q
-```
-
+`pixi.lock` and runs the command shown under [Adding a check](#adding-a-check).
 It runs on:
 
-- pull requests that change `validation/consistency/**`,
-  `docs/consistency-checks/**`, `pixi.toml`, `pixi.lock`, or the workflow file
-  itself;
+- pull requests that change the checks, their documentation, the Pixi
+  environment (`pixi.toml`, `pixi.lock`), or the workflow file itself (the
+  workflow's `paths` list is authoritative);
 - every push to `main`.
 
 A pull request that breaks a test shows a failing `Consistency Check Tests /
