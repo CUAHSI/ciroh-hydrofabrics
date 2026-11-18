@@ -186,7 +186,6 @@ not drift.
 | `network`: `duplicate_primary_ids.flowpaths`, `duplicate_network_rows`, `reciprocal_divide_flowpath_ambiguous` and the `*_ambiguous` metrics (Reference) | A few Reference VPUs repeat flowpath IDs or network rows, which makes the matching ambiguous. |
 | `network`: `dangling_toid.*`, `cycle_nodes.*` | A few official VPUs have links that do not resolve within the VPU, or cycles. |
 | `schema`: `column_order.*`, `extra_columns.network`, `missing_layer.hydrolocations` (Reference) | The official Reference GeoPackages differ from the observed specification in every recorded VPU. |
-| `schema`: `layer_type.hydrolocations`, `contents_crs.hydrolocations`, `missing_columns.hydrolocations`, `missing_geometry_registration.hydrolocations` (NextGen) | The recorded counts treat `hydrolocations` as a non-feature table in all 21 VPUs, while the specification describes a POINT layer. The cause is not yet explained; see the note on [`schema`](schema.md). |
 | `schema`: `unobserved_id_prefixes.network.toid` (NextGen) | Observed prefixes are not an allowlist; see [`schema`](schema.md). |
 | `attributes`: `violations.divide-attributes.mean.impervious_range` (NextGen) | Some official divides have impervious values outside [0, 100]. |
 
