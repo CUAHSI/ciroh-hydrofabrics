@@ -33,6 +33,12 @@ description of the project structure and purpose.
   assign, link, date, or parent change) and wait for approval before
   running it. Batch related writes into one request so they can be
   approved together.
+- Exception to the Jira approval rule above: when the user says a PR has
+  been merged, update its Jira ticket without asking. Confirm the merge on
+  GitHub (`gh pr view <n> --json state,mergeCommit`), post a comment linking
+  the PR and merge commit, then transition the ticket to `Done`. This
+  covers only that ticket's closing comment and transition; every other
+  Jira write still needs approval.
 
 
 ## Coding Principles
