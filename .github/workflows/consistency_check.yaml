@@ -5,8 +5,12 @@ name: Consistency Check
 #
 # A pull request that touches the Build (pipelines/**, ngen-workflow/** except
 # *.md, Dockerfile, docker-compose.yml) must give a "Build resource:" in its
-# description (see .github/PULL_REQUEST_TEMPLATE.md); leaving it empty fails the
-# job. Other pull requests pass with "no Build required".
+# description (see .github/PULL_REQUEST_TEMPLATE.md); leaving it empty or giving
+# an invalid value fails the job. Other pull requests pass with "no Build
+# required" and are not checked, whatever they put in those fields. The job
+# starts on every pull request so that it can be a required status check: a
+# workflow filtered by path never reports on other pull requests, which would
+# leave a required check pending forever.
 #
 # The job never fails on check results while every `blocking` flag in
 # validation/consistency/checks.yaml is false (docs/adr/0001). It fails only when

@@ -14,8 +14,9 @@ empty "Build resource" on such a pull request fails the check.
 - Upload the Build's GeoPackages to HydroShare and make the resource public.
 - Give the resource page, in the form
   https://www.hydroshare.org/resource/<resource-id>/
-- Other pull requests may leave it empty ("no Build required"). A value that is
-  not a resource page like the one above fails the check on any pull request.
+- Other pull requests pass with "no Build required" and are not checked; leave
+  these fields empty. On a pull request that changes the Build, a value that is
+  not a resource page like the one above fails the check.
 - "Data model" is optional and defaults to v2.2.
 - Editing this description re-runs the checks.
 -->

@@ -53,13 +53,26 @@ def test_declared_data_model_is_used():
     assert evaluate(body, ["Dockerfile"])["data_model"] == "v3.0"
 
 
-def test_build_resource_is_optional_but_still_checked_on_other_pull_requests():
+def test_build_resource_is_read_when_pasted_as_a_list_item_in_angle_brackets():
     body = f"- Build resource: <{RESOURCE}>\n"
 
-    result = evaluate(body, ["README.md"])
+    result = evaluate(body, ["Dockerfile"])
 
     assert result["status"] == "run"
     assert result["resource"] == RESOURCE
+
+
+def test_pull_request_that_does_not_touch_the_build_is_never_checked():
+    body = f"Build resource: {RESOURCE}\n"
+
+    result = evaluate(body, ["README.md"])
+
+    assert result == {"status": "skip", "message": "no Build required"}
+
+
+@pytest.mark.parametrize("body", ["Build resource: not a url\n", f"Build resource: {RESOURCE}\nData model: $(id)\n"])
+def test_invalid_values_never_fail_a_pull_request_that_does_not_touch_the_build(body):
+    assert evaluate(body, ["README.md"]) == {"status": "skip", "message": "no Build required"}
 
 
 def test_template_instructions_in_comments_are_not_read_as_values():
@@ -80,7 +93,7 @@ def test_template_instructions_in_comments_are_not_read_as_values():
     ],
 )
 def test_build_resource_that_is_not_a_hydroshare_resource_url_fails(value):
-    result = evaluate(f"Build resource: {value}\n", ["README.md"])
+    result = evaluate(f"Build resource: {value}\n", ["pipelines/conus/dvc.yaml"])
 
     assert result["status"] == "fail"
     assert "https://www.hydroshare.org/resource/<id>/" in result["message"]
@@ -91,7 +104,7 @@ def test_build_resource_that_is_not_a_hydroshare_resource_url_fails(value):
 def test_data_model_that_is_not_a_plain_name_fails(value):
     body = f"Build resource: {RESOURCE}\nData model: {value}\n"
 
-    result = evaluate(body, ["README.md"])
+    result = evaluate(body, ["ngen-workflow/R/hfaggregate.R"])
 
     assert result["status"] == "fail"
     assert "Data model" in result["message"]

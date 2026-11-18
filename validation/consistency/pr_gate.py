@@ -2,7 +2,8 @@
 
 A pull request that touches the Build (the pipelines and the code that makes the
 hydrofabric) must name a Build resource for the Consistency Checks to run on.
-Any other pull request passes without one.
+Any other pull request passes without one: the checks are not run on it, and
+anything it writes in the Build resource fields is ignored.
 
 The description is untrusted input: values are read from it by label and
 nothing in it is ever executed.
@@ -43,11 +44,11 @@ def evaluate(body, changed_paths):
 
     A ``run`` result also carries the ``resource`` to check and its ``data_model``.
     """
+    if not any(touches_build(path) for path in changed_paths):
+        return {"status": "skip", "message": "no Build required"}
     resource = field(body, "Build resource")
     if not resource:
-        if any(touches_build(path) for path in changed_paths):
-            return {"status": "fail", "message": "This pull request changes the Build; give a Build resource."}
-        return {"status": "skip", "message": "no Build required"}
+        return {"status": "fail", "message": "This pull request changes the Build; give a Build resource."}
     if not RESOURCE_URL.fullmatch(resource):
         return {"status": "fail", "message": "`Build resource` must look like https://www.hydroshare.org/resource/<id>/"}
     data_model = field(body, "Data model") or DEFAULT_DATA_MODEL
