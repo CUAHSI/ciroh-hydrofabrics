@@ -75,13 +75,12 @@ Reference identifiers are numeric, so these two metrics do not apply to
 | `ngen` | `divides` (POLYGON), `flowpaths` (GEOMETRY), `hydrolocations` (POINT), `lakes` (POINT), `nexus` (POINT) | `divide-attributes`, `flowpath-attributes`, `flowpath-attributes-ml`, `network`, `pois` |
 | `reference` | `divides` (POLYGON), `flowpaths` (LINESTRING), `hydrolocations` (POINT) | `network` |
 
-**Known recorded mismatch.** `counts.yaml` records `layer_type`,
-`contents_crs`, `missing_columns` and `missing_geometry_registration` for the
-NextGen `hydrolocations` layer as `1` in all 21 VPUs, which means the official
-files carry `hydrolocations` as a non-feature table. The specification and the
-local 03S test asset describe it as a POINT feature layer in EPSG:5070. The
-reason for the difference has not been investigated, so treat those four
-limits as inherited from the recorded files, not as the intended shape.
+**NextGen `hydrolocations` is a feature layer.** The official NextGen files
+carry `hydrolocations` as a POINT feature layer in EPSG:5070 in all 21 VPUs,
+as the specification describes. Counts recorded earlier from CONUS-scoped
+files instead of the per-VPU products had `layer_type`, `contents_crs`,
+`missing_columns` and `missing_geometry_registration` for it as `1`; they were
+re-recorded from the per-VPU products in CAM-1605 and are now `0`.
 
 ## Pass and fail
 
