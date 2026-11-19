@@ -82,17 +82,26 @@ files instead of the per-VPU products had `layer_type`, `contents_crs`,
 `missing_columns` and `missing_geometry_registration` for it as `1`; they were
 re-recorded from the per-VPU products in CAM-1605 and are now `0`.
 
+**Reference `hydrolocations` is a feature layer too.** All 21 official
+Reference per-VPU GeoPackages on HydroShare carry `hydrolocations` as a POINT
+layer in EPSG:5070, and their registered layers and columns are identical to the
+specification's `tables`, so the specification is correct for every VPU. The
+counts recorded earlier from CONUS-scoped files had `missing_layer.hydrolocations`
+as `1` for 20 of the VPUs, and `column_order.divides`, `column_order.flowpaths`
+and `extra_columns.network` as `1`. They were re-recorded from the per-VPU
+products in CAM-1676 (VPU 16 in CAM-1605) and are now `0` in all 21 VPUs. A
+Build of a Community Reference Hydrofabric that omits the `hydrolocations` layer
+now fails `missing_layer.hydrolocations` against its recorded limit of `0`.
+
 ## Pass and fail
 
 | Metric | Passes when | Fails when |
 | --- | --- | --- |
 | Every metric above | The value is no greater than the recorded count (a missing count is `0`). | The value is greater than the recorded count. |
 
-For example, the official Reference GeoPackages have no `hydrolocations` layer
-in the recorded VPUs, so `missing_layer.hydrolocations: 1` is recorded. A
-Reference Build that omits the layer passes at `1 <= 1`; one that includes it
-reports `0` and also passes. The ratchet cannot tell an unchanged inherited
-difference from a new one; see [reading a report](reading-a-report.md).
+For example, a metric recorded as `1` in a VPU passes when a Build reports `1`
+or `0` and fails when it reports `2`. The ratchet cannot tell an unchanged
+inherited difference from a new one; see [reading a report](reading-a-report.md).
 
 ## When the check is incomplete
 
@@ -106,7 +115,7 @@ before any file is read; there is no fallback to v2.2.
 
 | Convention | v2.2 value | Source |
 | --- | --- | --- |
-| Table and column names, declared types, column order | The layers and columns in `tables` | Data Model specific (v2.2): observed from the official NextGen VPU 03S and 16 and Reference VPU 16 GeoPackages. |
+| Table and column names, declared types, column order | The layers and columns in `tables` | Data Model specific (v2.2): observed from the official NextGen VPU 03S and 16 GeoPackages and all 21 official Reference VPU GeoPackages. |
 | Feature CRS | EPSG:5070 | Data Model specific (v2.2): the observed registration. |
 | Identifier separator | `-` | Data Model specific (v2.2), `checks.schema.id_prefix_separator`. |
 | Observed prefixes | e.g. `wb`, `cat`, `nex`, `tnx`, `inx`, `cnx` | Data Model specific (v2.2): union over VPU 03S and 16. |

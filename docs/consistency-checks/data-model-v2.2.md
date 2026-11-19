@@ -1,7 +1,7 @@
 # v2.2 Data Model specifications
 
 - [`ngen.json`](../../validation/consistency/models/v2.2/ngen.json): NextGen output, based on the official VPU 03S and 16 GeoPackages.
-- [`reference.json`](../../validation/consistency/models/v2.2/reference.json): Reference output, based on the official VPU 16 GeoPackage.
+- [`reference.json`](../../validation/consistency/models/v2.2/reference.json): Reference output, based on the official GeoPackages of all 21 VPUs.
 
 This page documents the evidence behind those specifications. The checks that
 use them are described in the [index](README.md).
@@ -26,8 +26,8 @@ rules; see [Regenerating a Data Model specification](running-and-recording.md#re
   `null` for attribute tables; otherwise it gives the registered column,
   geometry type, SRS ID, CRS authority/code/name, and GeoPackage `z` and `m`
   flags (0 = prohibited, 1 = mandatory, 2 = optional). Both NextGen files
-  have identical registered structures. Reference structure is known only
-  from VPU 16. The EPSG:5070 feature CRS and declarations are observations,
+  have identical registered structures, and so do all 21 Reference VPUs.
+  The EPSG:5070 feature CRS and declarations are observations,
   not evidence that every possible release or VPU has identical metadata.
   In particular, do not interpret a generic `GEOMETRY` declaration as a
   requirement that actual features have no more specific geometry type.

@@ -8239,6 +8239,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8268,12 +8274,16 @@ v2.2:
         divide_overlaps.total_area_m2: 5790605.161179597
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1543
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8289,58 +8299,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 2025
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1139
         flowpaths_without_divides.has_divide_0: 1139
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 2025
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 2025
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '02':
       attributes:
@@ -8369,6 +8392,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8398,12 +8427,16 @@ v2.2:
         divide_overlaps.total_area_m2: 115011441.3904611
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1601
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8419,58 +8452,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 4180
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 2216
         flowpaths_without_divides.has_divide_0: 2216
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 4180
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 4180
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '03N':
       attributes:
@@ -8499,6 +8545,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8528,12 +8580,16 @@ v2.2:
         divide_overlaps.total_area_m2: 16496992.018282693
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1118
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8549,58 +8605,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 2320
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1630
         flowpaths_without_divides.has_divide_0: 1630
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 2320
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 2320
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '03S':
       attributes:
@@ -8629,6 +8698,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8658,12 +8733,16 @@ v2.2:
         divide_overlaps.total_area_m2: 13711959.177827392
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 460
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8679,58 +8758,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 3889
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 795
         flowpaths_without_divides.has_divide_0: 795
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 3889
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 3889
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '03W':
       attributes:
@@ -8759,6 +8851,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8788,12 +8886,16 @@ v2.2:
         divide_overlaps.total_area_m2: 15060603.534479516
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 1
+        duplicate_geometries.hydrolocations: 843
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8809,58 +8911,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 4
         dnhydroseq_ambiguous.network: 8
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 1515
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 1
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 1
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1369
         flowpaths_without_divides.has_divide_0: 1369
         hydroseq_order_ambiguous.flowpaths: 4
         hydroseq_order_ambiguous.network: 8
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 1515
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 1515
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '04':
       attributes:
@@ -8889,6 +9004,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -8918,12 +9039,16 @@ v2.2:
         divide_overlaps.total_area_m2: 63301044.84313413
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1718
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -8939,58 +9064,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 3028
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1442
         flowpaths_without_divides.has_divide_0: 1442
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 3028
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 3028
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '05':
       attributes:
@@ -9019,6 +9157,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9048,12 +9192,16 @@ v2.2:
         divide_overlaps.total_area_m2: 38257212.460083604
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1907
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9069,58 +9217,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 1
-        dnhydroseq_indeterminate.network: 117
+        dnhydroseq_indeterminate.network: 2
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1613
         flowpaths_without_divides.has_divide_0: 1613
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 1
-        hydroseq_order_indeterminate.network: 117
+        hydroseq_order_indeterminate.network: 2
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 115
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '06':
       attributes:
@@ -9149,6 +9310,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9178,12 +9345,16 @@ v2.2:
         divide_overlaps.total_area_m2: 23228539.450513247
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 460
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9205,6 +9376,7 @@ v2.2:
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 618
         flowpaths_without_divides.has_divide_0: 618
         hydroseq_order_ambiguous.flowpaths: 0
@@ -9218,39 +9390,51 @@ v2.2:
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '07':
       attributes:
@@ -9279,6 +9463,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9308,12 +9498,16 @@ v2.2:
         divide_overlaps.total_area_m2: 133869628.81796908
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 2099
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9329,58 +9523,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 1
-        dnhydroseq_indeterminate.network: 105
+        dnhydroseq_indeterminate.network: 2
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 2
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1882
         flowpaths_without_divides.has_divide_0: 1882
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 1
-        hydroseq_order_indeterminate.network: 105
+        hydroseq_order_indeterminate.network: 2
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 103
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 6
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '08':
       attributes:
@@ -9409,6 +9616,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9438,12 +9651,16 @@ v2.2:
         divide_overlaps.total_area_m2: 49546348.94981288
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 639
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9459,58 +9676,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 2391
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1510
         flowpaths_without_divides.has_divide_0: 1510
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 2391
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 2391
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '09':
       attributes:
@@ -9539,6 +9769,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9568,12 +9804,16 @@ v2.2:
         divide_overlaps.total_area_m2: 436981059.2747079
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 521
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9589,58 +9829,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 1213
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 311
         flowpaths_without_divides.has_divide_0: 311
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 1213
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 1213
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '10L':
       attributes:
@@ -9669,6 +9922,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9698,12 +9957,16 @@ v2.2:
         divide_overlaps.total_area_m2: 188392050.11240202
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1732
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9719,58 +9982,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 1
-        dnhydroseq_indeterminate.network: 59
+        dnhydroseq_indeterminate.network: 3
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 3260
         flowpaths_without_divides.has_divide_0: 3260
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 1
-        hydroseq_order_indeterminate.network: 59
+        hydroseq_order_indeterminate.network: 3
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 56
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '10U':
       attributes:
@@ -9799,6 +10075,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9828,12 +10110,16 @@ v2.2:
         divide_overlaps.total_area_m2: 301868137.24748415
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 2014
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9849,58 +10135,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 2
-        dnhydroseq_indeterminate.network: 2778
+        dnhydroseq_indeterminate.network: 4
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 4001
         flowpaths_without_divides.has_divide_0: 4001
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 2
-        hydroseq_order_indeterminate.network: 2778
+        hydroseq_order_indeterminate.network: 4
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 2774
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '11':
       attributes:
@@ -9929,6 +10228,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -9958,12 +10263,16 @@ v2.2:
         divide_overlaps.total_area_m2: 92343150.92901918
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 1
+        duplicate_geometries.hydrolocations: 2205
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -9979,58 +10288,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 4
         dnhydroseq_ambiguous.network: 3
         dnhydroseq_indeterminate.flowpaths: 4
-        dnhydroseq_indeterminate.network: 765
+        dnhydroseq_indeterminate.network: 6
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 1
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 1
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 2406
         flowpaths_without_divides.has_divide_0: 2406
         hydroseq_order_ambiguous.flowpaths: 4
         hydroseq_order_ambiguous.network: 3
         hydroseq_order_indeterminate.flowpaths: 4
-        hydroseq_order_indeterminate.network: 765
+        hydroseq_order_indeterminate.network: 6
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 759
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '12':
       attributes:
@@ -10059,6 +10381,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10088,12 +10416,16 @@ v2.2:
         divide_overlaps.total_area_m2: 245430840.76818466
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 1
+        duplicate_geometries.hydrolocations: 1710
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10109,58 +10441,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 4
         dnhydroseq_ambiguous.network: 4
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 1701
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 1
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 1
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 540
         flowpaths_without_divides.has_divide_0: 540
         hydroseq_order_ambiguous.flowpaths: 4
         hydroseq_order_ambiguous.network: 4
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 1701
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 1701
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '13':
       attributes:
@@ -10189,6 +10534,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10218,12 +10569,16 @@ v2.2:
         divide_overlaps.total_area_m2: 271309945.6866078
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 824
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10239,58 +10594,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 916
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 296
         flowpaths_without_divides.has_divide_0: 296
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 916
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 916
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '14':
       attributes:
@@ -10319,6 +10687,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10348,12 +10722,16 @@ v2.2:
         divide_overlaps.total_area_m2: 62367297.68753423
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1075
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10369,58 +10747,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 2
-        dnhydroseq_indeterminate.network: 108
+        dnhydroseq_indeterminate.network: 3
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 777
         flowpaths_without_divides.has_divide_0: 777
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 2
-        hydroseq_order_indeterminate.network: 108
+        hydroseq_order_indeterminate.network: 3
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 105
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '15':
       attributes:
@@ -10449,6 +10840,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10478,12 +10875,16 @@ v2.2:
         divide_overlaps.total_area_m2: 3420919357.9313173
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 1138
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10499,58 +10900,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 183
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 0
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 519
         flowpaths_without_divides.has_divide_0: 519
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 183
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 183
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 0
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '16':
       attributes:
@@ -10732,6 +11146,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10761,12 +11181,16 @@ v2.2:
         divide_overlaps.total_area_m2: 209749038.521164
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 2819
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10782,58 +11206,71 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 1844
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 1
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 1050
         flowpaths_without_divides.has_divide_0: 1050
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 1844
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 1844
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 3
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
     '18':
       attributes:
@@ -10862,6 +11299,12 @@ v2.2:
         sentinel.flowpaths.toid: 0
         sentinel.flowpaths.tomeas: 0
         sentinel.flowpaths.totdasqkm: 0
+        sentinel.hydrolocations.fid: 0
+        sentinel.hydrolocations.flowpath_id: 0
+        sentinel.hydrolocations.hl_id: 0
+        sentinel.hydrolocations.pathmeas: 0
+        sentinel.hydrolocations.poi_id: 0
+        sentinel.hydrolocations.reachmeas: 0
         sentinel.network.areasqkm: 0
         sentinel.network.divide_id: 0
         sentinel.network.dnhydroseq: 0
@@ -10891,12 +11334,16 @@ v2.2:
         divide_overlaps.total_area_m2: 475382184.4863732
         duplicate_geometries.divides: 0
         duplicate_geometries.flowpaths: 0
+        duplicate_geometries.hydrolocations: 2152
         empty_geometries.divides: 0
         empty_geometries.flowpaths: 0
+        empty_geometries.hydrolocations: 0
         invalid_geometries.divides: 0
         invalid_geometries.flowpaths: 0
+        invalid_geometries.hydrolocations: 0
         null_geometries.divides: 0
         null_geometries.flowpaths: 0
+        null_geometries.hydrolocations: 0
       geopackage_layers:
         empty_layers: 0
         missing_layers: 0
@@ -10912,56 +11359,69 @@ v2.2:
         dnhydroseq_ambiguous.flowpaths: 0
         dnhydroseq_ambiguous.network: 0
         dnhydroseq_indeterminate.flowpaths: 0
-        dnhydroseq_indeterminate.network: 2042
+        dnhydroseq_indeterminate.network: 0
         dnhydroseq_mismatches.flowpaths: 0
         dnhydroseq_mismatches.network: 0
         duplicate_network_rows: 0
         duplicate_primary_ids.divides: 2
         duplicate_primary_ids.flowpaths: 0
+        duplicate_primary_ids.hydrolocations: 0
         flowpaths_without_divides: 697
         flowpaths_without_divides.has_divide_0: 697
         hydroseq_order_ambiguous.flowpaths: 0
         hydroseq_order_ambiguous.network: 0
         hydroseq_order_indeterminate.flowpaths: 0
-        hydroseq_order_indeterminate.network: 2042
+        hydroseq_order_indeterminate.network: 0
         hydroseq_order_violations.flowpaths: 0
         hydroseq_order_violations.network: 0
         indeterminate_null_toid.flowpaths: 0
-        indeterminate_null_toid.network: 2042
+        indeterminate_null_toid.network: 0
         reciprocal_divide_flowpath_ambiguous: 6
         reciprocal_divide_flowpath_mismatches: 0
       schema:
-        column_order.divides: 1
-        column_order.flowpaths: 1
+        column_order.divides: 0
+        column_order.flowpaths: 0
+        column_order.hydrolocations: 0
         column_order.network: 0
         column_types.divides: 0
         column_types.flowpaths: 0
+        column_types.hydrolocations: 0
         column_types.network: 0
         contents_crs.divides: 0
         contents_crs.flowpaths: 0
+        contents_crs.hydrolocations: 0
         crs_authority.divides: 0
         crs_authority.flowpaths: 0
+        crs_authority.hydrolocations: 0
         extra_columns.divides: 0
         extra_columns.flowpaths: 0
-        extra_columns.network: 1
+        extra_columns.hydrolocations: 0
+        extra_columns.network: 0
         geometry_column.divides: 0
         geometry_column.flowpaths: 0
+        geometry_column.hydrolocations: 0
         geometry_crs.divides: 0
         geometry_crs.flowpaths: 0
+        geometry_crs.hydrolocations: 0
         geometry_type.divides: 0
         geometry_type.flowpaths: 0
+        geometry_type.hydrolocations: 0
         layer_type.divides: 0
         layer_type.flowpaths: 0
+        layer_type.hydrolocations: 0
         layer_type.network: 0
         missing_columns.divides: 0
         missing_columns.flowpaths: 0
+        missing_columns.hydrolocations: 0
         missing_columns.network: 0
         missing_geometry_registration.divides: 0
         missing_geometry_registration.flowpaths: 0
+        missing_geometry_registration.hydrolocations: 0
         missing_layer.divides: 0
         missing_layer.flowpaths: 0
-        missing_layer.hydrolocations: 1
+        missing_layer.hydrolocations: 0
         missing_layer.network: 0
         missing_registration.divides: 0
         missing_registration.flowpaths: 0
+        missing_registration.hydrolocations: 0
         missing_registration.network: 0
