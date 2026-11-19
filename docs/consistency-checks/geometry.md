@@ -37,10 +37,11 @@ How equality is decided:
 `duplicate_geometries.hydrolocations` is nonzero in all 21 official NextGen
 v2.2 VPUs recorded in
 [`counts.yaml`](../../validation/consistency/counts.yaml), from 661 in VPU 06 to
-5,772 in VPU 17. **In the one VPU inspected (03S), 881 of the 889 extra rows are
-legitimate: the layer has one row per referenced location, and a point of
-interest (POI) can have several, all at one point. The other 8 are exact repeated
-rows, a minor data defect in the official product.**
+5,772 in VPU 17. **Verified in all 21 VPUs: 45,225 of the 46,946 extra rows
+(96.3%) are legitimate, because the layer has one row per referenced location
+and a point of interest (POI) can have several, all at one point. The other
+1,721 (3.7%) are exact repeated rows, a minor data defect in the official
+product, listed per VPU below. No VPU contradicts this cause.**
 
 The metric counts extra rows at a point, so a POI that has a `huc12` row, a
 `gages` row and a `LAKEPARM` row adds `2`, even though each row is a different
@@ -50,10 +51,11 @@ cannot tell that case from a repeated row.
 ### Why the points are shared
 
 `hydrolocations` has one row per referenced location, not one per place. Each
-row carries a `poi_id`, the flowpath (`id`) and nexus (`nex_id`) of that POI, and
-the referenced location in `hl_reference`, `hl_link` and `hl_uri` (for example
-`gages-02234500` or `huc12-030801011303`). One POI can have several referenced
-locations, and every row of a POI has the same point. For example, POI 2656 in
+row carries a `poi_id`, a flowpath (`id`) and the nexus (`nex_id`) of that POI,
+and the referenced location in `hl_reference`, `hl_link` and `hl_uri` (for
+example `gages-02234500` or `huc12-030801011303`). One POI can have several
+referenced locations, and every row of a POI has the same point and the same
+nexus (the rows of some POIs name different flowpaths that feed that nexus). For example, POI 2656 in
 VPU 03S has four rows, all at the point of `nex-420410` on `wb-420409`:
 `huc12-030801011303` and `gages-02234500` and `te-620` (`ref-fab`), and
 `LAKEPARM-10996865` (`NOAA-OWP`).
@@ -70,6 +72,7 @@ Observed read-only in `tests/v2.2/assets/ngen-hydrofabric-vpu-03S.gpkg`
 | Extra POIs on a point another POI already uses (2,286 - 2,270) | 16 |
 | Rows per POI | 1 for 1,614 POIs; 2 for 539; 3 for 97; 4 for 23; 5 for 7; 6 for 3; 9 for 1; 11 for 2 |
 | POIs on more than one point, or on more than one `nex_id` | 0 |
+| POIs whose rows name more than one flowpath `id` | 42 |
 | Points with more than one row | 683 of 2,270 (30%), holding 1,572 of 3,159 rows (50%) |
 | Rows at those 683 points | 2 at 545 points, 3 at 102, 4 at 23, 5 at 7, 6 at 3, 9 at 1, 11 at 2 |
 | Shared points with one `nex_id` | all 683 |
@@ -89,10 +92,11 @@ the commonest pairs are `huc12` + `huc12` (123), `LAKEPARM` + `wbout` (118),
 both at 186. This repository does not define the `hl_reference` values, so they
 are named here, not interpreted.
 
-### The eight repeated rows are a defect
+### The repeated rows are a defect
 
-Four groups of rows in VPU 03S repeat every column except `fid`. Each group is
-inside one POI, and together they add 8 of the 889 extra rows (under 1%):
+In every VPU, some groups of rows repeat every column except `fid`. Each group
+is inside one POI. VPU 03S has four such groups, which add 8 of its 889 extra
+rows (under 1%):
 
 | `hl_uri` | `poi_id` | `nex_id` | Rows | Extra rows |
 | --- | --- | --- | --- | --- |
@@ -105,6 +109,39 @@ They carry no information that another row does not, so they are a minor defect
 in the official product. No other check finds them: no primary key is
 established for NextGen `hydrolocations` (see [`network`](network.md)), so they
 appear only inside this count.
+
+All 21 VPUs were read the same way. The 1,721 repeated rows are 3.7% of the
+46,946 extra rows, from 0.5% in VPU 04 to 11.2% in VPU 06 (74 of 661). By
+`hl_reference`, 1,516 are `reservoir` rows, 184 `wbin`, 15 `lake`, and 6 are
+`wbout`, `nid`, `gages` or `huc12`. No repeated group has more than 4 rows. In
+every VPU, every extra row that is not a repeated row adds a `hl_uri` not yet at
+its point, and no point holds two rows with the same `hl_uri` that differ in
+another column.
+
+| VPU | Extra rows (recorded) | Repeated rows | Share | Extra rows adding a new `hl_uri` |
+| --- | ---: | ---: | ---: | ---: |
+| 01 | 2,826 | 45 | 1.6% | 2,781 |
+| 02 | 2,691 | 67 | 2.5% | 2,624 |
+| 03N | 1,805 | 39 | 2.2% | 1,766 |
+| 03S | 889 | 8 | 0.9% | 881 |
+| 03W | 1,266 | 39 | 3.1% | 1,227 |
+| 04 | 3,378 | 17 | 0.5% | 3,361 |
+| 05 | 2,452 | 126 | 5.1% | 2,326 |
+| 06 | 661 | 74 | 11.2% | 587 |
+| 07 | 3,557 | 74 | 2.1% | 3,483 |
+| 08 | 1,034 | 37 | 3.6% | 997 |
+| 09 | 984 | 27 | 2.7% | 957 |
+| 10L | 2,165 | 87 | 4.0% | 2,078 |
+| 10U | 2,713 | 78 | 2.9% | 2,635 |
+| 11 | 2,979 | 193 | 6.5% | 2,786 |
+| 12 | 2,420 | 195 | 8.1% | 2,225 |
+| 13 | 985 | 17 | 1.7% | 968 |
+| 14 | 1,498 | 105 | 7.0% | 1,393 |
+| 15 | 1,370 | 39 | 2.8% | 1,331 |
+| 16 | 1,411 | 82 | 5.8% | 1,329 |
+| 17 | 5,772 | 231 | 4.0% | 5,541 |
+| 18 | 4,090 | 141 | 3.4% | 3,949 |
+| All 21 | 46,946 | 1,721 | 3.7% | 45,225 |
 
 To split a GeoPackage's count into the two cases, compare distinct points with
 distinct point-and-`hl_uri` pairs. In VPU 03S the first is 889 and the second 8:
@@ -119,14 +156,18 @@ FROM hydrolocations;
 
 The second value equals the number of exactly repeated rows only if no point
 holds two rows with the same `hl_uri` and different other columns; none does in
-VPU 03S.
+any of the 21 VPUs.
 
 ### Limits of this evidence
 
-Only VPU 03S was inspected. The other 20 NextGen VPUs are known only through
-their recorded counts, so the composition above is not verified for them. Their
-rows have the same structure, so the same cause is expected (an inference), but a
-VPU may hold more repeated rows. Reference VPU 16 also records a nonzero
+All 21 official NextGen v2.2 VPUs were read (VPU 03S from the test asset and the
+other 20 from the HydroShare release), and the recorded count equals the extra
+rows in each. The structural findings held in every one of them: one row per
+referenced location, no POI on more than one point or nexus, and every extra row
+that is not a repeated row adding a new `hl_uri`. The detailed breakdown by
+`hl_reference`, source and nexus (the observation table above) was made for VPU
+03S only. The rows show what the layer contains, not that its design is
+intended. Reference VPU 16 also records a nonzero
 `duplicate_geometries.hydrolocations` (1,109); no Reference GeoPackage was
 inspected, so that count is not explained here. The metric and its recorded
 counts are unchanged: a Build may carry the official count forward but must not
