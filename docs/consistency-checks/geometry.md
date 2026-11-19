@@ -42,8 +42,9 @@ legitimate: the layer has one row per referenced location, and a point of
 interest (POI) can have several, all at one point. The other 8 are exact repeated
 rows, a minor data defect in the official product.**
 
-The metric counts extra rows at a point, so a POI that has a HUC12, a gage and a
-lake row adds `2`, even though each row is a different referenced location. It
+The metric counts extra rows at a point, so a POI that has a `huc12` row, a
+`gages` row and a `LAKEPARM` row adds `2`, even though each row is a different
+referenced location. It
 cannot tell that case from a repeated row.
 
 ### Why the points are shared
@@ -74,7 +75,7 @@ Observed read-only in `tests/v2.2/assets/ngen-hydrofabric-vpu-03S.gpkg`
 | Shared points with one `nex_id` | all 683 |
 | Shared points with rows on two flowpath `id`s | 56 (132 rows) |
 | Extra rows that add a new `hl_uri` to their point | 881 of the 889 |
-| Rows where `geom` differs from (`hl_x`, `hl_y`) | 0 |
+| Rows where `geom` differs from (`hl_x`, `hl_y`) by more than 1e-6 m | 0 |
 | Rows whose point is exactly the point of the nexus named in `nex_id` | 3,088 of 3,159; the other 71 are 33 m to 4.7 km away |
 
 So 873 + 16 = 889. The 16 are POIs that sit on the same point as a different POI
