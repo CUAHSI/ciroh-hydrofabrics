@@ -167,11 +167,11 @@ referenced location, no POI on more than one point or nexus, and every extra row
 that is not a repeated row adding a new `hl_uri`. The detailed breakdown by
 `hl_reference`, source and nexus (the observation table above) was made for VPU
 03S only. The rows show what the layer contains, not that its design is
-intended. Reference VPU 16 also records a nonzero
-`duplicate_geometries.hydrolocations` (1,109); no Reference GeoPackage was
-inspected, so that count is not explained here. The metric and its recorded
-counts are unchanged: a Build may carry the official count forward but must not
-exceed it.
+intended. The 21 official Reference VPUs also record a nonzero
+`duplicate_geometries.hydrolocations` (460 to 2,819), with the same cause but no
+exact repeated rows; see [reading a report](reading-a-report.md#known-legitimate-causes).
+The metric and its recorded counts are unchanged: a Build may carry the official
+count forward but must not exceed it.
 
 ## Divide topology metrics
 
